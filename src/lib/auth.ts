@@ -153,10 +153,23 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24,
   },
   // Config cookie figée (correction review) : sameSite lax partout, secure
-  // uniquement en production (baseURL https), pas de domain personnalisé
-  // en dev (crossSubDomainCookies désactivé par défaut).
+  // uniquement en production (baseURL https).
+  //
+  // Cross-sous-domaines : quand le front (myday.aevio-one.com) et l'API
+  // (api.myday.aevio-one.com) vivent sur des sous-domaines distincts, le cookie
+  // de session doit porter un Domain partagé pour que le navigateur l'envoie
+  // aussi à l'API. On le pilote par `COOKIE_DOMAIN` (ex: `.myday.aevio-one.com`)
+  // : absent en dev (localhost, même origine) → comportement inchangé.
   advanced: {
     useSecureCookies: process.env.NODE_ENV === "production",
+    ...(process.env.COOKIE_DOMAIN
+      ? {
+          crossSubDomainCookies: {
+            enabled: true,
+            domain: process.env.COOKIE_DOMAIN,
+          },
+        }
+      : {}),
     defaultCookieAttributes: {
       sameSite: "lax",
       httpOnly: true,

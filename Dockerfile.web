@@ -21,6 +21,13 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# NEXT_PUBLIC_API_URL est inline DANS le bundle au moment du `next build`
+# (variable exposee au navigateur). Elle doit donc etre fournie en build-arg
+# par la plateforme (Dokploy : « Build-Time Variables »), sinon le front
+# appellerait localhost:8000 en production. Defaut inoffensif pour le build local.
+ARG NEXT_PUBLIC_API_URL="http://localhost:8000"
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Variables factices pour que `next build` puisse s'executer sans .env.local
 # reel (les vraies valeurs sont injectees au runtime par la plateforme).
 ENV NEXT_TELEMETRY_DISABLED=1
