@@ -1,0 +1,5 @@
+- [Projet MyDay](project_myday.md) — cockpit IA perso : agenda/mails/tâches/messages unifiés, sur invitation
+- [Contraintes faisabilité intégrations](project_myday_integrations.md) — quelles sources sont livrables ou non pour le MVP
+- [Profil utilisateur Yoann](user_yoann.md) — non technique, décideur produit, écosystème Apple/WhatsApp
+- [Périmètre & séquencement MVP](project_myday_mvp_scope.md) — 13 features MVP à découper en 3 paliers livrables + test de sortie Palier 1
+- [Risques produit & règles manquantes](project_myday_risques_produit.md) — mail important non défini, parcours d'échec absents, verification Google, coût LLM

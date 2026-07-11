@@ -1,0 +1,16 @@
+# À ajouter dans [project] dependencies de backend/pyproject.toml :
+# "agent-platform>=0.4,<1.0",
+#
+# ⚠️  Le package est sur Gemfury (PyPI privé), PAS sur PyPI public.
+# Installation :
+#   pip install agent-platform \
+#     --index-url https://<token>@pypi.fury.io/<handle>/
+#
+# Ou via uv (recommandé) - ajouter dans pyproject.toml :
+# [[tool.uv.index]]
+# name = "gemfury"
+# url = "https://<token>@pypi.fury.io/<handle>/"
+# explicit = true
+#
+# [tool.uv.sources]
+# agent-platform = { index = "gemfury" }

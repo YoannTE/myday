@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyDay — Réglages</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../shared/tailwind-tokens.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+    <link rel="stylesheet" href="../shared/design-system.css" />
+    <link rel="stylesheet" href="../shared/base.css" />
+    <script src="../shared/components-loader.js" defer></script>
+    <script>
+      window.__TWEAKS__ = {
+        variants: {
+          navigation: {
+            label: "Navigation réglages",
+            options: ["Onglets horizontaux", "Sections empilées", "Menu latéral"],
+          },
+          google: {
+            label: "Carte Google",
+            options: ["État détaillé", "Ligne compacte", "Avec permissions"],
+          },
+          admin: {
+            label: "Onglet admin",
+            options: ["Tableaux nets", "Cartes", "Liste dense"],
+          },
+        },
+      };
+    </script>
+    <script src="../shared/tweaks-panel.js" defer></script>
+  </head>
+  <body class="bg-bg text-ink font-body min-h-screen">
+    <div data-include="../shared/components/navbar.html"></div>
+
+    <main class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10">
+      <a href="dashboard.html" class="inline-flex items-center gap-2 font-body text-sm text-ink/50 hover:text-accent transition-colors mb-4" data-mockup-id="retour-cockpit">← Cockpit</a>
+      <h1 class="font-display font-extrabold text-ink text-xl md:text-2xl tracking-[-0.02em] mb-6" data-mockup-id="reglages-titre">Réglages</h1>
+
+      <!-- NAVIGATION - V0 Onglets horizontaux -->
+      <div data-variant-group="navigation" data-variant="0" data-mockup-id="reglages-onglets" class="flex items-center gap-6 font-body text-sm border-b border-ink/5 mb-8 fade-in">
+        <a href="#" class="pb-3 border-b-2 border-accent text-ink font-medium">Mon compte</a>
+        <a href="#" class="pb-3 text-ink/50 hover:text-accent transition-colors">Brief & notifications</a>
+        <a href="#" class="pb-3 text-ink/50 hover:text-accent transition-colors">Administration</a>
+      </div>
+      <!-- NAVIGATION - V1 Sections empilées -->
+      <div data-variant-group="navigation" data-variant="1" data-mockup-id="reglages-sections" class="mb-8" style="display:none">
+        <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40">Tout est sur cette page — fais défiler</p>
+      </div>
+      <!-- NAVIGATION - V2 Menu latéral -->
+      <div data-variant-group="navigation" data-variant="2" data-mockup-id="reglages-lateral" class="mb-8" style="display:none">
+        <div class="inline-flex flex-col bg-white rounded-card shadow-card p-2 gap-1">
+          <span class="rounded-inner bg-soft text-ink font-body text-sm px-4 py-2">Mon compte</span>
+          <span class="rounded-inner text-ink/50 font-body text-sm px-4 py-2">Brief & notifications</span>
+          <span class="rounded-inner text-ink/50 font-body text-sm px-4 py-2">Administration</span>
+        </div>
+      </div>
+
+      <!-- Profil -->
+      <section class="bg-white rounded-card shadow-card p-6 mb-5 fade-in delay-1" data-mockup-id="section-profil">
+        <h2 class="font-display font-bold text-ink tracking-[-0.02em] mb-5">Mon compte</h2>
+        <div class="flex items-center gap-4 mb-5">
+          <div class="w-14 h-14 rounded-full bg-soft flex items-center justify-center font-display font-bold text-ink text-xl">Y</div>
+          <div>
+            <p class="font-display font-semibold text-ink">Yoann Varloud</p>
+            <p class="font-body text-sm text-ink/50">yoann.varloud@gmail.com · <span class="font-mono text-[10px] uppercase tracking-[.04em] text-accent">Admin</span></p>
+          </div>
+          <button class="bg-soft text-ink/70 font-body rounded-inner px-4 py-2 text-sm ml-auto">Modifier</button>
+        </div>
+
+        <!-- CARTE GOOGLE - V0 État détaillé -->
+        <div data-variant-group="google" data-variant="0" data-mockup-id="google-etat-detaille" class="rounded-inner border border-ink/10 p-5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="bg-white shadow-card rounded-full w-9 h-9 flex items-center justify-center text-accent font-bold">G</span>
+            <div>
+              <p class="font-display font-semibold text-ink text-sm">Compte Google connecté</p>
+              <p class="font-mono text-[10px] uppercase tracking-[.04em] text-accent flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-accent inline-block"></span>Synchronisé il y a 3 min</p>
+            </div>
+            <button class="bg-white border border-ink/10 text-ink/50 font-body rounded-inner px-3 py-1.5 text-xs ml-auto">Déconnecter</button>
+          </div>
+          <p class="font-body text-xs text-ink/50">Agenda (lecture + écriture) · Gmail (lecture + réponses validées) — MyDay ne supprime jamais rien dans Gmail.</p>
+        </div>
+        <!-- CARTE GOOGLE - V1 Ligne compacte -->
+        <div data-variant-group="google" data-variant="1" data-mockup-id="google-ligne" class="rounded-inner bg-soft px-4 py-3 items-center gap-3" style="display:none">
+          <span class="font-body text-sm text-ink flex-1">Google : connecté · sync il y a 3 min</span>
+          <button class="font-body text-xs text-ink/50">Gérer</button>
+        </div>
+        <!-- CARTE GOOGLE - V2 Avec permissions -->
+        <div data-variant-group="google" data-variant="2" data-mockup-id="google-permissions" class="rounded-inner border border-ink/10 p-5" style="display:none">
+          <p class="font-display font-semibold text-ink text-sm mb-3">Connexion Google</p>
+          <div class="flex flex-col gap-2 font-body text-xs text-ink/70">
+            <p><span class="text-accent">✓</span> Google Agenda — lecture et écriture</p>
+            <p><span class="text-accent">✓</span> Gmail — lecture et réponses validées</p>
+            <p><span class="text-ink/40">·</span> Dernière synchronisation : il y a 3 minutes</p>
+          </div>
+          <div class="flex gap-2 mt-4">
+            <button class="bg-soft text-ink/70 font-body rounded-inner px-3 py-1.5 text-xs">Resynchroniser</button>
+            <button class="bg-white border border-ink/10 text-ink/50 font-body rounded-inner px-3 py-1.5 text-xs">Déconnecter</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Brief & notifications -->
+      <section class="bg-white rounded-card shadow-card p-6 mb-5 fade-in delay-2" data-mockup-id="section-brief-notifications">
+        <h2 class="font-display font-bold text-ink tracking-[-0.02em] mb-5">Brief & notifications</h2>
+        <div class="grid md:grid-cols-2 gap-5">
+          <div>
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-2">Heure du brief</p>
+            <div class="rounded-inner border border-ink/10 px-4 py-3 font-body text-ink flex items-center justify-between">
+              <span>07:00</span><span class="text-ink/30">▾</span>
+            </div>
+          </div>
+          <div>
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-2">Ton du brief</p>
+            <div class="rounded-inner border border-ink/10 px-4 py-3 font-body text-ink flex items-center justify-between">
+              <span>Neutre</span><span class="text-ink/30">▾</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col divide-y divide-ink/5 mt-5" data-mockup-id="reglages-notifications">
+          <div class="flex items-center justify-between py-3">
+            <div>
+              <p class="font-body text-sm text-ink">Mail important reçu</p>
+              <p class="font-body text-xs text-ink/40">Maximum 3 alertes par heure</p>
+            </div>
+            <span class="w-10 h-6 rounded-full cta-gradient relative flex-shrink-0"><span class="absolute right-0.5 top-0.5 w-5 h-5 rounded-full bg-white"></span></span>
+          </div>
+          <div class="flex items-center justify-between py-3">
+            <p class="font-body text-sm text-ink">Rappel avant un événement</p>
+            <span class="w-10 h-6 rounded-full cta-gradient relative flex-shrink-0"><span class="absolute right-0.5 top-0.5 w-5 h-5 rounded-full bg-white"></span></span>
+          </div>
+          <div class="flex items-center justify-between py-3">
+            <p class="font-body text-sm text-ink">Brief prêt</p>
+            <span class="w-10 h-6 rounded-full bg-ink/15 relative flex-shrink-0"><span class="absolute left-0.5 top-0.5 w-5 h-5 rounded-full bg-white"></span></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADMIN - V0 Tableaux nets -->
+      <section data-variant-group="admin" data-variant="0" data-mockup-id="section-admin-tableaux" class="bg-white rounded-card shadow-card p-6 mb-5 fade-in delay-3">
+        <div class="flex items-center gap-3 mb-5">
+          <h2 class="font-display font-bold text-ink tracking-[-0.02em]">Administration</h2>
+          <span class="font-mono text-[9px] uppercase tracking-[.04em] text-accent bg-soft rounded-full px-2 py-0.5">Visible par toi seul</span>
+        </div>
+
+        <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-3">Invitations</p>
+        <div class="rounded-inner border border-ink/10 divide-y divide-ink/5 mb-3">
+          <div class="flex items-center gap-3 px-4 py-3" data-mockup-id="invitation-manon">
+            <span class="font-body text-sm text-ink flex-1">manon@gmail.com</span>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-accent bg-soft rounded-full px-2 py-0.5">Acceptée</span>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-3" data-mockup-id="invitation-julien">
+            <span class="font-body text-sm text-ink flex-1">julien.padel@gmail.com</span>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/40">Envoyée · expire le 16 juil.</span>
+            <button class="font-body text-xs text-accent">Renvoyer</button>
+            <button class="font-body text-xs text-ink/40">Révoquer</button>
+          </div>
+        </div>
+        <div class="rounded-inner bg-soft px-4 py-3 flex items-center gap-3 mb-6" data-mockup-id="invitation-nouvelle">
+          <span class="text-accent font-semibold">＋</span>
+          <span class="font-body text-sm text-ink/40 flex-1">Inviter quelqu'un — son email...</span>
+          <button class="cta-gradient text-white font-display font-semibold rounded-inner px-4 py-2 text-xs">Envoyer l'invitation</button>
+        </div>
+
+        <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-3">Comptes</p>
+        <div class="rounded-inner border border-ink/10 divide-y divide-ink/5" data-mockup-id="admin-comptes">
+          <div class="flex items-center gap-3 px-4 py-3">
+            <span class="w-8 h-8 rounded-full bg-soft flex items-center justify-center font-display font-semibold text-ink text-xs">Y</span>
+            <div class="flex-1">
+              <p class="font-body text-sm text-ink">yoann.varloud@gmail.com <span class="font-mono text-[9px] uppercase tracking-[.04em] text-accent ml-1">Admin</span></p>
+              <p class="font-body text-xs text-ink/40">Dernière connexion : maintenant</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-3">
+            <span class="w-8 h-8 rounded-full bg-soft flex items-center justify-center font-display font-semibold text-ink text-xs">M</span>
+            <div class="flex-1">
+              <p class="font-body text-sm text-ink">manon@gmail.com</p>
+              <p class="font-body text-xs text-ink/40">Dernière connexion : hier · 21:34</p>
+            </div>
+            <button class="font-body text-xs text-ink/40">Désactiver</button>
+          </div>
+        </div>
+        <p class="font-body text-xs text-ink/40 mt-3">Tu vois uniquement les informations de compte — jamais le contenu (mails, notes, tâches) des autres utilisateurs.</p>
+      </section>
+      <!-- ADMIN - V1 Cartes -->
+      <section data-variant-group="admin" data-variant="1" data-mockup-id="section-admin-cartes" class="mb-5" style="display:none">
+        <h2 class="font-display font-bold text-ink tracking-[-0.02em] mb-4">Administration</h2>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="bg-white rounded-card shadow-card p-5">
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-2">Invitations</p>
+            <p class="font-display font-extrabold text-2xl text-ink tracking-[-0.02em]">2</p>
+            <p class="font-body text-xs text-ink/50">1 acceptée · 1 en attente</p>
+          </div>
+          <div class="bg-white rounded-card shadow-card p-5">
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-2">Comptes actifs</p>
+            <p class="font-display font-extrabold text-2xl text-ink tracking-[-0.02em]">2</p>
+            <p class="font-body text-xs text-ink/50">Yoann (admin) · Manon</p>
+          </div>
+        </div>
+      </section>
+      <!-- ADMIN - V2 Liste dense -->
+      <section data-variant-group="admin" data-variant="2" data-mockup-id="section-admin-dense" class="bg-white rounded-card shadow-card divide-y divide-ink/5 mb-5" style="display:none">
+        <div class="px-5 py-3"><p class="font-display font-bold text-ink text-sm">Administration</p></div>
+        <div class="px-5 py-2.5 flex items-center gap-3 font-body text-sm"><span class="flex-1 text-ink">manon@gmail.com</span><span class="font-mono text-[9px] uppercase text-accent">Acceptée</span></div>
+        <div class="px-5 py-2.5 flex items-center gap-3 font-body text-sm"><span class="flex-1 text-ink">julien.padel@gmail.com</span><span class="font-mono text-[9px] uppercase text-ink/40">En attente</span></div>
+        <div class="px-5 py-2.5 flex items-center gap-3 font-body text-sm text-accent">＋ Inviter quelqu'un</div>
+      </section>
+
+      <!-- Zone danger -->
+      <section class="rounded-card border border-ink/10 p-6 fade-in delay-4" data-mockup-id="section-danger">
+        <h2 class="font-display font-bold text-ink tracking-[-0.02em] mb-2">Supprimer mon compte</h2>
+        <p class="font-body text-sm text-ink/50 mb-4">Toutes tes données MyDay sont effacées et l'accès à ton compte Google est révoqué. Tes mails et ton agenda Google restent intacts.</p>
+        <button class="bg-white border border-ink/15 text-ink/60 font-body rounded-inner px-4 py-2.5 text-sm">Supprimer définitivement...</button>
+      </section>
+    </main>
+
+    <div data-include="../shared/components/fraicheur.html"></div>
+  </body>
+</html>

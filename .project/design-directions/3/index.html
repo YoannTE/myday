@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AEVIO One — MyDay</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              bg: "var(--palette-bg)",
+              ink: "var(--palette-ink)",
+              accent: "var(--palette-accent)",
+              soft: "var(--palette-soft)",
+            },
+            fontFamily: {
+              display: "var(--font-display)",
+              body: "var(--font-body)",
+              mono: "var(--font-mono)",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      :root {
+        --palette-bg: #f5f7fb;
+        --palette-ink: #111a37;
+        --palette-accent: #2350e6;
+        --palette-soft: #eaf0ff;
+        --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
+        --font-body: "Plus Jakarta Sans", system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", monospace;
+        --space-base: 16px;
+        /* alias fidèles au relevé AEVIO One (mêmes valeurs, autre nommage) */
+        --bg: var(--palette-bg);
+        --ink: var(--palette-ink);
+        --accent: var(--palette-accent);
+        --soft: var(--palette-soft);
+        --success: var(--palette-accent);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      /* -- Responsive mobile : tout le rendu est en rem, on réduit la base -- */
+      @media (max-width: 640px) {
+        html {
+          font-size: 13.5px;
+        }
+        :root {
+          --space-base: 13px;
+        }
+      }
+
+      body {
+        background: var(--palette-bg);
+        color: var(--palette-ink);
+        font-family: var(--font-body);
+        margin: 0;
+        transition: background 0.4s ease, color 0.4s ease;
+      }
+
+      /* -- Blocs utilitaires partagés AEVIO One (dérivés des CSS vars, aucune autre teinte en dur) -- */
+      .rounded-card {
+        border-radius: 14px;
+      }
+      .rounded-inner {
+        border-radius: 12px;
+      }
+      .shadow-card {
+        box-shadow:
+          0 1px 2px color-mix(in srgb, var(--ink) 4%, transparent),
+          0 24px 48px -32px color-mix(in srgb, var(--ink) 28%, transparent);
+      }
+      .focus-ring:focus {
+        outline: none;
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 10%, transparent);
+      }
+      .text-secondary {
+        color: color-mix(in srgb, var(--ink) 55%, transparent);
+      }
+      /* Exception autorisée : dégradé CTA fidèle au site AEVIO (valeurs non dérivables des CSS vars) */
+      .cta-gradient {
+        background: linear-gradient(180deg, #3a6bff, #2350e6);
+        box-shadow: 0 10px 22px -8px rgba(47, 98, 255, 0.6);
+      }
+      .text-success {
+        color: var(--success);
+      }
+      .bg-success {
+        background-color: var(--success);
+      }
+      .bg-success-soft {
+        background: color-mix(in srgb, var(--success) 14%, var(--bg));
+      }
+
+      /* -- Animations globales (jamais dans les templates de variants) -- */
+      @keyframes pulse-soft {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.55;
+          transform: scale(1.25);
+        }
+      }
+      .pulse-now {
+        animation: pulse-soft 2.4s ease-in-out infinite;
+      }
+
+      @keyframes fade-in-up {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .fade-in {
+        animation: fade-in-up 0.7s ease-out both;
+      }
+      .delay-1 {
+        animation-delay: 0.05s;
+      }
+      .delay-2 {
+        animation-delay: 0.12s;
+      }
+      .delay-3 {
+        animation-delay: 0.19s;
+      }
+      .delay-4 {
+        animation-delay: 0.26s;
+      }
+      .delay-5 {
+        animation-delay: 0.33s;
+      }
+      .delay-6 {
+        animation-delay: 0.4s;
+      }
+    </style>
+
+    <script>
+      // Configuration tweaks-panel.js
+      window.__TWEAKS__ = {
+        palettes: [
+          {
+            name: "AEVIO One",
+            colors: {
+              bg: "#f5f7fb",
+              ink: "#111a37",
+              accent: "#2350e6",
+              soft: "#eaf0ff",
+            },
+          },
+          {
+            name: "Sable & Terracotta",
+            colors: {
+              bg: "#f4ede2",
+              ink: "#1a1815",
+              accent: "#b4461e",
+              soft: "#d8cdb8",
+            },
+          },
+          {
+            name: "Encre & Or brûlé",
+            colors: {
+              bg: "#faf8f1",
+              ink: "#303440",
+              accent: "#b5914a",
+              soft: "#dcdee5",
+            },
+          },
+          {
+            name: "Marbre & Vert Reborn",
+            colors: {
+              bg: "#fbf9f5",
+              ink: "#1a1a1a",
+              accent: "#2c8265",
+              soft: "#e5e1da",
+            },
+          },
+          {
+            name: "Lait & Olive",
+            colors: {
+              bg: "#faf8f1",
+              ink: "#0f1310",
+              accent: "#5e7548",
+              soft: "#e3e1d4",
+            },
+          },
+          {
+            name: "Craie & Vermillon",
+            colors: {
+              bg: "#fcfaf5",
+              ink: "#1a0c0a",
+              accent: "#d94f32",
+              soft: "#e7e3dc",
+            },
+          },
+        ],
+        dark: { bg: "#0c1024", ink: "#eef1fb", soft: "#1a2140" },
+        variants: {
+          topbar: {
+            label: "Barre du haut",
+            options: ["Barre produit", "Barre minimale", "Barre à onglets"],
+          },
+          brief: {
+            label: "Brief du matin",
+            options: ["Carte hero", "Bandeau dégradé", "Split métriques"],
+          },
+          notes: {
+            label: "Notes",
+            options: ["Liste épinglée", "Capture rapide", "Post-its"],
+          },
+          planning: {
+            label: "Planning du jour",
+            options: ["Timeline produit", "Cartes créneaux", "Liste agenda dense"],
+          },
+          todo: {
+            label: "Tâches",
+            options: ["Checklist nette", "Cartes kanban légères", "Liste compacte"],
+          },
+          mails: {
+            label: "Mails importants",
+            options: ["Inbox scorée", "Cartes mail", "Digest par importance"],
+          },
+          assistant: {
+            label: "Assistant",
+            options: ["Intégré en haut + suggestions", "Bouton flottant dégradé", "Panneau latéral esquissé"],
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="min-h-screen">
+    <!-- SLOT topbar -->
+    <div data-variant-group="topbar" data-variant="0" data-mockup-id="topbar-barre-produit" class="border-b border-ink/5 fade-in">
+      <div class="max-w-6xl mx-auto px-4 md:px-6 py-3 md:py-4 flex flex-wrap items-center gap-x-6 gap-y-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-inner cta-gradient flex items-center justify-center text-white font-display font-bold text-sm">M</div>
+          <span class="font-display font-bold text-ink tracking-[-0.02em]">Vendredi 10 juillet</span>
+        </div>
+        <div class="order-3 w-full sm:order-none sm:w-auto sm:flex-1 sm:max-w-xl sm:mx-auto" data-mockup-id="assistant-top-bar">
+          <div class="rounded-full bg-bg border border-accent/20 shadow-card px-3 py-2 flex items-center gap-2.5">
+            <span class="w-6 h-6 rounded-full cta-gradient text-white flex items-center justify-center text-xs font-display font-semibold flex-shrink-0">→</span>
+            <span class="font-body text-sm text-ink/40 flex-1 truncate">Dis-moi quoi faire — une note, un rendez-vous, un mail...</span>
+            <span class="hidden sm:inline font-mono text-[10px] uppercase tracking-[.04em] text-ink/30 bg-soft rounded-full px-2 py-0.5">⌘K</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 ml-auto">
+          <button class="w-9 h-9 rounded-full bg-soft flex items-center justify-center text-ink/60 hover:text-accent transition-colors focus-ring" data-mockup-id="toggle-dark-mode" title="Mode sombre" aria-label="Basculer le mode sombre">☾</button>
+          <div class="w-9 h-9 rounded-full bg-soft flex items-center justify-center font-display font-semibold text-ink">Y</div>
+        </div>
+      </div>
+    </div>
+    <div data-variant-group="topbar" data-variant="1" data-mockup-id="topbar-barre-minimale" style="display:none">
+      <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-inner cta-gradient flex items-center justify-center text-white font-display font-bold text-sm">M</div>
+          <span class="font-display font-bold text-ink tracking-[-0.02em] text-lg">Vendredi 10 juillet</span>
+        </div>
+        <div class="w-9 h-9 rounded-full bg-soft flex items-center justify-center font-display font-semibold text-ink">Y</div>
+      </div>
+    </div>
+    <div data-variant-group="topbar" data-variant="2" data-mockup-id="topbar-barre-onglets" style="display:none">
+      <div class="max-w-6xl mx-auto px-6 pt-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="font-display font-bold text-ink tracking-[-0.02em] text-lg">Vendredi 10 juillet</span>
+          <div class="w-8 h-8 rounded-full bg-soft"></div>
+        </div>
+        <nav class="flex items-center gap-6 font-body text-sm text-ink/50 border-b border-ink/5">
+          <a href="#" class="pb-3 border-b-2 border-accent text-ink font-medium">Aujourd'hui</a>
+          <a href="#" class="pb-3 hover:text-accent transition-colors">Notes</a>
+          <a href="#" class="pb-3 hover:text-accent transition-colors">Planning</a>
+          <a href="#" class="pb-3 hover:text-accent transition-colors">Mails</a>
+          <a href="#" class="pb-3 hover:text-accent transition-colors">Assistant</a>
+        </nav>
+      </div>
+    </div>
+
+    <!-- SLOT brief -->
+    <section data-variant-group="brief" data-variant="0" data-mockup-id="brief-carte-hero" class="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-10 fade-in delay-1">
+      <div class="bg-bg rounded-card shadow-card p-4 md:p-12 relative overflow-hidden">
+        <div class="absolute inset-x-0 top-0 h-1 cta-gradient"></div>
+        <span class="font-mono uppercase text-[10px] md:text-[11px] tracking-[.04em] text-accent bg-soft rounded-full px-3 py-1 inline-block mb-3 md:mb-5">Brief · 07:00</span>
+        <h2 class="font-display font-extrabold text-ink text-lg md:text-4xl tracking-[-0.02em] leading-tight max-w-2xl mb-4 md:mb-8">
+          Trois priorités déterminent ta journée.
+        </h2>
+        <div class="flex flex-col gap-2 md:gap-3 max-w-xl mb-4 md:mb-8">
+          <div class="flex items-center gap-3 md:gap-4 rounded-inner border border-ink/10 px-3 py-2.5 md:px-5 md:py-4">
+            <span class="w-5 h-5 md:w-7 md:h-7 rounded-full cta-gradient text-white font-mono text-[10px] md:text-xs flex items-center justify-center flex-shrink-0">01</span>
+            <p class="font-body text-sm md:text-base text-ink">Répondre au mail du comptable avant midi</p>
+          </div>
+          <div class="flex items-center gap-3 md:gap-4 rounded-inner border border-ink/10 px-3 py-2.5 md:px-5 md:py-4">
+            <span class="w-5 h-5 md:w-7 md:h-7 rounded-full cta-gradient text-white font-mono text-[10px] md:text-xs flex items-center justify-center flex-shrink-0">02</span>
+            <p class="font-body text-sm md:text-base text-ink">Préparer la réunion AEVIO de 14h</p>
+          </div>
+          <div class="flex items-center gap-3 md:gap-4 rounded-inner border border-ink/10 px-3 py-2.5 md:px-5 md:py-4">
+            <span class="w-5 h-5 md:w-7 md:h-7 rounded-full cta-gradient text-white font-mono text-[10px] md:text-xs flex items-center justify-center flex-shrink-0">03</span>
+            <p class="font-body text-sm md:text-base text-ink">Confirmer le padel de vendredi</p>
+          </div>
+        </div>
+        <div class="rounded-inner bg-soft px-3 py-2.5 md:px-5 md:py-4 flex items-center gap-3">
+          <span class="font-mono text-[10px] md:text-[11px] uppercase tracking-[.04em] text-accent flex-shrink-0">Alerte</span>
+          <p class="font-body text-xs md:text-sm text-ink/70">Ta réunion de 14h n'a pas d'ordre du jour.</p>
+        </div>
+      </div>
+    </section>
+    <section data-variant-group="brief" data-variant="1" data-mockup-id="brief-bandeau-degrade" class="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <div class="cta-gradient rounded-card p-5 md:p-12">
+        <span class="font-mono uppercase text-[11px] tracking-[.04em] text-white/80 bg-white/15 rounded-full px-3 py-1 inline-block mb-5">Brief · 07:00</span>
+        <h2 class="font-display font-extrabold text-white text-2xl md:text-4xl tracking-[-0.02em] leading-tight max-w-2xl mb-8">
+          Trois priorités déterminent ta journée.
+        </h2>
+        <div class="grid md:grid-cols-3 gap-4 mb-6">
+          <div class="rounded-inner bg-white/10 p-5">
+            <span class="font-mono text-xs text-white/60">01</span>
+            <p class="font-body text-white mt-2">Répondre au mail du comptable avant midi</p>
+          </div>
+          <div class="rounded-inner bg-white/10 p-5">
+            <span class="font-mono text-xs text-white/60">02</span>
+            <p class="font-body text-white mt-2">Préparer la réunion AEVIO de 14h</p>
+          </div>
+          <div class="rounded-inner bg-white/10 p-5">
+            <span class="font-mono text-xs text-white/60">03</span>
+            <p class="font-body text-white mt-2">Confirmer le padel de vendredi</p>
+          </div>
+        </div>
+        <div class="rounded-inner bg-white/15 px-5 py-4">
+          <p class="font-body text-sm text-white/90">Alerte : ta réunion de 14h n'a pas d'ordre du jour.</p>
+        </div>
+      </div>
+    </section>
+    <section data-variant-group="brief" data-variant="2" data-mockup-id="brief-split-metriques" class="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <div class="bg-bg rounded-card shadow-card p-5 md:p-12 grid md:grid-cols-[1.3fr_1fr] gap-8">
+        <div>
+          <span class="font-mono uppercase text-[11px] tracking-[.04em] text-accent">Brief · 07:00</span>
+          <h2 class="font-display font-extrabold text-ink text-3xl tracking-[-0.02em] leading-tight mt-3 mb-6">
+            Trois priorités déterminent ta journée.
+          </h2>
+          <ul class="flex flex-col gap-2 font-body text-ink/80">
+            <li>1. Répondre au mail du comptable avant midi</li>
+            <li>2. Préparer la réunion AEVIO de 14h</li>
+            <li>3. Confirmer le padel de vendredi</li>
+          </ul>
+        </div>
+        <div class="flex flex-col gap-5 justify-center border-l border-ink/10 pl-8">
+          <div>
+            <p class="font-mono text-3xl font-semibold text-accent tracking-[-0.02em]">3</p>
+            <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40">Priorités</p>
+          </div>
+          <div>
+            <p class="font-mono text-3xl font-semibold text-ink tracking-[-0.02em]">5</p>
+            <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40">Tâches</p>
+          </div>
+          <div>
+            <p class="font-mono text-3xl font-semibold text-ink tracking-[-0.02em]">1</p>
+            <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40">Alerte active</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLOT notes -->
+    <section data-variant-group="notes" data-variant="1" data-mockup-id="notes-capture-rapide" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-display font-bold text-ink text-xl tracking-[-0.02em]">Notes</h3>
+        <span class="font-mono text-[10px] uppercase tracking-[.04em] text-accent bg-soft rounded-full px-2.5 py-1">Capture rapide</span>
+      </div>
+      <div class="bg-bg rounded-card shadow-card border border-accent/15 px-5 py-4 mb-4 flex items-center gap-3" data-mockup-id="notes-champ-rapide">
+        <span class="text-accent font-display font-semibold text-lg">+</span>
+        <span class="font-body text-ink/40 flex-1">Note rapide — écris, c'est gardé...</span>
+        <span class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/30 bg-soft rounded-full px-2 py-0.5">N</span>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-bg rounded-card shadow-card p-5" data-mockup-id="note-liste-courses">
+          <p class="font-display font-semibold text-ink mb-2">Liste de courses</p>
+          <p class="font-body text-sm text-ink/60">Bananes, pommes, fraises, pain, lait d'amande</p>
+          <p class="font-mono text-[10px] uppercase tracking-[.04em] text-accent mt-3">Épinglée · via l'assistant</p>
+        </div>
+        <div class="bg-bg rounded-card shadow-card p-5" data-mockup-id="note-idees">
+          <p class="font-display font-semibold text-ink mb-2">Idées MyDay</p>
+          <p class="font-body text-sm text-ink/60">Vue semaine du planning, widget mobile, partage avec Manon</p>
+          <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/30 mt-3">Modifiée hier</p>
+        </div>
+      </div>
+    </section>
+    <section data-variant-group="notes" data-variant="2" data-mockup-id="notes-post-its" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <h3 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-6">Notes</h3>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-soft rounded-card p-5 rotate-[-0.5deg]">
+          <p class="font-display font-semibold text-ink mb-2">Liste de courses</p>
+          <p class="font-body text-sm text-ink/70">Bananes, pommes, fraises, pain, lait d'amande</p>
+        </div>
+        <div class="bg-soft rounded-card p-5 rotate-[0.5deg]">
+          <p class="font-display font-semibold text-ink mb-2">Idées MyDay</p>
+          <p class="font-body text-sm text-ink/70">Vue semaine, widget mobile, partage avec Manon</p>
+        </div>
+        <div class="bg-bg rounded-card border-2 border-dashed border-accent/30 p-5 flex items-center justify-center">
+          <span class="font-body text-sm text-accent">+ Nouvelle note</span>
+        </div>
+      </div>
+    </section>
+    <section data-variant-group="notes" data-variant="0" data-mockup-id="notes-liste-epinglee" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10 fade-in delay-2">
+      <h3 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-4">Notes</h3>
+      <div class="bg-bg rounded-card shadow-card divide-y divide-ink/5">
+        <div class="flex items-center gap-4 px-5 py-3">
+          <span class="text-accent">＋</span>
+          <span class="font-body text-sm text-ink/40 flex-1">Note rapide...</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-3">
+          <span class="font-body text-sm text-ink flex-1">Liste de courses — bananes, pommes, fraises...</span>
+          <span class="font-mono text-[10px] uppercase tracking-[.04em] text-accent">Épinglée</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-3">
+          <span class="font-body text-sm text-ink flex-1">Idées MyDay — vue semaine, widget mobile...</span>
+          <span class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/30">Hier</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLOT planning -->
+    <section data-variant-group="planning" data-variant="0" data-mockup-id="planning-timeline-produit" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10 fade-in delay-2">
+      <h3 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-6">Ta journée</h3>
+      <div class="bg-bg rounded-card shadow-card p-6 flex flex-col gap-4">
+        <div class="flex items-center gap-4">
+          <span class="font-mono text-xs text-ink/40 w-16">09:30</span>
+          <div class="flex-1 rounded-inner bg-soft px-4 py-3">
+            <span class="font-body text-ink">Point équipe</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="font-mono text-xs text-accent w-16 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-accent inline-block pulse-now"></span>14:00
+          </span>
+          <div class="flex-1 rounded-inner border-2 border-accent/30 px-4 py-3">
+            <p class="font-body text-ink">Réunion client AEVIO</p>
+            <p class="font-mono text-[11px] uppercase tracking-[.04em] text-accent mt-1">Aucun ordre du jour</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="font-mono text-xs text-ink/40 w-16">18:00</span>
+          <div class="flex-1 rounded-inner bg-soft px-4 py-3">
+            <span class="font-body text-ink">Padel avec Julien</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section data-variant-group="planning" data-variant="1" data-mockup-id="planning-cartes-creneaux" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <h3 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-6">Ta journée</h3>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-bg rounded-card shadow-card p-5">
+          <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mb-2">09:30</p>
+          <p class="font-body text-ink">Point équipe</p>
+        </div>
+        <div class="bg-bg rounded-card shadow-card p-5 border border-accent/20">
+          <p class="font-mono text-[11px] uppercase tracking-[.04em] text-accent mb-2 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-accent inline-block pulse-now"></span>14:00
+          </p>
+          <p class="font-body text-ink">Réunion client AEVIO</p>
+        </div>
+        <div class="bg-bg rounded-card shadow-card p-5">
+          <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mb-2">18:00</p>
+          <p class="font-body text-ink">Padel avec Julien</p>
+        </div>
+      </div>
+    </section>
+    <section data-variant-group="planning" data-variant="2" data-mockup-id="planning-liste-agenda-dense" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <h3 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-4">Ta journée</h3>
+      <div class="bg-bg rounded-card shadow-card divide-y divide-ink/5">
+        <div class="flex items-center gap-4 px-5 py-3">
+          <span class="font-mono text-xs text-ink/40 w-14">09:30</span>
+          <span class="font-body text-sm text-ink">Point équipe</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-3 bg-soft/60">
+          <span class="font-mono text-xs text-accent w-14 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-accent inline-block pulse-now"></span>14:00</span>
+          <span class="font-body text-sm text-ink">Réunion client AEVIO — sans ordre du jour</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-3">
+          <span class="font-mono text-xs text-ink/40 w-14">18:00</span>
+          <span class="font-body text-sm text-ink">Padel avec Julien</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLOT todo -->
+    <section data-variant-group="todo" data-variant="0" data-mockup-id="todo-checklist-nette" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10 fade-in delay-3">
+      <h3 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-6">Tes tâches</h3>
+      <div class="bg-bg rounded-card shadow-card divide-y divide-ink/5">
+        <div class="flex items-center gap-4 px-5 py-4">
+          <span class="w-5 h-5 rounded-md border-2 border-accent/40 flex-shrink-0"></span>
+          <span class="font-body text-ink flex-1">Acheter le pain</span>
+          <span class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40">Aujourd'hui</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-4">
+          <span class="w-5 h-5 rounded-md border-2 border-accent/40 flex-shrink-0"></span>
+          <span class="font-body text-ink flex-1">Relire le contrat Dupont</span>
+          <span class="font-mono uppercase text-[10px] tracking-[.04em] text-accent bg-soft rounded-full px-2.5 py-1">Priorité</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-4 opacity-50">
+          <span class="w-5 h-5 rounded-md bg-success flex items-center justify-center text-white text-xs flex-shrink-0">✓</span>
+          <span class="font-body text-ink line-through flex-1">Envoyer la facture</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-4">
+          <span class="w-5 h-5 rounded-md border-2 border-accent/40 flex-shrink-0"></span>
+          <span class="font-body text-ink flex-1">Réserver le restaurant pour vendredi</span>
+          <span class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40">Vendredi</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-4 opacity-50">
+          <span class="w-5 h-5 rounded-md bg-success flex items-center justify-center text-white text-xs flex-shrink-0">✓</span>
+          <span class="font-body text-ink line-through flex-1">Appeler le plombier</span>
+        </div>
+      </div>
+    </section>
+    <section data-variant-group="todo" data-variant="1" data-mockup-id="todo-cartes-kanban-legeres" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <h3 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-6">Tes tâches</h3>
+      <div class="grid md:grid-cols-3 gap-5">
+        <div>
+          <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mb-3">À faire</p>
+          <div class="flex flex-col gap-3">
+            <div class="bg-bg rounded-card shadow-card p-4 font-body text-ink text-sm">Acheter le pain</div>
+            <div class="bg-bg rounded-card shadow-card p-4 font-body text-ink text-sm">Réserver le restaurant pour vendredi</div>
+          </div>
+        </div>
+        <div>
+          <p class="font-mono text-[11px] uppercase tracking-[.04em] text-accent mb-3">En cours</p>
+          <div class="flex flex-col gap-3">
+            <div class="bg-bg rounded-card shadow-card p-4 font-body text-ink text-sm border border-accent/20">Relire le contrat Dupont</div>
+          </div>
+        </div>
+        <div>
+          <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mb-3">Fait</p>
+          <div class="flex flex-col gap-3">
+            <div class="bg-bg rounded-card shadow-card p-4 font-body text-ink/50 text-sm line-through">Envoyer la facture</div>
+            <div class="bg-bg rounded-card shadow-card p-4 font-body text-ink/50 text-sm line-through">Appeler le plombier</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section data-variant-group="todo" data-variant="2" data-mockup-id="todo-liste-compacte" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <h3 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-4">Tes tâches</h3>
+      <ul class="font-body text-sm text-ink divide-y divide-ink/5">
+        <li class="py-2.5 flex items-center gap-2"><span class="text-ink/30">·</span> Acheter le pain</li>
+        <li class="py-2.5 flex items-center gap-2"><span class="text-accent">·</span> Relire le contrat Dupont</li>
+        <li class="py-2.5 flex items-center gap-2 opacity-50"><span class="text-success">✓</span> <span class="line-through">Envoyer la facture</span></li>
+        <li class="py-2.5 flex items-center gap-2"><span class="text-ink/30">·</span> Réserver le restaurant pour vendredi</li>
+        <li class="py-2.5 flex items-center gap-2 opacity-50"><span class="text-success">✓</span> <span class="line-through">Appeler le plombier</span></li>
+      </ul>
+    </section>
+
+    <!-- SLOT mails -->
+    <section data-variant-group="mails" data-variant="0" data-mockup-id="mails-inbox-scoree" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10 fade-in delay-4">
+      <h3 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-6">Mails importants</h3>
+      <div class="bg-bg rounded-card shadow-card divide-y divide-ink/5">
+        <div class="flex items-center gap-4 px-5 py-4">
+          <span class="cta-gradient text-white font-mono text-xs rounded-full w-9 h-9 flex items-center justify-center flex-shrink-0">92</span>
+          <div>
+            <p class="font-display font-semibold text-ink">Le comptable — Solde à valider</p>
+            <p class="font-body text-sm text-ink/50">Résumé IA : demande une validation du solde avant midi pour lancer le virement.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-4">
+          <span class="cta-gradient text-white font-mono text-xs rounded-full w-9 h-9 flex items-center justify-center flex-shrink-0">78</span>
+          <div>
+            <p class="font-display font-semibold text-ink">AEVIO — Ordre du jour 14h</p>
+            <p class="font-body text-sm text-ink/50">Résumé IA : aucun ordre du jour n'a été partagé, propose d'en envoyer un rapidement.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-4">
+          <span class="bg-soft text-accent font-mono text-xs rounded-full w-9 h-9 flex items-center justify-center flex-shrink-0">54</span>
+          <div>
+            <p class="font-display font-semibold text-ink">Julien — Padel vendredi</p>
+            <p class="font-body text-sm text-ink/50">Résumé IA : confirme l'heure du padel de vendredi, réponse simple attendue.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section data-variant-group="mails" data-variant="1" data-mockup-id="mails-cartes-mail" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <h3 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-6">Mails importants</h3>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-bg rounded-card shadow-card p-5">
+          <span class="font-mono uppercase text-[10px] tracking-[.04em] text-accent bg-soft rounded-full px-2.5 py-1 inline-block mb-3">Score 92</span>
+          <p class="font-display font-semibold text-ink mb-1">Le comptable</p>
+          <p class="font-body text-sm text-ink/50">Solde à valider avant midi.</p>
+        </div>
+        <div class="bg-bg rounded-card shadow-card p-5">
+          <span class="font-mono uppercase text-[10px] tracking-[.04em] text-accent bg-soft rounded-full px-2.5 py-1 inline-block mb-3">Score 78</span>
+          <p class="font-display font-semibold text-ink mb-1">AEVIO</p>
+          <p class="font-body text-sm text-ink/50">Ordre du jour 14h manquant.</p>
+        </div>
+        <div class="bg-bg rounded-card shadow-card p-5">
+          <span class="font-mono uppercase text-[10px] tracking-[.04em] text-ink/40 bg-soft rounded-full px-2.5 py-1 inline-block mb-3">Score 54</span>
+          <p class="font-display font-semibold text-ink mb-1">Julien</p>
+          <p class="font-body text-sm text-ink/50">Confirmation padel vendredi.</p>
+        </div>
+      </div>
+    </section>
+    <section data-variant-group="mails" data-variant="2" data-mockup-id="mails-digest-importance" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <h3 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-6">Mails importants</h3>
+      <div class="mb-4">
+        <p class="font-mono text-[11px] uppercase tracking-[.04em] text-accent mb-2">Urgent</p>
+        <div class="bg-bg rounded-card shadow-card p-4 flex items-center justify-between">
+          <p class="font-body text-ink">Le comptable — Solde à valider</p>
+          <span class="font-mono text-xs text-accent">92</span>
+        </div>
+      </div>
+      <div class="mb-4">
+        <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mb-2">À traiter</p>
+        <div class="bg-bg rounded-card shadow-card p-4 flex items-center justify-between">
+          <p class="font-body text-ink">AEVIO — Ordre du jour 14h</p>
+          <span class="font-mono text-xs text-accent">78</span>
+        </div>
+      </div>
+      <div>
+        <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mb-2">Peut attendre</p>
+        <div class="bg-bg rounded-card shadow-card p-4 flex items-center justify-between">
+          <p class="font-body text-ink">Julien — Padel vendredi</p>
+          <span class="font-mono text-xs text-ink/40">54</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLOT assistant -->
+    <div data-variant-group="assistant" data-variant="0" data-mockup-id="assistant-suggestions" class="max-w-3xl mx-auto px-6 pb-16 fade-in delay-5">
+      <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 text-center mb-3">L'assistant est en haut — essaie par exemple :</p>
+      <div class="flex flex-wrap items-center justify-center gap-2">
+        <span class="rounded-full bg-soft px-4 py-2 font-body text-sm text-ink/60">« Prends une note : liste de courses — bananes, pommes, fraises »</span>
+        <span class="rounded-full bg-soft px-4 py-2 font-body text-sm text-ink/60">« Ajoute l'ostéopathe vendredi 10 juillet à 19h »</span>
+        <span class="rounded-full bg-soft px-4 py-2 font-body text-sm text-ink/60">« Réponds à Julien que 18h c'est parfait »</span>
+      </div>
+    </div>
+    <div data-variant-group="assistant" data-variant="1" data-mockup-id="assistant-bouton-flottant-degrade" class="max-w-3xl mx-auto px-6 pb-28" style="display:none">
+      <div class="fixed bottom-8 right-8 w-16 h-16 rounded-full cta-gradient text-white flex items-center justify-center text-xl font-display font-semibold">
+        →
+      </div>
+    </div>
+    <div data-variant-group="assistant" data-variant="2" data-mockup-id="assistant-panneau-lateral-esquisse" class="max-w-3xl mx-auto px-6 pb-10" style="display:none">
+      <div class="bg-bg rounded-card shadow-card p-6 max-w-xs ml-auto border border-dashed border-accent/30">
+        <p class="font-display font-semibold text-ink mb-2 tracking-[-0.02em]">Assistant</p>
+        <p class="font-body text-sm text-ink/50 mb-4">Dis-moi quoi faire, je m'occupe du reste.</p>
+        <div class="rounded-inner bg-soft px-4 py-3 font-body text-sm text-ink/40">Écris ici...</div>
+      </div>
+    </div>
+
+    <!-- Détail mémorable : indicateur de fraîcheur, chrome global (hors slots) -->
+    <div class="fixed bottom-6 left-6 font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 flex items-center gap-2 fade-in delay-6" data-mockup-id="fraicheur-indicateur">
+      <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+      À jour il y a 3 min
+    </div>
+
+    <script defer src="../../mockups/shared/tweaks-panel.js"></script>
+  </body>
+</html>

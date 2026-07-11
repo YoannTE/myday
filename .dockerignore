@@ -1,0 +1,31 @@
+# Dependances et builds (reconstruits dans l'image)
+node_modules
+.next
+dist
+out
+
+# Backend Python (image separee : Dockerfile.api)
+backend
+
+# Memoire projet et outillage Claude Code (jamais embarques en prod)
+.project
+.claude
+
+# Git
+.git
+.gitignore
+
+# Env locaux (jamais dans l'image - injectes par la plateforme de deploiement)
+.env*
+!.env.local.example
+
+# Divers
+*.md
+!README.md
+npm-debug.log*
+yarn-debug.log*
+.DS_Store
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+Capture*.png
+starterkit_v2_agents*.zip

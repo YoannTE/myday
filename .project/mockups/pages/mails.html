@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyDay — Mails</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../shared/tailwind-tokens.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+    <link rel="stylesheet" href="../shared/design-system.css" />
+    <link rel="stylesheet" href="../shared/base.css" />
+    <script src="../shared/components-loader.js" defer></script>
+    <script>
+      window.__TWEAKS__ = {
+        variants: {
+          entete: {
+            label: "En-tête mails",
+            options: ["Filtres + rafraîchir", "Stats du tri", "Minimal"],
+          },
+          disposition: {
+            label: "Disposition",
+            options: ["Liste + mail ouvert", "Liste seule", "Cartes par importance"],
+          },
+          mailouvert: {
+            label: "Mail ouvert",
+            options: ["Résumé IA en tête", "Corps d'abord", "Actions en vedette"],
+          },
+        },
+      };
+    </script>
+    <script src="../shared/tweaks-panel.js" defer></script>
+  </head>
+  <body class="bg-bg text-ink font-body min-h-screen">
+    <div data-include="../shared/components/navbar.html"></div>
+
+    <main class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10">
+      <a href="dashboard.html" class="inline-flex items-center gap-2 font-body text-sm text-ink/50 hover:text-accent transition-colors mb-4" data-mockup-id="retour-cockpit">← Cockpit</a>
+
+      <!-- ENTÊTE - V0 Filtres + rafraîchir -->
+      <div data-variant-group="entete" data-variant="0" data-mockup-id="mails-entete-filtres" class="flex flex-wrap items-center gap-3 mb-6 fade-in">
+        <h1 class="font-display font-extrabold text-ink text-xl md:text-2xl tracking-[-0.02em]">Mails</h1>
+        <div class="inline-flex bg-white rounded-full shadow-card p-1 ml-auto">
+          <span class="rounded-full cta-gradient text-white font-body text-xs px-3 py-1.5">Importants</span>
+          <span class="rounded-full font-body text-xs text-ink/50 px-3 py-1.5">Tous</span>
+          <span class="rounded-full font-body text-xs text-ink/50 px-3 py-1.5">Répondus</span>
+        </div>
+        <button class="w-9 h-9 rounded-inner bg-white shadow-card text-ink/50" title="Rafraîchir" data-mockup-id="bouton-rafraichir">⟳</button>
+      </div>
+      <!-- ENTÊTE - V1 Stats du tri -->
+      <div data-variant-group="entete" data-variant="1" data-mockup-id="mails-entete-stats" class="items-center gap-4 mb-6" style="display:none">
+        <h1 class="font-display font-extrabold text-ink text-xl md:text-2xl tracking-[-0.02em]">Mails</h1>
+        <span class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40">3 importants · 12 écartés par le tri aujourd'hui</span>
+      </div>
+      <!-- ENTÊTE - V2 Minimal -->
+      <div data-variant-group="entete" data-variant="2" data-mockup-id="mails-entete-minimal" class="items-center justify-between mb-6" style="display:none">
+        <h1 class="font-display font-extrabold text-ink text-xl md:text-2xl tracking-[-0.02em]">Mails importants</h1>
+      </div>
+
+      <!-- DISPOSITION - V0 Liste + mail ouvert -->
+      <div data-variant-group="disposition" data-variant="0" data-mockup-id="mails-split" class="grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)] gap-5 fade-in delay-1">
+        <div class="flex flex-col gap-3 self-start">
+          <div class="bg-white rounded-card shadow-card border border-accent/30 px-4 py-3 flex items-center gap-3" data-mockup-id="mail-item-comptable">
+            <span class="cta-gradient text-white font-mono text-xs rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">92</span>
+            <div class="min-w-0">
+              <p class="font-display font-semibold text-ink text-sm truncate">Le comptable</p>
+              <p class="font-body text-xs text-ink/50 truncate">Solde à valider</p>
+            </div>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/30 ml-auto flex-shrink-0">08:12</span>
+          </div>
+          <div class="bg-white rounded-card shadow-card px-4 py-3 flex items-center gap-3" data-mockup-id="mail-item-aevio">
+            <span class="cta-gradient text-white font-mono text-xs rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">78</span>
+            <div class="min-w-0">
+              <p class="font-display font-semibold text-ink text-sm truncate">AEVIO</p>
+              <p class="font-body text-xs text-ink/50 truncate">Ordre du jour 14h</p>
+            </div>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/30 ml-auto flex-shrink-0">07:48</span>
+          </div>
+          <div class="bg-white rounded-card shadow-card px-4 py-3 flex items-center gap-3 opacity-70" data-mockup-id="mail-item-julien">
+            <span class="bg-soft text-accent font-mono text-xs rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">54</span>
+            <div class="min-w-0">
+              <p class="font-display font-semibold text-ink text-sm truncate">Julien</p>
+              <p class="font-body text-xs text-ink/50 truncate">Padel vendredi ✓ répondu</p>
+            </div>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/30 ml-auto flex-shrink-0">Hier</span>
+          </div>
+          <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/30 text-center mt-2" data-mockup-id="mails-ecartes">12 mails écartés par le tri · voir</p>
+        </div>
+
+        <!-- MAIL OUVERT - V0 Résumé IA en tête -->
+        <div data-variant-group="mailouvert" data-variant="0" data-mockup-id="mail-ouvert-resume" class="bg-white rounded-card shadow-card p-6">
+          <div class="flex items-start gap-3 mb-4">
+            <span class="cta-gradient text-white font-mono text-sm rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">92</span>
+            <div class="min-w-0 flex-1">
+              <h2 class="font-display font-extrabold text-ink tracking-[-0.02em]">Solde à valider</h2>
+              <p class="font-body text-sm text-ink/50">Le comptable · comptable@cabinet-durand.fr · 08:12</p>
+            </div>
+          </div>
+          <div class="rounded-inner bg-soft px-4 py-3 mb-2" data-mockup-id="mail-resume-ia">
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-accent mb-1">Résumé IA</p>
+            <p class="font-body text-sm text-ink/80">Demande une validation du solde avant midi pour lancer le virement.</p>
+          </div>
+          <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-4" data-mockup-id="mail-raison-score">Score 92 — demande d'action urgente d'un expéditeur connu</p>
+          <div class="font-body text-sm text-ink/70 leading-relaxed border-t border-ink/5 pt-4 mb-6" data-mockup-id="mail-corps">
+            <p>Bonjour Yoann,</p>
+            <p class="mt-2">Peux-tu valider le solde du compte pro avant midi ? J'ai besoin de ton accord pour lancer le virement des charges de juillet.</p>
+            <p class="mt-2">Merci d'avance,<br />Marc Durand</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2" data-mockup-id="mail-actions">
+            <button class="cta-gradient text-white font-display font-semibold rounded-inner px-4 py-2.5 text-sm" data-mockup-id="cta-repondre-assistant">Répondre avec l'assistant</button>
+            <button class="bg-soft text-ink/70 font-body rounded-inner px-4 py-2.5 text-sm">Ouvrir dans Gmail</button>
+            <div class="flex items-center gap-1.5 ml-auto" data-mockup-id="mail-feedback">
+              <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/30 mr-1">Ce mail est</span>
+              <button class="rounded-full bg-soft text-accent font-body text-xs px-3 py-1.5 border border-accent/30">Important</button>
+              <button class="rounded-full bg-white border border-ink/10 text-ink/50 font-body text-xs px-3 py-1.5">Pas important</button>
+            </div>
+          </div>
+        </div>
+        <!-- MAIL OUVERT - V1 Corps d'abord -->
+        <div data-variant-group="mailouvert" data-variant="1" data-mockup-id="mail-ouvert-corps" class="bg-white rounded-card shadow-card p-6" style="display:none">
+          <h2 class="font-display font-extrabold text-ink tracking-[-0.02em] mb-1">Solde à valider</h2>
+          <p class="font-body text-sm text-ink/50 mb-4">Le comptable · 08:12</p>
+          <div class="font-body text-sm text-ink/70 leading-relaxed mb-4">
+            <p>Bonjour Yoann,</p>
+            <p class="mt-2">Peux-tu valider le solde du compte pro avant midi ? J'ai besoin de ton accord pour lancer le virement des charges de juillet.</p>
+          </div>
+          <p class="font-body text-xs text-ink/40 border-t border-ink/5 pt-3">Résumé IA : demande une validation du solde avant midi. · Score 92</p>
+        </div>
+        <!-- MAIL OUVERT - V2 Actions en vedette -->
+        <div data-variant-group="mailouvert" data-variant="2" data-mockup-id="mail-ouvert-actions" class="bg-white rounded-card shadow-card p-6" style="display:none">
+          <div class="rounded-inner cta-gradient text-white p-5 mb-4">
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-white/70 mb-1">L'assistant te propose</p>
+            <p class="font-display font-semibold mb-3">« Réponds que tu valides le solde »</p>
+            <button class="bg-white text-accent font-display font-semibold rounded-inner px-4 py-2 text-sm">Préparer la réponse</button>
+          </div>
+          <h2 class="font-display font-bold text-ink tracking-[-0.02em] mb-1">Solde à valider — Le comptable</h2>
+          <p class="font-body text-sm text-ink/60">Demande une validation du solde avant midi pour lancer le virement.</p>
+        </div>
+      </div>
+
+      <!-- DISPOSITION - V1 Liste seule -->
+      <div data-variant-group="disposition" data-variant="1" data-mockup-id="mails-liste-seule" class="bg-white rounded-card shadow-card divide-y divide-ink/5" style="display:none">
+        <div class="flex items-center gap-4 px-5 py-4">
+          <span class="cta-gradient text-white font-mono text-xs rounded-full w-9 h-9 flex items-center justify-center flex-shrink-0">92</span>
+          <div class="min-w-0">
+            <p class="font-display font-semibold text-ink">Le comptable — Solde à valider</p>
+            <p class="font-body text-sm text-ink/50 truncate">Résumé IA : demande une validation du solde avant midi pour lancer le virement.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-4">
+          <span class="cta-gradient text-white font-mono text-xs rounded-full w-9 h-9 flex items-center justify-center flex-shrink-0">78</span>
+          <div class="min-w-0">
+            <p class="font-display font-semibold text-ink">AEVIO — Ordre du jour 14h</p>
+            <p class="font-body text-sm text-ink/50 truncate">Résumé IA : aucun ordre du jour partagé, propose d'en envoyer un rapidement.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-4 opacity-70">
+          <span class="bg-soft text-accent font-mono text-xs rounded-full w-9 h-9 flex items-center justify-center flex-shrink-0">54</span>
+          <div class="min-w-0">
+            <p class="font-display font-semibold text-ink">Julien — Padel vendredi</p>
+            <p class="font-body text-sm text-ink/50 truncate">Répondu hier via l'assistant.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- DISPOSITION - V2 Cartes par importance -->
+      <div data-variant-group="disposition" data-variant="2" data-mockup-id="mails-cartes-importance" style="display:none">
+        <p class="font-mono text-[11px] uppercase tracking-[.04em] text-accent mb-2">Urgent</p>
+        <div class="bg-white rounded-card shadow-card p-4 mb-4 flex items-center justify-between">
+          <p class="font-body text-ink">Le comptable — Solde à valider</p>
+          <span class="font-mono text-xs text-accent">92</span>
+        </div>
+        <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mb-2">À traiter</p>
+        <div class="bg-white rounded-card shadow-card p-4 mb-4 flex items-center justify-between">
+          <p class="font-body text-ink">AEVIO — Ordre du jour 14h</p>
+          <span class="font-mono text-xs text-accent">78</span>
+        </div>
+        <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mb-2">Traité</p>
+        <div class="bg-white rounded-card shadow-card p-4 flex items-center justify-between opacity-70">
+          <p class="font-body text-ink">Julien — Padel vendredi ✓</p>
+          <span class="font-mono text-xs text-ink/40">54</span>
+        </div>
+      </div>
+    </main>
+
+    <div data-include="../shared/components/fraicheur.html"></div>
+  </body>
+</html>

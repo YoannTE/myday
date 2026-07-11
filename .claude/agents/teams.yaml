@@ -1,0 +1,12 @@
+agent-platform-dev:
+  - agent-graph-designer
+  - agent-detail-writer
+  - agent-platform-developer
+  - runtime-boundary-reviewer
+  - sdk-observability-reviewer
+
+agent-platform-review:
+  - runtime-boundary-reviewer
+  - sdk-observability-reviewer
+  - lead-dev-reviewer
+  - qa-tester

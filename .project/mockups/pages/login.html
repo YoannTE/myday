@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyDay — Connexion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../shared/tailwind-tokens.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+    <link rel="stylesheet" href="../shared/design-system.css" />
+    <link rel="stylesheet" href="../shared/base.css" />
+    <script src="../shared/components-loader.js" defer></script>
+    <script>
+      window.__TWEAKS__ = {
+        variants: {
+          panneau: {
+            label: "Panneau de gauche",
+            options: ["Pitch dégradé", "Aperçu du brief", "Minimal marque"],
+          },
+          invitation: {
+            label: "Bloc invitation",
+            options: ["Bandeau en tête", "Carte intégrée", "Pastille discrète"],
+          },
+          formulaire: {
+            label: "Formulaire",
+            options: ["Classique", "Compact", "Connexion existante"],
+          },
+        },
+      };
+    </script>
+    <script src="../shared/tweaks-panel.js" defer></script>
+  </head>
+  <body class="bg-bg text-ink font-body min-h-screen">
+    <div class="min-h-screen grid lg:grid-cols-[45%_1fr]">
+      <!-- PANNEAU GAUCHE - V0 Pitch dégradé -->
+      <aside data-variant-group="panneau" data-variant="0" data-mockup-id="panneau-pitch" class="cta-gradient text-white p-8 lg:p-14 flex flex-col justify-between min-h-[220px] lg:min-h-screen fade-in">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-inner bg-white/15 flex items-center justify-center font-display font-bold">M</div>
+          <span class="font-display font-bold tracking-[-0.02em] text-lg">MyDay</span>
+        </div>
+        <div class="my-8 lg:my-0">
+          <h1 class="font-display font-extrabold text-2xl lg:text-4xl tracking-[-0.02em] leading-tight max-w-md mb-4">
+            Ton cockpit t'attend.
+          </h1>
+          <p class="font-body text-white/80 max-w-sm text-sm lg:text-base">
+            Planning, notes, tâches et mails réunis au même endroit — avec un assistant qui te dit quoi faire maintenant.
+          </p>
+        </div>
+        <p class="hidden lg:block font-mono text-[11px] uppercase tracking-[.04em] text-white/50">Sur invitation uniquement</p>
+      </aside>
+      <!-- PANNEAU GAUCHE - V1 Aperçu du brief -->
+      <aside data-variant-group="panneau" data-variant="1" data-mockup-id="panneau-apercu" class="bg-soft p-8 lg:p-14 flex-col justify-center min-h-[220px] lg:min-h-screen" style="display:none">
+        <div class="flex items-center gap-2 mb-10">
+          <div class="w-9 h-9 rounded-inner cta-gradient flex items-center justify-center text-white font-display font-bold">M</div>
+          <span class="font-display font-bold tracking-[-0.02em] text-lg text-ink">MyDay</span>
+        </div>
+        <div class="bg-white rounded-card shadow-card p-6 max-w-sm rotate-[-1deg]">
+          <span class="font-mono uppercase text-[10px] tracking-[.04em] text-accent bg-soft rounded-full px-2.5 py-1 inline-block mb-3">Brief · 07:00</span>
+          <p class="font-display font-bold text-ink tracking-[-0.02em] mb-3">Trois priorités déterminent ta journée.</p>
+          <p class="font-body text-sm text-ink/50">01 — Répondre au mail du comptable...</p>
+        </div>
+      </aside>
+      <!-- PANNEAU GAUCHE - V2 Minimal marque -->
+      <aside data-variant-group="panneau" data-variant="2" data-mockup-id="panneau-minimal" class="bg-bg border-r border-ink/5 p-8 lg:p-14 flex-col justify-center items-center min-h-[160px] lg:min-h-screen" style="display:none">
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-card cta-gradient flex items-center justify-center text-white font-display font-bold text-2xl mx-auto mb-4">M</div>
+          <p class="font-display font-extrabold text-ink text-2xl tracking-[-0.02em]">MyDay</p>
+          <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mt-2">Ton cockpit personnel</p>
+        </div>
+      </aside>
+
+      <!-- COLONNE FORMULAIRE -->
+      <main class="flex items-center justify-center p-6 lg:p-14">
+        <div class="w-full max-w-md">
+          <!-- INVITATION - V0 Bandeau en tête -->
+          <div data-variant-group="invitation" data-variant="0" data-mockup-id="invitation-bandeau" class="rounded-inner bg-soft px-5 py-4 mb-8 flex items-center gap-3 fade-in delay-1">
+            <span class="w-9 h-9 rounded-full cta-gradient text-white font-display font-semibold flex items-center justify-center flex-shrink-0">Y</span>
+            <div>
+              <p class="font-body text-sm text-ink"><strong class="font-semibold">Yoann</strong> t'a invitée sur MyDay</p>
+              <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mt-0.5">Invitation valide · expire dans 6 jours</p>
+            </div>
+          </div>
+          <!-- INVITATION - V1 Carte intégrée -->
+          <div data-variant-group="invitation" data-variant="1" data-mockup-id="invitation-carte" class="bg-white rounded-card shadow-card px-5 py-4 mb-8 border border-accent/15" style="display:none">
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-accent mb-1">Invitation personnelle</p>
+            <p class="font-body text-sm text-ink">Bienvenue Manon — Yoann t'a réservé une place sur son cockpit.</p>
+          </div>
+          <!-- INVITATION - V2 Pastille discrète -->
+          <div data-variant-group="invitation" data-variant="2" data-mockup-id="invitation-pastille" class="mb-8" style="display:none">
+            <span class="font-mono uppercase text-[10px] tracking-[.04em] text-accent bg-soft rounded-full px-3 py-1.5 inline-block">Invitée par Yoann · expire dans 6 jours</span>
+          </div>
+
+          <!-- FORMULAIRE - V0 Classique (création via invitation) -->
+          <div data-variant-group="formulaire" data-variant="0" data-mockup-id="form-inscription" class="fade-in delay-2">
+            <h2 class="font-display font-extrabold text-ink text-2xl tracking-[-0.02em] mb-2">Crée ton compte</h2>
+            <p class="font-body text-sm text-ink/50 mb-8">Deux champs et ton cockpit est prêt.</p>
+            <div class="flex flex-col gap-4">
+              <div>
+                <label class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/50 block mb-2">Ton email</label>
+                <div class="bg-white rounded-inner border border-ink/10 px-4 py-3 font-body text-ink/40 focus-ring">manon@gmail.com</div>
+              </div>
+              <div>
+                <label class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/50 block mb-2">Mot de passe</label>
+                <div class="bg-white rounded-inner border border-ink/10 px-4 py-3 font-body text-ink/40">••••••••••</div>
+              </div>
+              <button class="cta-gradient text-white font-display font-semibold rounded-inner px-6 py-3.5 mt-2" data-mockup-id="cta-creer-compte">Créer mon compte</button>
+              <p class="font-body text-sm text-ink/50 text-center mt-2">Déjà un compte ? <a href="#" class="text-accent font-medium">Se connecter</a></p>
+            </div>
+          </div>
+          <!-- FORMULAIRE - V1 Compact -->
+          <div data-variant-group="formulaire" data-variant="1" data-mockup-id="form-compact" style="display:none">
+            <h2 class="font-display font-extrabold text-ink text-2xl tracking-[-0.02em] mb-6">Rejoindre MyDay</h2>
+            <div class="bg-white rounded-card shadow-card divide-y divide-ink/5 mb-4">
+              <div class="px-4 py-3 font-body text-ink/40">manon@gmail.com</div>
+              <div class="px-4 py-3 font-body text-ink/40">Mot de passe</div>
+            </div>
+            <button class="cta-gradient text-white font-display font-semibold rounded-inner px-6 py-3.5 w-full">C'est parti →</button>
+          </div>
+          <!-- FORMULAIRE - V2 Connexion existante -->
+          <div data-variant-group="formulaire" data-variant="2" data-mockup-id="form-connexion" style="display:none">
+            <h2 class="font-display font-extrabold text-ink text-2xl tracking-[-0.02em] mb-2">Bon retour !</h2>
+            <p class="font-body text-sm text-ink/50 mb-8">Connecte-toi pour retrouver ton cockpit.</p>
+            <div class="flex flex-col gap-4">
+              <div class="bg-white rounded-inner border border-ink/10 px-4 py-3 font-body text-ink/40">yoann.varloud@gmail.com</div>
+              <div class="bg-white rounded-inner border border-ink/10 px-4 py-3 font-body text-ink/40">••••••••••</div>
+              <div class="flex items-center justify-between mt-1">
+                <a href="#" class="font-body text-sm text-accent">Mot de passe oublié ?</a>
+              </div>
+              <button class="cta-gradient text-white font-display font-semibold rounded-inner px-6 py-3.5 mt-1">Se connecter</button>
+            </div>
+          </div>
+
+          <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/30 text-center mt-10" data-mockup-id="mention-invitation">MyDay est accessible sur invitation uniquement</p>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

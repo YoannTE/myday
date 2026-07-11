@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Bundles generes par `npm run db:bundle-migrate` (pas du code source)
+    "dist/**",
+    // Ressources dev-time Claude Code (prompts, skills, exemples) - hors
+    // perimetre applicatif, cf. .claude/CLAUDE.md
+    ".claude/**",
   ]),
 ]);
 

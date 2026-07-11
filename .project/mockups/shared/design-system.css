@@ -1,0 +1,122 @@
+/* design-system.css - généré depuis .project/design.md (direction « AEVIO One ») */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+:root {
+  --bg: #f5f7fb;
+  --ink: #111a37;
+  --accent: #2350e6;
+  --soft: #eaf0ff;
+  --success: var(--accent); /* aucun vert dans l'app (décision utilisateur) */
+  --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-body: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --space-base: 16px;
+  --radius-base: 14px;
+  --radius-inner: 12px;
+}
+
+/* Mode sombre (bouton ☾ dans la barre du haut) */
+html[data-mode="dark"],
+:root[data-theme="dark"] {
+  --bg: #0c1024;
+  --ink: #eef1fb;
+  --soft: #1a2140;
+}
+
+/* Responsive mobile : tout le rendu est en rem, on réduit la base (règle validée) */
+@media (max-width: 640px) {
+  html {
+    font-size: 13.5px;
+  }
+  :root {
+    --space-base: 13px;
+  }
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* -- Utilitaires AEVIO One partagés par tous les mockups -- */
+.rounded-card {
+  border-radius: var(--radius-base);
+}
+.rounded-inner {
+  border-radius: var(--radius-inner);
+}
+.shadow-card {
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--ink) 4%, transparent),
+    0 24px 48px -32px color-mix(in srgb, var(--ink) 28%, transparent);
+}
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.text-secondary {
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+/* Dégradé CTA fidèle au site AEVIO */
+.cta-gradient {
+  background: linear-gradient(180deg, #3a6bff, #2350e6);
+  box-shadow: 0 10px 22px -8px rgba(47, 98, 255, 0.6);
+}
+/* Libellés techniques : mono uppercase espacé */
+.label-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* -- Animations globales -- */
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.25);
+  }
+}
+.pulse-now {
+  animation: pulse-soft 2.4s ease-in-out infinite;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-in {
+  animation: fade-in-up 0.7s ease-out both;
+}
+.delay-1 {
+  animation-delay: 0.05s;
+}
+.delay-2 {
+  animation-delay: 0.12s;
+}
+.delay-3 {
+  animation-delay: 0.19s;
+}
+.delay-4 {
+  animation-delay: 0.26s;
+}
+.delay-5 {
+  animation-delay: 0.33s;
+}
+.delay-6 {
+  animation-delay: 0.4s;
+}

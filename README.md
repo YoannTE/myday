@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MyDay — ton cockpit personnel
 
-## Getting Started
+MyDay réunit ton planning, tes tâches, tes notes et tes mails importants dans un seul cockpit,
+avec un brief IA pour démarrer ta journée et un assistant à qui tu peux parler. Application web
+installable (PWA), sur invitation uniquement.
 
-First, run the development server:
+## Stack
+
+- **Frontend** : Next.js 16 (App Router, `src/`) + TypeScript + Tailwind + shadcn/ui + Better-auth
+- **Backend** : FastAPI (Python 3.12) + asyncpg + Pydantic v2
+- **Base de données** : Postgres 16 (RLS pour le cloisonnement strict par utilisateur)
+- **Stockage** : MinIO (S3-compatible)
+- **IA** (optionnelle) : Anthropic Claude — tri des mails, brief quotidien, assistant conversationnel
+- **Push** : Web Push (VAPID)
+
+## Prérequis
+
+- Docker (Postgres + MinIO)
+- Node.js 20+
+- Python 3.12+ (un venv est recommandé)
+
+## Lancement local (from scratch)
 
 ```bash
+# 1. Configuration
+cp .env.local.example .env.local
+# Éditer .env.local : renseigner au minimum BETTER_AUTH_SECRET et TOKEN_ENCRYPTION_KEY.
+# GOOGLE_* : pour la connexion Google (agenda/mails). ANTHROPIC_API_KEY : pour la vraie IA
+# (sinon le tri/brief tournent en mode « règles »). VAPID_* : pour les notifications push.
+
+# 2. Services (Postgres + MinIO)
+docker compose up -d
+
+# 3. Frontend + base de données
+npm install
+npm run db:migrate      # applique les migrations Drizzle
+npm run db:seed         # crée l'admin par défaut (idempotent)
+
+# 4. Backend (dans un second terminal)
+cd backend
+python -m venv .venv && source .venv/bin/activate   # ou ton venv existant
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+
+# 5. Frontend (terminal 1)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Frontend : http://localhost:3000
+- API : http://localhost:8000 (docs : http://localhost:8000/docs)
+- Postgres : localhost:5433 · MinIO console : http://localhost:9001
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Identifiants admin par défaut (dev)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Email : `admin@admin.com`
+- Mot de passe : `password`
 
-## Learn More
+À changer en production. Créé via `npm run db:seed`.
 
-To learn more about Next.js, take a look at the following resources:
+## Variables d'environnement (`.env.local`)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variable | Rôle | Obligatoire |
+| --- | --- | --- |
+| `DATABASE_URL` | Postgres (rôle admin, migrations DDL) | oui |
+| `BACKEND_DATABASE_URL` | Postgres (rôle `app_rls`, non-superuser — RLS) | oui |
+| `BETTER_AUTH_SECRET` | Secret de signature des sessions | oui |
+| `BETTER_AUTH_URL` | URL de l'app (ex. http://localhost:3000) | oui |
+| `NEXT_PUBLIC_API_URL` | URL du backend FastAPI | oui |
+| `TOKEN_ENCRYPTION_KEY` | Clé AES-256 (chiffrement des jetons Google) | oui |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth Google (agenda + Gmail) | pour Google |
+| `S3_*` | MinIO / stockage | oui (dev via docker) |
+| `ANTHROPIC_API_KEY` | IA (tri, brief, assistant). **Absente → mode « règles »** | non |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | Notifications push web | pour le push |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Sans clé IA** : le tri des mails et le brief fonctionnent en mode heuristique (« règles ») ;
+l'assistant conversationnel, lui, a besoin d'une clé pour comprendre le langage naturel. Ajouter la
+clé dans `.env.local` puis redémarrer le backend suffit à activer la vraie IA (aucun autre changement).
 
-## Deploy on Vercel
+## Commandes utiles
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `npm run db:generate` — génère une migration depuis le schéma Drizzle
+- `npm run db:migrate` — applique les migrations · `npm run db:seed` — admin par défaut
+- `npm run db:studio` — visualise la base (Drizzle Studio)
+- `npm run build` — build de production · `npm run dev` — dev
+- Backend : `cd backend && python -m pytest -q` (tests) · `ruff check app` (lint)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Architecture
+
+- `src/app/` — pages (App Router) · `src/components/` — composants · `src/lib/` — auth, db, storage, api
+- `backend/app/` — `api/` (endpoints), `services/` (logique métier + agents IA), `db/`, `auth/`, `storage/`
+- `.project/` — mémoire du projet (rounds, décisions, patterns, SOPs, mockups)
+
+Le cloisonnement est strict : chaque utilisateur ne voit que ses données (RLS Postgres). L'admin ne
+voit que des métadonnées de compte (jamais le contenu des mails/notes/tâches).

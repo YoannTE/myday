@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyDay — Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../shared/tailwind-tokens.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+    <link rel="stylesheet" href="../shared/design-system.css" />
+    <link rel="stylesheet" href="../shared/base.css" />
+    <script src="../shared/components-loader.js" defer></script>
+    <script>
+      window.__TWEAKS__ = {
+        variants: {
+          brief: {
+            label: "Brief du jour",
+            options: ["Carte hero", "Bandeau dégradé", "Split métriques"],
+          },
+          notes: {
+            label: "Notes",
+            options: ["Liste épinglée", "Capture rapide", "Post-its"],
+          },
+          planning: {
+            label: "Planning du jour",
+            options: ["Timeline produit", "Cartes créneaux", "Liste agenda dense"],
+          },
+          todo: {
+            label: "Tâches",
+            options: ["Checklist nette", "Cartes kanban légères", "Liste compacte"],
+          },
+          mails: {
+            label: "Mails importants",
+            options: ["Inbox scorée", "Cartes mail", "Digest par importance"],
+          },
+        },
+      };
+    </script>
+    <script src="../shared/tweaks-panel.js" defer></script>
+  </head>
+  <body class="bg-bg text-ink font-body min-h-screen">
+    <!-- Barre du haut (composant partagé) -->
+    <div data-include="../shared/components/navbar.html"></div>
+
+    <!-- BRIEF - V0 Carte hero (validée) -->
+    <section data-variant-group="brief" data-variant="0" data-mockup-id="brief-carte-hero" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10 fade-in delay-1">
+      <div class="bg-white rounded-card shadow-card p-4 md:p-12 relative overflow-hidden">
+        <div class="absolute inset-x-0 top-0 h-1 cta-gradient"></div>
+        <span class="font-mono uppercase text-[10px] md:text-[11px] tracking-[.04em] text-accent bg-soft rounded-full px-3 py-1 inline-block mb-3 md:mb-5">Brief · 07:00</span>
+        <h1 class="font-display font-extrabold text-ink text-lg md:text-4xl tracking-[-0.02em] leading-tight max-w-2xl mb-4 md:mb-8">
+          Trois priorités déterminent ta journée.
+        </h1>
+        <div class="flex flex-col gap-2 md:gap-3 max-w-xl mb-4 md:mb-8">
+          <div class="flex items-center gap-3 md:gap-4 rounded-inner border border-ink/10 px-3 py-2.5 md:px-5 md:py-4" data-mockup-id="brief-priorite-1">
+            <span class="w-5 h-5 md:w-7 md:h-7 rounded-full cta-gradient text-white font-mono text-[10px] md:text-xs flex items-center justify-center flex-shrink-0">01</span>
+            <p class="font-body text-sm md:text-base text-ink">Répondre au mail du comptable avant midi</p>
+          </div>
+          <div class="flex items-center gap-3 md:gap-4 rounded-inner border border-ink/10 px-3 py-2.5 md:px-5 md:py-4" data-mockup-id="brief-priorite-2">
+            <span class="w-5 h-5 md:w-7 md:h-7 rounded-full cta-gradient text-white font-mono text-[10px] md:text-xs flex items-center justify-center flex-shrink-0">02</span>
+            <p class="font-body text-sm md:text-base text-ink">Préparer la réunion AEVIO de 14h</p>
+          </div>
+          <div class="flex items-center gap-3 md:gap-4 rounded-inner border border-ink/10 px-3 py-2.5 md:px-5 md:py-4" data-mockup-id="brief-priorite-3">
+            <span class="w-5 h-5 md:w-7 md:h-7 rounded-full cta-gradient text-white font-mono text-[10px] md:text-xs flex items-center justify-center flex-shrink-0">03</span>
+            <p class="font-body text-sm md:text-base text-ink">Confirmer le padel de vendredi</p>
+          </div>
+        </div>
+        <div class="rounded-inner bg-soft px-3 py-2.5 md:px-5 md:py-4 flex items-center gap-3" data-mockup-id="brief-alerte">
+          <span class="font-mono text-[10px] md:text-[11px] uppercase tracking-[.04em] text-accent flex-shrink-0">Alerte</span>
+          <p class="font-body text-xs md:text-sm text-ink/70">Ta réunion de 14h n'a pas d'ordre du jour.</p>
+        </div>
+      </div>
+    </section>
+    <!-- BRIEF - V1 Bandeau dégradé -->
+    <section data-variant-group="brief" data-variant="1" data-mockup-id="brief-bandeau-degrade" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <div class="cta-gradient rounded-card p-5 md:p-12">
+        <span class="font-mono uppercase text-[11px] tracking-[.04em] text-white/80 bg-white/15 rounded-full px-3 py-1 inline-block mb-5">Brief · 07:00</span>
+        <h1 class="font-display font-extrabold text-white text-2xl md:text-4xl tracking-[-0.02em] leading-tight max-w-2xl mb-8">
+          Trois priorités déterminent ta journée.
+        </h1>
+        <div class="grid md:grid-cols-3 gap-4 mb-6">
+          <div class="rounded-inner bg-white/10 p-5">
+            <span class="font-mono text-xs text-white/60">01</span>
+            <p class="font-body text-white mt-2">Répondre au mail du comptable avant midi</p>
+          </div>
+          <div class="rounded-inner bg-white/10 p-5">
+            <span class="font-mono text-xs text-white/60">02</span>
+            <p class="font-body text-white mt-2">Préparer la réunion AEVIO de 14h</p>
+          </div>
+          <div class="rounded-inner bg-white/10 p-5">
+            <span class="font-mono text-xs text-white/60">03</span>
+            <p class="font-body text-white mt-2">Confirmer le padel de vendredi</p>
+          </div>
+        </div>
+        <div class="rounded-inner bg-white/15 px-5 py-4">
+          <p class="font-body text-sm text-white/90">Alerte : ta réunion de 14h n'a pas d'ordre du jour.</p>
+        </div>
+      </div>
+    </section>
+    <!-- BRIEF - V2 Split métriques -->
+    <section data-variant-group="brief" data-variant="2" data-mockup-id="brief-split-metriques" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <div class="bg-white rounded-card shadow-card p-5 md:p-12 grid md:grid-cols-[1.3fr_1fr] gap-8">
+        <div>
+          <span class="font-mono uppercase text-[11px] tracking-[.04em] text-accent">Brief · 07:00</span>
+          <h1 class="font-display font-extrabold text-ink text-2xl md:text-3xl tracking-[-0.02em] leading-tight mt-3 mb-6">
+            Trois priorités déterminent ta journée.
+          </h1>
+          <ul class="flex flex-col gap-2 font-body text-ink/80">
+            <li>1. Répondre au mail du comptable avant midi</li>
+            <li>2. Préparer la réunion AEVIO de 14h</li>
+            <li>3. Confirmer le padel de vendredi</li>
+          </ul>
+        </div>
+        <div class="flex flex-col gap-5 justify-center border-l border-ink/10 pl-8">
+          <div>
+            <p class="font-mono text-3xl font-semibold text-accent tracking-[-0.02em]">3</p>
+            <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40">Priorités</p>
+          </div>
+          <div>
+            <p class="font-mono text-3xl font-semibold text-ink tracking-[-0.02em]">5</p>
+            <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40">Tâches</p>
+          </div>
+          <div>
+            <p class="font-mono text-3xl font-semibold text-ink tracking-[-0.02em]">1</p>
+            <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40">Alerte active</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NOTES - V0 Liste épinglée (défaut validé) -->
+    <section data-variant-group="notes" data-variant="0" data-mockup-id="notes-liste-epinglee" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10 fade-in delay-2">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-display font-bold text-ink text-xl tracking-[-0.02em]">Notes</h2>
+        <a href="notes.html" class="font-body text-sm text-accent" data-mockup-id="lien-notes">Tout voir →</a>
+      </div>
+      <div class="bg-white rounded-card shadow-card divide-y divide-ink/5">
+        <div class="flex items-center gap-4 px-5 py-3" data-mockup-id="notes-champ-rapide">
+          <span class="text-accent">＋</span>
+          <span class="font-body text-sm text-ink/40 flex-1">Note rapide...</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-3" data-mockup-id="note-liste-courses">
+          <span class="font-body text-sm text-ink flex-1">Liste de courses — bananes, pommes, fraises...</span>
+          <span class="font-mono text-[10px] uppercase tracking-[.04em] text-accent">Épinglée</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-3" data-mockup-id="note-idees">
+          <span class="font-body text-sm text-ink flex-1">Idées MyDay — vue semaine, widget mobile...</span>
+          <span class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/30">Hier</span>
+        </div>
+      </div>
+    </section>
+    <!-- NOTES - V1 Capture rapide -->
+    <section data-variant-group="notes" data-variant="1" data-mockup-id="notes-capture-rapide" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="font-display font-bold text-ink text-xl tracking-[-0.02em]">Notes</h2>
+        <span class="font-mono text-[10px] uppercase tracking-[.04em] text-accent bg-soft rounded-full px-2.5 py-1">Capture rapide</span>
+      </div>
+      <div class="bg-white rounded-card shadow-card border border-accent/15 px-5 py-4 mb-4 flex items-center gap-3">
+        <span class="text-accent font-display font-semibold text-lg">+</span>
+        <span class="font-body text-ink/40 flex-1">Note rapide — écris, c'est gardé...</span>
+        <span class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/30 bg-soft rounded-full px-2 py-0.5">N</span>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-white rounded-card shadow-card p-5">
+          <p class="font-display font-semibold text-ink mb-2">Liste de courses</p>
+          <p class="font-body text-sm text-ink/60">Bananes, pommes, fraises, pain, lait d'amande</p>
+          <p class="font-mono text-[10px] uppercase tracking-[.04em] text-accent mt-3">Épinglée · via l'assistant</p>
+        </div>
+        <div class="bg-white rounded-card shadow-card p-5">
+          <p class="font-display font-semibold text-ink mb-2">Idées MyDay</p>
+          <p class="font-body text-sm text-ink/60">Vue semaine du planning, widget mobile, partage avec Manon</p>
+          <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/30 mt-3">Modifiée hier</p>
+        </div>
+      </div>
+    </section>
+    <!-- NOTES - V2 Post-its -->
+    <section data-variant-group="notes" data-variant="2" data-mockup-id="notes-post-its" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <h2 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-6">Notes</h2>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-soft rounded-card p-5 rotate-[-0.5deg]">
+          <p class="font-display font-semibold text-ink mb-2">Liste de courses</p>
+          <p class="font-body text-sm text-ink/70">Bananes, pommes, fraises, pain, lait d'amande</p>
+        </div>
+        <div class="bg-soft rounded-card p-5 rotate-[0.5deg]">
+          <p class="font-display font-semibold text-ink mb-2">Idées MyDay</p>
+          <p class="font-body text-sm text-ink/70">Vue semaine, widget mobile, partage avec Manon</p>
+        </div>
+        <div class="bg-white rounded-card border-2 border-dashed border-accent/30 p-5 flex items-center justify-center">
+          <span class="font-body text-sm text-accent">+ Nouvelle note</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLANNING - V0 Timeline produit (validée) -->
+    <section data-variant-group="planning" data-variant="0" data-mockup-id="planning-timeline-produit" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10 fade-in delay-3">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="font-display font-bold text-ink text-xl tracking-[-0.02em]">Ta journée</h2>
+        <a href="planning.html" class="font-body text-sm text-accent" data-mockup-id="lien-planning">Tout voir →</a>
+      </div>
+      <div class="bg-white rounded-card shadow-card p-6 flex flex-col gap-4">
+        <div class="flex items-center gap-4" data-mockup-id="planning-event-0930">
+          <span class="font-mono text-xs text-ink/40 w-16">09:30</span>
+          <div class="flex-1 rounded-inner bg-soft px-4 py-3">
+            <span class="font-body text-ink">Point équipe</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-4" data-mockup-id="planning-event-1400">
+          <span class="font-mono text-xs text-accent w-16 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-accent inline-block pulse-now"></span>14:00
+          </span>
+          <div class="flex-1 rounded-inner border-2 border-accent/30 px-4 py-3">
+            <p class="font-body text-ink">Réunion client AEVIO</p>
+            <p class="font-mono text-[11px] uppercase tracking-[.04em] text-accent mt-1">Aucun ordre du jour</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4" data-mockup-id="planning-event-1800">
+          <span class="font-mono text-xs text-ink/40 w-16">18:00</span>
+          <div class="flex-1 rounded-inner bg-soft px-4 py-3">
+            <span class="font-body text-ink">Padel avec Julien</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- PLANNING - V1 Cartes créneaux -->
+    <section data-variant-group="planning" data-variant="1" data-mockup-id="planning-cartes-creneaux" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <h2 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-6">Ta journée</h2>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-white rounded-card shadow-card p-5">
+          <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mb-2">09:30</p>
+          <p class="font-body text-ink">Point équipe</p>
+        </div>
+        <div class="bg-white rounded-card shadow-card p-5 border border-accent/20">
+          <p class="font-mono text-[11px] uppercase tracking-[.04em] text-accent mb-2 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-accent inline-block pulse-now"></span>14:00
+          </p>
+          <p class="font-body text-ink">Réunion client AEVIO</p>
+        </div>
+        <div class="bg-white rounded-card shadow-card p-5">
+          <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mb-2">18:00</p>
+          <p class="font-body text-ink">Padel avec Julien</p>
+        </div>
+      </div>
+    </section>
+    <!-- PLANNING - V2 Liste agenda dense -->
+    <section data-variant-group="planning" data-variant="2" data-mockup-id="planning-liste-agenda-dense" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <h2 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-4">Ta journée</h2>
+      <div class="bg-white rounded-card shadow-card divide-y divide-ink/5">
+        <div class="flex items-center gap-4 px-5 py-3">
+          <span class="font-mono text-xs text-ink/40 w-14">09:30</span>
+          <span class="font-body text-sm text-ink">Point équipe</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-3 bg-soft/60">
+          <span class="font-mono text-xs text-accent w-14 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-accent inline-block pulse-now"></span>14:00</span>
+          <span class="font-body text-sm text-ink">Réunion client AEVIO — sans ordre du jour</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-3">
+          <span class="font-mono text-xs text-ink/40 w-14">18:00</span>
+          <span class="font-body text-sm text-ink">Padel avec Julien</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TODO - V0 Checklist nette (validée) -->
+    <section data-variant-group="todo" data-variant="0" data-mockup-id="todo-checklist-nette" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10 fade-in delay-4">
+      <h2 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-6">Tes tâches</h2>
+      <div class="bg-white rounded-card shadow-card divide-y divide-ink/5">
+        <div class="flex items-center gap-4 px-5 py-4" data-mockup-id="todo-item-pain">
+          <span class="w-5 h-5 rounded-md border-2 border-accent/40 flex-shrink-0"></span>
+          <span class="font-body text-ink flex-1">Acheter le pain</span>
+          <span class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40">Aujourd'hui</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-4" data-mockup-id="todo-item-contrat">
+          <span class="w-5 h-5 rounded-md border-2 border-accent/40 flex-shrink-0"></span>
+          <span class="font-body text-ink flex-1">Relire le contrat Dupont</span>
+          <span class="font-mono uppercase text-[10px] tracking-[.04em] text-accent bg-soft rounded-full px-2.5 py-1">Priorité</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-4 opacity-50" data-mockup-id="todo-item-facture">
+          <span class="w-5 h-5 rounded-md bg-accent flex items-center justify-center text-white text-xs flex-shrink-0">✓</span>
+          <span class="font-body text-ink line-through flex-1">Envoyer la facture</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-4" data-mockup-id="todo-item-restaurant">
+          <span class="w-5 h-5 rounded-md border-2 border-accent/40 flex-shrink-0"></span>
+          <span class="font-body text-ink flex-1">Réserver le restaurant pour vendredi</span>
+          <span class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40">Vendredi</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-4 opacity-50" data-mockup-id="todo-item-plombier">
+          <span class="w-5 h-5 rounded-md bg-accent flex items-center justify-center text-white text-xs flex-shrink-0">✓</span>
+          <span class="font-body text-ink line-through flex-1">Appeler le plombier</span>
+        </div>
+      </div>
+    </section>
+    <!-- TODO - V1 Cartes kanban légères -->
+    <section data-variant-group="todo" data-variant="1" data-mockup-id="todo-cartes-kanban" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <h2 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-6">Tes tâches</h2>
+      <div class="grid md:grid-cols-3 gap-5">
+        <div>
+          <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mb-3">À faire</p>
+          <div class="flex flex-col gap-3">
+            <div class="bg-white rounded-card shadow-card p-4 font-body text-ink text-sm">Acheter le pain</div>
+            <div class="bg-white rounded-card shadow-card p-4 font-body text-ink text-sm">Réserver le restaurant pour vendredi</div>
+          </div>
+        </div>
+        <div>
+          <p class="font-mono text-[11px] uppercase tracking-[.04em] text-accent mb-3">En cours</p>
+          <div class="flex flex-col gap-3">
+            <div class="bg-white rounded-card shadow-card p-4 font-body text-ink text-sm border border-accent/20">Relire le contrat Dupont</div>
+          </div>
+        </div>
+        <div>
+          <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mb-3">Fait</p>
+          <div class="flex flex-col gap-3">
+            <div class="bg-white rounded-card shadow-card p-4 font-body text-ink/50 text-sm line-through">Envoyer la facture</div>
+            <div class="bg-white rounded-card shadow-card p-4 font-body text-ink/50 text-sm line-through">Appeler le plombier</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- TODO - V2 Liste compacte -->
+    <section data-variant-group="todo" data-variant="2" data-mockup-id="todo-liste-compacte" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <h2 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-4">Tes tâches</h2>
+      <ul class="font-body text-sm text-ink divide-y divide-ink/5">
+        <li class="py-2.5 flex items-center gap-2"><span class="text-ink/30">·</span> Acheter le pain</li>
+        <li class="py-2.5 flex items-center gap-2"><span class="text-accent">·</span> Relire le contrat Dupont</li>
+        <li class="py-2.5 flex items-center gap-2 opacity-50"><span class="text-accent">✓</span> <span class="line-through">Envoyer la facture</span></li>
+        <li class="py-2.5 flex items-center gap-2"><span class="text-ink/30">·</span> Réserver le restaurant pour vendredi</li>
+        <li class="py-2.5 flex items-center gap-2 opacity-50"><span class="text-accent">✓</span> <span class="line-through">Appeler le plombier</span></li>
+      </ul>
+    </section>
+
+    <!-- MAILS - V0 Inbox scorée (validée) -->
+    <section data-variant-group="mails" data-variant="0" data-mockup-id="mails-inbox-scoree" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10 fade-in delay-5">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="font-display font-bold text-ink text-xl tracking-[-0.02em]">Mails importants</h2>
+        <a href="mails.html" class="font-body text-sm text-accent" data-mockup-id="lien-mails">Tout voir →</a>
+      </div>
+      <div class="bg-white rounded-card shadow-card divide-y divide-ink/5">
+        <div class="flex items-center gap-4 px-5 py-4" data-mockup-id="mail-comptable">
+          <span class="cta-gradient text-white font-mono text-xs rounded-full w-9 h-9 flex items-center justify-center flex-shrink-0">92</span>
+          <div class="min-w-0">
+            <p class="font-display font-semibold text-ink">Le comptable — Solde à valider</p>
+            <p class="font-body text-sm text-ink/50 truncate">Résumé IA : demande une validation du solde avant midi pour lancer le virement.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-4" data-mockup-id="mail-aevio">
+          <span class="cta-gradient text-white font-mono text-xs rounded-full w-9 h-9 flex items-center justify-center flex-shrink-0">78</span>
+          <div class="min-w-0">
+            <p class="font-display font-semibold text-ink">AEVIO — Ordre du jour 14h</p>
+            <p class="font-body text-sm text-ink/50 truncate">Résumé IA : aucun ordre du jour n'a été partagé, propose d'en envoyer un rapidement.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-4" data-mockup-id="mail-julien">
+          <span class="bg-soft text-accent font-mono text-xs rounded-full w-9 h-9 flex items-center justify-center flex-shrink-0">54</span>
+          <div class="min-w-0">
+            <p class="font-display font-semibold text-ink">Julien — Padel vendredi</p>
+            <p class="font-body text-sm text-ink/50 truncate">Résumé IA : confirme l'heure du padel de vendredi, réponse simple attendue.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- MAILS - V1 Cartes mail -->
+    <section data-variant-group="mails" data-variant="1" data-mockup-id="mails-cartes-mail" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <h2 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-6">Mails importants</h2>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-white rounded-card shadow-card p-5">
+          <span class="font-mono uppercase text-[10px] tracking-[.04em] text-accent bg-soft rounded-full px-2.5 py-1 inline-block mb-3">Score 92</span>
+          <p class="font-display font-semibold text-ink mb-1">Le comptable</p>
+          <p class="font-body text-sm text-ink/50">Solde à valider avant midi.</p>
+        </div>
+        <div class="bg-white rounded-card shadow-card p-5">
+          <span class="font-mono uppercase text-[10px] tracking-[.04em] text-accent bg-soft rounded-full px-2.5 py-1 inline-block mb-3">Score 78</span>
+          <p class="font-display font-semibold text-ink mb-1">AEVIO</p>
+          <p class="font-body text-sm text-ink/50">Ordre du jour 14h manquant.</p>
+        </div>
+        <div class="bg-white rounded-card shadow-card p-5">
+          <span class="font-mono uppercase text-[10px] tracking-[.04em] text-ink/40 bg-soft rounded-full px-2.5 py-1 inline-block mb-3">Score 54</span>
+          <p class="font-display font-semibold text-ink mb-1">Julien</p>
+          <p class="font-body text-sm text-ink/50">Confirmation padel vendredi.</p>
+        </div>
+      </div>
+    </section>
+    <!-- MAILS - V2 Digest par importance -->
+    <section data-variant-group="mails" data-variant="2" data-mockup-id="mails-digest-importance" class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10" style="display:none">
+      <h2 class="font-display font-bold text-ink text-xl tracking-[-0.02em] mb-6">Mails importants</h2>
+      <div class="mb-4">
+        <p class="font-mono text-[11px] uppercase tracking-[.04em] text-accent mb-2">Urgent</p>
+        <div class="bg-white rounded-card shadow-card p-4 flex items-center justify-between">
+          <p class="font-body text-ink">Le comptable — Solde à valider</p>
+          <span class="font-mono text-xs text-accent">92</span>
+        </div>
+      </div>
+      <div class="mb-4">
+        <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mb-2">À traiter</p>
+        <div class="bg-white rounded-card shadow-card p-4 flex items-center justify-between">
+          <p class="font-body text-ink">AEVIO — Ordre du jour 14h</p>
+          <span class="font-mono text-xs text-accent">78</span>
+        </div>
+      </div>
+      <div>
+        <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mb-2">Peut attendre</p>
+        <div class="bg-white rounded-card shadow-card p-4 flex items-center justify-between">
+          <p class="font-body text-ink">Julien — Padel vendredi</p>
+          <span class="font-mono text-xs text-ink/40">54</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Suggestions assistant (config validée : intégré en haut + suggestions) -->
+    <div class="max-w-4xl mx-auto px-4 md:px-6 pb-16 fade-in delay-6" data-mockup-id="assistant-suggestions">
+      <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 text-center mb-3">L'assistant est en haut — essaie par exemple :</p>
+      <div class="flex flex-wrap items-center justify-center gap-2">
+        <span class="rounded-full bg-soft px-4 py-2 font-body text-sm text-ink/60">« Prends une note : liste de courses — bananes, pommes, fraises »</span>
+        <span class="rounded-full bg-soft px-4 py-2 font-body text-sm text-ink/60">« Ajoute l'ostéopathe vendredi 10 juillet à 19h »</span>
+        <span class="rounded-full bg-soft px-4 py-2 font-body text-sm text-ink/60">« Réponds à Julien que 18h c'est parfait »</span>
+      </div>
+    </div>
+
+    <!-- Fraîcheur (composant partagé) -->
+    <div data-include="../shared/components/fraicheur.html"></div>
+  </body>
+</html>

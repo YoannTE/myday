@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lettre du matin — MyDay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@400;500;600;700&display=swap"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              bg: "var(--palette-bg)",
+              ink: "var(--palette-ink)",
+              accent: "var(--palette-accent)",
+              soft: "var(--palette-soft)",
+            },
+            fontFamily: {
+              display: "var(--font-display)",
+              body: "var(--font-body)",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      :root {
+        --palette-bg: #f4ede2;
+        --palette-ink: #1a1815;
+        --palette-accent: #b4461e;
+        --palette-soft: #d8cdb8;
+        --font-display: "Fraunces", serif;
+        --font-body: "Inter", sans-serif;
+        --space-base: 1rem;
+      }
+      body {
+        background: var(--palette-bg);
+        color: var(--palette-ink);
+        font-family: var(--font-body);
+        margin: 0;
+      }
+      .rule-fine {
+        border-color: var(--palette-ink);
+        opacity: 0.18;
+      }
+      .rule-accent {
+        border-color: var(--palette-accent);
+      }
+    </style>
+
+    <script>
+      window.__TWEAKS__ = {
+        palettes: [
+          {
+            name: "Sable & Terracotta",
+            colors: { bg: "#f4ede2", ink: "#1a1815", accent: "#b4461e", soft: "#d8cdb8" },
+          },
+          {
+            name: "Encre & Or brûlé",
+            colors: { bg: "#faf8f1", ink: "#303440", accent: "#b5914a", soft: "#dcdee5" },
+          },
+          {
+            name: "Marbre & Vert Reborn",
+            colors: { bg: "#fbf9f5", ink: "#1a1a1a", accent: "#2c8265", soft: "#e5e1da" },
+          },
+          {
+            name: "Lait & Olive",
+            colors: { bg: "#faf8f1", ink: "#0f1310", accent: "#5e7548", soft: "#e3e1d4" },
+          },
+          {
+            name: "Craie & Vermillon",
+            colors: { bg: "#fcfaf5", ink: "#1a0c0a", accent: "#d94f32", soft: "#e7e3dc" },
+          },
+        ],
+        dark: { bg: "#1a1815", ink: "#f4ede2", soft: "#3a3530" },
+        variants: {
+          topbar: {
+            label: "Bandeau",
+            options: ["Masthead journal", "Minimal flottant", "Rubrique latérale"],
+          },
+          brief: {
+            label: "Brief IA",
+            options: ["Lettre pleine largeur", "Carte encadrée", "Bandeau horizon"],
+          },
+          planning: {
+            label: "Planning",
+            options: ["Timeline filet", "Blocs horaires", "Ordre du jour"],
+          },
+          todo: {
+            label: "Tâches",
+            options: ["Liste cochable éditoriale", "Cartes tâches", "Compacte numérotée"],
+          },
+          mails: {
+            label: "Courrier",
+            options: ["Courrier du jour", "Cartes résumé", "Digest groupé"],
+          },
+          assistant: {
+            label: "Assistant",
+            options: ["Barre de dépêche", "Bulle flottante", "Encart rédaction"],
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="font-body">
+    <div class="max-w-6xl mx-auto px-6 md:px-10 pb-32">
+
+      <!-- ============================================================ -->
+      <!-- SLOT topbar -->
+      <!-- ============================================================ -->
+
+      <!-- Variant 01 : Masthead journal -->
+      <div data-variant-group="topbar" data-variant="0">
+        <header data-mockup-id="topbar-masthead" class="pt-10 pb-6 text-center">
+          <p class="font-body text-xs tracking-[0.35em] uppercase text-ink/50 mb-3">
+            Jeudi 9 juillet 2026 — Édition du matin
+          </p>
+          <h1 class="font-display italic font-light text-6xl md:text-7xl tracking-tight text-ink">
+            MyDay
+          </h1>
+          <div class="mt-5 flex items-center justify-center gap-4">
+            <div class="h-px w-16 rule-fine border-t"></div>
+            <div class="flex items-center gap-2">
+              <div class="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-bg text-xs font-semibold font-body">
+                YV
+              </div>
+              <span class="text-sm text-ink/60 font-body">Yoann Varloud</span>
+            </div>
+            <div class="h-px w-16 rule-fine border-t"></div>
+          </div>
+        </header>
+        <div class="border-t-2 rule-accent"></div>
+      </div>
+
+      <!-- Variant 02 : Minimal flottant -->
+      <div data-variant-group="topbar" data-variant="1" style="display:none">
+        <header data-mockup-id="topbar-flottant" class="pt-8 pb-4">
+          <div class="bg-soft/60 rounded-full px-6 py-3 flex items-center justify-between">
+            <span class="font-display italic text-xl text-ink">MyDay</span>
+            <nav class="hidden md:flex items-center gap-6 text-sm text-ink/60 font-body">
+              <span class="text-ink font-medium">Brief</span>
+              <span>Planning</span>
+              <span>Tâches</span>
+              <span>Courrier</span>
+            </nav>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-ink/50 font-body">9 juil.</span>
+              <div class="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-bg text-xs font-semibold font-body">
+                YV
+              </div>
+            </div>
+          </div>
+        </header>
+      </div>
+
+      <!-- Variant 03 : Rubrique latérale -->
+      <div data-variant-group="topbar" data-variant="2" style="display:none">
+        <header data-mockup-id="topbar-rubrique" class="pt-8 pb-4 flex items-center justify-between border-b rule-fine">
+          <span class="font-display italic text-2xl text-ink">MyDay</span>
+          <nav class="hidden md:flex items-center gap-8 text-xs tracking-[0.2em] uppercase text-ink/50 font-body">
+            <span class="text-accent border-b-2 rule-accent pb-1">Brief</span>
+            <span>Planning</span>
+            <span>Tâches</span>
+            <span>Courrier</span>
+            <span>Assistant</span>
+          </nav>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-ink/50 font-body">Jeudi 9 juillet</span>
+            <div class="h-7 w-7 rounded-full bg-accent flex items-center justify-center text-bg text-[10px] font-semibold font-body">
+              YV
+            </div>
+          </div>
+        </header>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- SLOT brief -->
+      <!-- ============================================================ -->
+
+      <!-- Variant 01 : Lettre pleine largeur -->
+      <div data-variant-group="brief" data-variant="0">
+        <section data-mockup-id="brief-lettre" class="grid grid-cols-1 md:grid-cols-12 gap-10 py-14 border-b rule-fine">
+          <div class="md:col-span-3 flex md:flex-col items-baseline md:items-start gap-3 md:gap-1">
+            <span class="font-display font-light text-8xl md:text-9xl leading-none text-ink">09</span>
+            <div class="md:mt-2 text-sm text-ink/50 font-body uppercase tracking-[0.25em]">
+              Juillet<br class="hidden md:block" /> 2026
+            </div>
+          </div>
+          <div class="md:col-span-9">
+            <p class="text-xs tracking-[0.3em] uppercase text-accent font-body mb-4">Le brief du jour</p>
+            <p class="font-display italic text-3xl md:text-4xl leading-snug text-ink mb-8">
+              Bonjour Yoann, voici ta journée.
+            </p>
+            <ol class="space-y-5">
+              <li class="flex gap-4 pb-5 border-b rule-fine">
+                <span class="font-display italic text-2xl text-accent w-6">1</span>
+                <span class="text-base text-ink/90 font-body pt-0.5">Répondre au mail du comptable avant midi</span>
+              </li>
+              <li class="flex gap-4 pb-5 border-b rule-fine">
+                <span class="font-display italic text-2xl text-accent w-6">2</span>
+                <span class="text-base text-ink/90 font-body pt-0.5">Préparer la réunion AEVIO de 14h</span>
+              </li>
+              <li class="flex gap-4">
+                <span class="font-display italic text-2xl text-accent w-6">3</span>
+                <span class="text-base text-ink/90 font-body pt-0.5">Confirmer le padel de vendredi</span>
+              </li>
+            </ol>
+            <div class="mt-8 pt-5 border-t rule-fine flex items-start gap-3">
+              <span class="text-accent font-body text-sm font-semibold">⚠ Alerte</span>
+              <p class="text-sm text-ink/70 font-body italic">
+                Ta réunion de 14h n'a pas d'ordre du jour.
+              </p>
+            </div>
+            <p class="mt-6 text-xs text-ink/40 font-body">À jour il y a 3 min</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- Variant 02 : Carte encadrée -->
+      <div data-variant-group="brief" data-variant="1" style="display:none">
+        <section data-mockup-id="brief-carte" class="py-14">
+          <div class="border-t-2 border-b-2 rule-accent py-10 px-6 md:px-14 text-center">
+            <div class="border-t border-b rule-fine py-8 px-4">
+              <span class="font-display font-light text-7xl text-ink">09</span>
+              <p class="text-xs tracking-[0.3em] uppercase text-ink/50 font-body mt-2 mb-6">
+                Jeudi — Juillet 2026
+              </p>
+              <p class="font-display italic text-2xl md:text-3xl text-ink mb-8 max-w-xl mx-auto">
+                Bonjour Yoann, voici ta journée.
+              </p>
+              <ol class="inline-block text-left space-y-3 mx-auto">
+                <li class="flex gap-3">
+                  <span class="font-display italic text-accent">1.</span>
+                  <span class="text-sm font-body text-ink/90">Répondre au mail du comptable avant midi</span>
+                </li>
+                <li class="flex gap-3">
+                  <span class="font-display italic text-accent">2.</span>
+                  <span class="text-sm font-body text-ink/90">Préparer la réunion AEVIO de 14h</span>
+                </li>
+                <li class="flex gap-3">
+                  <span class="font-display italic text-accent">3.</span>
+                  <span class="text-sm font-body text-ink/90">Confirmer le padel de vendredi</span>
+                </li>
+              </ol>
+              <p class="mt-8 text-xs text-accent font-body italic">
+                ⚠ Ta réunion de 14h n'a pas d'ordre du jour
+              </p>
+              <p class="mt-3 text-xs text-ink/40 font-body">À jour il y a 3 min</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Variant 03 : Bandeau horizon -->
+      <div data-variant-group="brief" data-variant="2" style="display:none">
+        <section data-mockup-id="brief-horizon" class="py-14 border-b rule-fine">
+          <div class="flex items-end justify-between gap-6 mb-8">
+            <span class="font-display font-light text-8xl text-ink leading-none">09.07</span>
+            <p class="text-xs text-ink/40 font-body">À jour il y a 3 min</p>
+          </div>
+          <p class="font-display italic text-3xl md:text-5xl leading-tight text-ink mb-4 border-t rule-fine pt-8">
+            Bonjour Yoann, voici ta journée.
+          </p>
+          <p class="text-sm text-accent font-body italic mb-10">
+            ⚠ Ta réunion de 14h n'a pas d'ordre du jour
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="border-t-2 rule-accent pt-4">
+              <span class="text-xs uppercase tracking-[0.2em] text-ink/40 font-body">Priorité 1</span>
+              <p class="font-display italic text-lg text-ink mt-2">Répondre au mail du comptable avant midi</p>
+            </div>
+            <div class="border-t-2 rule-accent pt-4">
+              <span class="text-xs uppercase tracking-[0.2em] text-ink/40 font-body">Priorité 2</span>
+              <p class="font-display italic text-lg text-ink mt-2">Préparer la réunion AEVIO de 14h</p>
+            </div>
+            <div class="border-t-2 rule-accent pt-4">
+              <span class="text-xs uppercase tracking-[0.2em] text-ink/40 font-body">Priorité 3</span>
+              <p class="font-display italic text-lg text-ink mt-2">Confirmer le padel de vendredi</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- SLOT planning -->
+      <!-- ============================================================ -->
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-10 py-12">
+        <div>
+          <h2 class="text-xs tracking-[0.3em] uppercase text-accent font-body mb-6">Planning du jour</h2>
+
+          <!-- Variant 01 : Timeline filet -->
+          <div data-variant-group="planning" data-variant="0">
+            <div data-mockup-id="planning-timeline" class="relative pl-8">
+              <div class="absolute left-2 top-1 bottom-1 border-l rule-fine"></div>
+              <ul class="space-y-8">
+                <li class="relative">
+                  <div class="absolute -left-[26px] top-1 h-2 w-2 rounded-full bg-accent"></div>
+                  <span class="text-xs text-ink/40 font-body">09:30</span>
+                  <p class="font-display italic text-xl text-ink">Point équipe</p>
+                </li>
+                <li class="relative">
+                  <div class="absolute -left-[26px] top-1 h-2 w-2 rounded-full bg-accent"></div>
+                  <span class="text-xs text-ink/40 font-body">14:00</span>
+                  <p class="font-display italic text-xl text-ink">Réunion client AEVIO</p>
+                </li>
+                <li class="relative">
+                  <div class="absolute -left-[26px] top-1 h-2 w-2 rounded-full bg-accent"></div>
+                  <span class="text-xs text-ink/40 font-body">18:00</span>
+                  <p class="font-display italic text-xl text-ink">Padel</p>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Variant 02 : Blocs horaires -->
+          <div data-variant-group="planning" data-variant="1" style="display:none">
+            <div data-mockup-id="planning-blocs" class="space-y-3">
+              <div class="border rule-fine rounded-md p-4 flex items-center justify-between">
+                <span class="text-sm text-ink/50 font-body">09:30</span>
+                <span class="font-display italic text-lg text-ink">Point équipe</span>
+              </div>
+              <div class="border-2 rule-accent rounded-md p-4 flex items-center justify-between">
+                <span class="text-sm text-accent font-body font-medium">14:00</span>
+                <span class="font-display italic text-lg text-ink">Réunion client AEVIO</span>
+              </div>
+              <div class="border rule-fine rounded-md p-4 flex items-center justify-between">
+                <span class="text-sm text-ink/50 font-body">18:00</span>
+                <span class="font-display italic text-lg text-ink">Padel</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Variant 03 : Ordre du jour -->
+          <div data-variant-group="planning" data-variant="2" style="display:none">
+            <ol data-mockup-id="planning-ordredujour" class="space-y-0">
+              <li class="flex items-baseline justify-between py-3 border-b rule-fine">
+                <span class="font-body text-sm text-ink/90">I. Point équipe</span>
+                <span class="text-xs text-ink/40 font-body">09:30</span>
+              </li>
+              <li class="flex items-baseline justify-between py-3 border-b rule-fine">
+                <span class="font-body text-sm text-ink/90">II. Réunion client AEVIO</span>
+                <span class="text-xs text-ink/40 font-body">14:00</span>
+              </li>
+              <li class="flex items-baseline justify-between py-3">
+                <span class="font-body text-sm text-ink/90">III. Padel</span>
+                <span class="text-xs text-ink/40 font-body">18:00</span>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- SLOT todo -->
+        <!-- ============================================================ -->
+        <div>
+          <h2 class="text-xs tracking-[0.3em] uppercase text-accent font-body mb-6">Tâches</h2>
+
+          <!-- Variant 01 : Liste cochable éditoriale -->
+          <div data-variant-group="todo" data-variant="0">
+            <ul data-mockup-id="todo-editoriale" class="space-y-0">
+              <li class="flex items-start gap-4 py-3 border-b rule-fine">
+                <span class="font-display italic text-2xl text-accent w-5">A</span>
+                <span class="h-4 w-4 border rule-fine mt-1 flex-shrink-0"></span>
+                <span class="text-sm font-body text-ink/90">Acheter le pain <em class="text-ink/40 not-italic text-xs">— ajouté via l'assistant</em></span>
+              </li>
+              <li class="flex items-start gap-4 py-3 border-b rule-fine">
+                <span class="font-display italic text-2xl text-accent w-5">B</span>
+                <span class="h-4 w-4 border rule-fine mt-1 flex-shrink-0"></span>
+                <span class="text-sm font-body text-ink/90">Envoyer le récapitulatif de réunion à l'équipe</span>
+              </li>
+              <li class="flex items-start gap-4 py-3 border-b rule-fine">
+                <span class="font-display italic text-2xl text-accent w-5">C</span>
+                <span class="h-4 w-4 border rule-fine mt-1 flex-shrink-0"></span>
+                <span class="text-sm font-body text-ink/90">Relire le contrat AEVIO avant signature</span>
+              </li>
+              <li class="flex items-start gap-4 py-3">
+                <span class="font-display italic text-2xl text-accent w-5">D</span>
+                <span class="h-4 w-4 border rule-fine mt-1 flex-shrink-0"></span>
+                <span class="text-sm font-body text-ink/90">Réserver le court de padel pour vendredi</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Variant 02 : Cartes tâches -->
+          <div data-variant-group="todo" data-variant="1" style="display:none">
+            <div data-mockup-id="todo-cartes" class="space-y-3">
+              <div class="border rule-fine rounded-md p-4 flex items-center gap-3">
+                <span class="h-4 w-4 border rule-fine flex-shrink-0"></span>
+                <span class="text-sm font-body flex-1">Acheter le pain</span>
+                <span class="text-[10px] uppercase tracking-wide text-accent font-body">Assistant</span>
+              </div>
+              <div class="border rule-fine rounded-md p-4 flex items-center gap-3">
+                <span class="h-4 w-4 border rule-fine flex-shrink-0"></span>
+                <span class="text-sm font-body flex-1">Envoyer le récapitulatif de réunion à l'équipe</span>
+              </div>
+              <div class="border rule-fine rounded-md p-4 flex items-center gap-3">
+                <span class="h-4 w-4 border rule-fine flex-shrink-0"></span>
+                <span class="text-sm font-body flex-1">Relire le contrat AEVIO avant signature</span>
+              </div>
+              <div class="border rule-fine rounded-md p-4 flex items-center gap-3">
+                <span class="h-4 w-4 border rule-fine flex-shrink-0"></span>
+                <span class="text-sm font-body flex-1">Réserver le court de padel pour vendredi</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Variant 03 : Compacte numérotée -->
+          <div data-variant-group="todo" data-variant="2" style="display:none">
+            <ol data-mockup-id="todo-compacte" class="space-y-2">
+              <li class="flex items-center gap-3 text-sm font-body">
+                <span class="text-ink/40">01</span>
+                <span class="flex-1 text-ink/90">Acheter le pain</span>
+                <span class="text-xs text-accent">assistant</span>
+              </li>
+              <li class="flex items-center gap-3 text-sm font-body">
+                <span class="text-ink/40">02</span>
+                <span class="flex-1 text-ink/90">Envoyer le récapitulatif de réunion à l'équipe</span>
+              </li>
+              <li class="flex items-center gap-3 text-sm font-body">
+                <span class="text-ink/40">03</span>
+                <span class="flex-1 text-ink/90">Relire le contrat AEVIO avant signature</span>
+              </li>
+              <li class="flex items-center gap-3 text-sm font-body">
+                <span class="text-ink/40">04</span>
+                <span class="flex-1 text-ink/90">Réserver le court de padel pour vendredi</span>
+              </li>
+              <li class="flex items-center gap-3 text-sm font-body">
+                <span class="text-ink/40">05</span>
+                <span class="flex-1 text-ink/90">Appeler le comptable pour la TVA</span>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- SLOT mails -->
+      <!-- ============================================================ -->
+
+      <div class="py-12 border-t rule-fine">
+        <h2 class="text-xs tracking-[0.3em] uppercase text-accent font-body mb-6">Courrier</h2>
+
+        <!-- Variant 01 : Courrier du jour -->
+        <div data-variant-group="mails" data-variant="0">
+          <ul data-mockup-id="mails-courrier" class="space-y-0">
+            <li class="py-5 border-b rule-fine">
+              <div class="flex items-baseline justify-between mb-1">
+                <span class="font-display text-lg text-ink">Marie Dubois — Comptabilité</span>
+                <span class="text-xs text-accent font-body font-medium">92</span>
+              </div>
+              <p class="text-xs text-ink/40 font-body mb-2">Relance TVA trimestre</p>
+              <p class="text-sm font-display italic text-ink/80">
+                « Elle a besoin de la validation du justificatif avant midi pour boucler la déclaration. »
+              </p>
+            </li>
+            <li class="py-5 border-b rule-fine">
+              <div class="flex items-baseline justify-between mb-1">
+                <span class="font-display text-lg text-ink">Thomas Lefèvre — AEVIO</span>
+                <span class="text-xs text-accent font-body font-medium">78</span>
+              </div>
+              <p class="text-xs text-ink/40 font-body mb-2">Ordre du jour réunion 14h</p>
+              <p class="text-sm font-display italic text-ink/80">
+                « Il propose de reporter le point budget faute d'ordre du jour clair. »
+              </p>
+            </li>
+            <li class="py-5">
+              <div class="flex items-baseline justify-between mb-1">
+                <span class="font-display text-lg text-ink">Club de Padel Levallois</span>
+                <span class="text-xs text-ink/40 font-body font-medium">45</span>
+              </div>
+              <p class="text-xs text-ink/40 font-body mb-2">Confirmation réservation vendredi</p>
+              <p class="text-sm font-display italic text-ink/80">
+                « Le court est libre à 18h, confirmation à donner avant jeudi soir. »
+              </p>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Variant 02 : Cartes résumé -->
+        <div data-variant-group="mails" data-variant="1" style="display:none">
+          <div data-mockup-id="mails-cartes" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div class="border rule-fine rounded-md p-5">
+              <div class="flex items-center justify-between mb-3">
+                <span class="h-7 w-7 rounded-full bg-accent text-bg text-xs font-body flex items-center justify-center">92</span>
+                <span class="text-xs text-ink/40 font-body">Comptabilité</span>
+              </div>
+              <p class="font-display text-base text-ink mb-2">Marie Dubois</p>
+              <p class="text-xs font-display italic text-ink/70">
+                Elle a besoin de la validation du justificatif avant midi.
+              </p>
+            </div>
+            <div class="border rule-fine rounded-md p-5">
+              <div class="flex items-center justify-between mb-3">
+                <span class="h-7 w-7 rounded-full bg-accent text-bg text-xs font-body flex items-center justify-center">78</span>
+                <span class="text-xs text-ink/40 font-body">AEVIO</span>
+              </div>
+              <p class="font-display text-base text-ink mb-2">Thomas Lefèvre</p>
+              <p class="text-xs font-display italic text-ink/70">
+                Propose de reporter le point budget faute d'ordre du jour.
+              </p>
+            </div>
+            <div class="border rule-fine rounded-md p-5">
+              <div class="flex items-center justify-between mb-3">
+                <span class="h-7 w-7 rounded-full bg-soft text-ink text-xs font-body flex items-center justify-center">45</span>
+                <span class="text-xs text-ink/40 font-body">Padel</span>
+              </div>
+              <p class="font-display text-base text-ink mb-2">Club de Padel Levallois</p>
+              <p class="text-xs font-display italic text-ink/70">
+                Le court est libre à 18h, à confirmer avant jeudi soir.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Variant 03 : Digest groupé -->
+        <div data-variant-group="mails" data-variant="2" style="display:none">
+          <div data-mockup-id="mails-digest" class="space-y-6">
+            <div>
+              <p class="text-xs uppercase tracking-[0.2em] text-ink/40 font-body mb-2">Prioritaire — score élevé</p>
+              <div class="border-l-2 rule-accent pl-4 py-1">
+                <p class="font-display text-base text-ink">Marie Dubois — Comptabilité</p>
+                <p class="text-sm font-display italic text-ink/70">Validation du justificatif avant midi.</p>
+              </div>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-[0.2em] text-ink/40 font-body mb-2">À traiter</p>
+              <div class="border-l-2 rule-fine pl-4 py-1">
+                <p class="font-display text-base text-ink">Thomas Lefèvre — AEVIO</p>
+                <p class="text-sm font-display italic text-ink/70">Ordre du jour manquant pour la réunion 14h.</p>
+              </div>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-[0.2em] text-ink/40 font-body mb-2">Informatif</p>
+              <div class="border-l-2 rule-fine pl-4 py-1">
+                <p class="font-display text-base text-ink">Club de Padel Levallois</p>
+                <p class="text-sm font-display italic text-ink/70">Confirmation à donner avant jeudi soir.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLOT assistant -->
+    <!-- ============================================================ -->
+
+    <!-- Variant 01 : Barre de dépêche -->
+    <div data-variant-group="assistant" data-variant="0">
+      <div data-mockup-id="assistant-depeche" class="fixed bottom-0 left-0 right-0 border-t rule-fine bg-bg/95">
+        <div class="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center gap-4">
+          <span class="font-display italic text-accent text-sm">✎</span>
+          <span class="flex-1 text-sm font-body text-ink/40 italic">Dis-moi quoi faire...</span>
+          <span class="text-xs text-ink/30 font-body border rule-fine rounded px-2 py-1">Entrée ↵</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variant 02 : Bulle flottante -->
+    <div data-variant-group="assistant" data-variant="1" style="display:none">
+      <div data-mockup-id="assistant-bulle" class="fixed bottom-6 right-6">
+        <div class="h-14 w-14 rounded-full bg-accent flex items-center justify-center shadow-none border-2 rule-accent">
+          <span class="text-bg font-display italic text-xl">✎</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variant 03 : Encart rédaction -->
+    <div data-variant-group="assistant" data-variant="2" style="display:none">
+      <div data-mockup-id="assistant-encart" class="fixed top-24 right-6 w-72 border rule-fine bg-bg p-5 hidden lg:block">
+        <p class="text-xs uppercase tracking-[0.2em] text-accent font-body mb-3">Assistant</p>
+        <p class="font-display italic text-lg text-ink mb-4">Une idée, une tâche, un mail à préparer ?</p>
+        <div class="border-b rule-fine pb-2 mb-3">
+          <span class="text-sm font-body text-ink/40 italic">Dis-moi quoi faire...</span>
+        </div>
+        <p class="text-xs text-ink/40 font-body">Ex. « Ajoute acheter le pain »</p>
+      </div>
+    </div>
+
+    <!-- TWEAKS PANEL -->
+    <script defer src="../../mockups/shared/tweaks-panel.js"></script>
+  </body>
+</html>

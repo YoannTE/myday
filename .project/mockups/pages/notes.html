@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyDay — Notes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../shared/tailwind-tokens.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+    <link rel="stylesheet" href="../shared/design-system.css" />
+    <link rel="stylesheet" href="../shared/base.css" />
+    <script src="../shared/components-loader.js" defer></script>
+    <script>
+      window.__TWEAKS__ = {
+        variants: {
+          entete: {
+            label: "En-tête notes",
+            options: ["Recherche + bouton", "Capture en vedette", "Minimal"],
+          },
+          disposition: {
+            label: "Disposition",
+            options: ["Liste + note ouverte", "Grille de cartes", "Liste pleine largeur"],
+          },
+          noteouverte: {
+            label: "Note ouverte",
+            options: ["Éditeur avec méta", "Plein texte épuré", "Liste à cocher"],
+          },
+        },
+      };
+    </script>
+    <script src="../shared/tweaks-panel.js" defer></script>
+  </head>
+  <body class="bg-bg text-ink font-body min-h-screen">
+    <div data-include="../shared/components/navbar.html"></div>
+
+    <main class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10">
+      <a href="dashboard.html" class="inline-flex items-center gap-2 font-body text-sm text-ink/50 hover:text-accent transition-colors mb-4" data-mockup-id="retour-cockpit">← Cockpit</a>
+
+      <!-- ENTÊTE - V0 Recherche + bouton -->
+      <div data-variant-group="entete" data-variant="0" data-mockup-id="notes-entete-recherche" class="flex flex-wrap items-center gap-3 mb-6 fade-in">
+        <h1 class="font-display font-extrabold text-ink text-xl md:text-2xl tracking-[-0.02em]">Notes</h1>
+        <div class="flex-1 max-w-xs ml-auto">
+          <div class="rounded-full bg-white shadow-card px-4 py-2 font-body text-sm text-ink/40">Rechercher dans les notes...</div>
+        </div>
+        <button class="cta-gradient text-white font-display font-semibold rounded-inner px-4 py-2 text-sm" data-mockup-id="cta-nouvelle-note">+ Note</button>
+      </div>
+      <!-- ENTÊTE - V1 Capture en vedette -->
+      <div data-variant-group="entete" data-variant="1" data-mockup-id="notes-entete-capture" class="mb-6" style="display:none">
+        <h1 class="font-display font-extrabold text-ink text-xl md:text-2xl tracking-[-0.02em] mb-4">Notes</h1>
+        <div class="bg-white rounded-card shadow-card border border-accent/15 px-5 py-4 flex items-center gap-3">
+          <span class="text-accent font-display font-semibold text-lg">+</span>
+          <span class="font-body text-ink/40 flex-1">Note rapide — écris, c'est gardé...</span>
+          <span class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/30 bg-soft rounded-full px-2 py-0.5">N</span>
+        </div>
+      </div>
+      <!-- ENTÊTE - V2 Minimal -->
+      <div data-variant-group="entete" data-variant="2" data-mockup-id="notes-entete-minimal" class="items-center justify-between mb-6" style="display:none">
+        <h1 class="font-display font-extrabold text-ink text-xl md:text-2xl tracking-[-0.02em]">Notes</h1>
+        <span class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40">4 notes · 1 épinglée</span>
+      </div>
+
+      <!-- DISPOSITION - V0 Liste + note ouverte -->
+      <div data-variant-group="disposition" data-variant="0" data-mockup-id="notes-split" class="grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)] gap-5 fade-in delay-1">
+        <div class="bg-white rounded-card shadow-card divide-y divide-ink/5 self-start">
+          <div class="flex items-center gap-3 px-4 py-3" data-mockup-id="note-item-courses">
+            <div class="min-w-0 flex-1">
+              <p class="font-display font-semibold text-ink text-sm truncate">Liste de courses</p>
+              <p class="font-body text-xs text-ink/50 truncate">Bananes, pommes, fraises, pain...</p>
+            </div>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-accent bg-soft rounded-full px-1.5 py-0.5 flex-shrink-0">Épinglée</span>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-3 bg-soft/60" data-mockup-id="note-item-idees">
+            <div class="min-w-0 flex-1">
+              <p class="font-display font-semibold text-ink text-sm truncate">Idées MyDay</p>
+              <p class="font-body text-xs text-ink/50 truncate">Vue semaine, widget mobile...</p>
+            </div>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/30 flex-shrink-0">Hier</span>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-3" data-mockup-id="note-item-cadeau">
+            <div class="min-w-0 flex-1">
+              <p class="font-display font-semibold text-ink text-sm truncate">Cadeau anniversaire Manon</p>
+              <p class="font-body text-xs text-ink/50 truncate">Week-end à Annecy ? Regarder les...</p>
+            </div>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/30 flex-shrink-0">Lun.</span>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-3 opacity-50" data-mockup-id="note-item-archivee">
+            <div class="min-w-0 flex-1">
+              <p class="font-display font-semibold text-ink text-sm truncate">Code portail piscine</p>
+              <p class="font-body text-xs text-ink/50 truncate">B1234 — valable jusqu'à fin août</p>
+            </div>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/30 flex-shrink-0">Archivée</span>
+          </div>
+        </div>
+
+        <!-- NOTE OUVERTE - V0 Éditeur avec méta -->
+        <div data-variant-group="noteouverte" data-variant="0" data-mockup-id="note-ouverte-meta" class="bg-white rounded-card shadow-card p-6">
+          <div class="flex items-center gap-2 mb-4 flex-wrap">
+            <h2 class="font-display font-extrabold text-ink text-lg tracking-[-0.02em] flex-1">Idées MyDay</h2>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/40 bg-soft rounded-full px-2 py-0.5">Modifiée hier · 18:42</span>
+            <button class="w-8 h-8 rounded-inner bg-soft text-ink/50 text-sm" title="Épingler">📌</button>
+          </div>
+          <div class="font-body text-sm text-ink/80 leading-relaxed flex flex-col gap-2">
+            <p>Vue semaine du planning avec glisser-déposer.</p>
+            <p>Widget iPhone : le brief du jour sur l'écran d'accueil.</p>
+            <p>Partage avec Manon : voir nos deux plannings côte à côte, se déléguer des tâches.</p>
+            <p class="text-ink/30">Écris ici...</p>
+          </div>
+          <div class="flex items-center gap-2 mt-6 pt-4 border-t border-ink/5">
+            <span class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/30">Créée le 2 juillet</span>
+            <button class="font-body text-xs text-ink/40 ml-auto hover:text-accent">Archiver</button>
+          </div>
+        </div>
+        <!-- NOTE OUVERTE - V1 Plein texte épuré -->
+        <div data-variant-group="noteouverte" data-variant="1" data-mockup-id="note-ouverte-epuree" class="bg-white rounded-card shadow-card p-8" style="display:none">
+          <h2 class="font-display font-extrabold text-ink text-2xl tracking-[-0.02em] mb-6">Idées MyDay</h2>
+          <div class="font-body text-ink/80 leading-loose">
+            <p>Vue semaine du planning avec glisser-déposer. Widget iPhone : le brief du jour sur l'écran d'accueil. Partage avec Manon : voir nos deux plannings côte à côte.</p>
+          </div>
+        </div>
+        <!-- NOTE OUVERTE - V2 Liste à cocher -->
+        <div data-variant-group="noteouverte" data-variant="2" data-mockup-id="note-ouverte-cocher" class="bg-white rounded-card shadow-card p-6" style="display:none">
+          <h2 class="font-display font-extrabold text-ink text-lg tracking-[-0.02em] mb-4">Liste de courses</h2>
+          <div class="flex flex-col gap-2.5 font-body text-sm text-ink/80">
+            <p class="flex items-center gap-3"><span class="w-4 h-4 rounded border-2 border-accent/40 inline-block"></span>Bananes</p>
+            <p class="flex items-center gap-3"><span class="w-4 h-4 rounded border-2 border-accent/40 inline-block"></span>Pommes</p>
+            <p class="flex items-center gap-3"><span class="w-4 h-4 rounded border-2 border-accent/40 inline-block"></span>Fraises</p>
+            <p class="flex items-center gap-3 opacity-50"><span class="w-4 h-4 rounded bg-accent text-white text-[10px] flex items-center justify-center">✓</span><span class="line-through">Pain</span></p>
+            <p class="flex items-center gap-3"><span class="w-4 h-4 rounded border-2 border-accent/40 inline-block"></span>Lait d'amande</p>
+          </div>
+          <p class="font-mono text-[9px] uppercase tracking-[.04em] text-accent bg-soft rounded-full px-2 py-0.5 inline-block mt-4">Épinglée · via l'assistant</p>
+        </div>
+      </div>
+
+      <!-- DISPOSITION - V1 Grille de cartes -->
+      <div data-variant-group="disposition" data-variant="1" data-mockup-id="notes-grille" class="grid md:grid-cols-3 gap-4" style="display:none">
+        <div class="bg-white rounded-card shadow-card p-5 border border-accent/15">
+          <p class="font-display font-semibold text-ink mb-2">Liste de courses</p>
+          <p class="font-body text-sm text-ink/60">Bananes, pommes, fraises, pain, lait d'amande</p>
+          <p class="font-mono text-[9px] uppercase tracking-[.04em] text-accent mt-3">Épinglée · via l'assistant</p>
+        </div>
+        <div class="bg-white rounded-card shadow-card p-5">
+          <p class="font-display font-semibold text-ink mb-2">Idées MyDay</p>
+          <p class="font-body text-sm text-ink/60">Vue semaine, widget mobile, partage avec Manon</p>
+          <p class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/30 mt-3">Hier</p>
+        </div>
+        <div class="bg-white rounded-card shadow-card p-5">
+          <p class="font-display font-semibold text-ink mb-2">Cadeau anniversaire Manon</p>
+          <p class="font-body text-sm text-ink/60">Week-end à Annecy ? Regarder les hôtels.</p>
+          <p class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/30 mt-3">Lundi</p>
+        </div>
+      </div>
+
+      <!-- DISPOSITION - V2 Liste pleine largeur -->
+      <div data-variant-group="disposition" data-variant="2" data-mockup-id="notes-pleine-largeur" class="bg-white rounded-card shadow-card divide-y divide-ink/5" style="display:none">
+        <div class="flex items-center gap-4 px-5 py-3">
+          <span class="text-accent">＋</span>
+          <span class="font-body text-sm text-ink/40 flex-1">Note rapide...</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-3">
+          <span class="font-body text-sm text-ink flex-1">Liste de courses — bananes, pommes, fraises...</span>
+          <span class="font-mono text-[10px] uppercase tracking-[.04em] text-accent">Épinglée</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-3">
+          <span class="font-body text-sm text-ink flex-1">Idées MyDay — vue semaine, widget mobile...</span>
+          <span class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/30">Hier</span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-3">
+          <span class="font-body text-sm text-ink flex-1">Cadeau anniversaire Manon — week-end à Annecy ?</span>
+          <span class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/30">Lundi</span>
+        </div>
+      </div>
+    </main>
+
+    <div data-include="../shared/components/fraicheur.html"></div>
+  </body>
+</html>

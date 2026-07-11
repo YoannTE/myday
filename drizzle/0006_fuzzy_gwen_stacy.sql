@@ -1,0 +1,2 @@
+ALTER TABLE "user_preferences" ADD COLUMN "brief_tone" text DEFAULT 'neutre' NOT NULL;--> statement-breakpoint
+ALTER TABLE "user_preferences" ADD CONSTRAINT "user_preferences_brief_tone_check" CHECK ("user_preferences"."brief_tone" IN ('neutre', 'motivant', 'direct'));

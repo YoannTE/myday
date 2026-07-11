@@ -1,0 +1,12 @@
+# Dependances sans version pinee : pip installe la derniere stable
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+asyncpg
+httpx
+boto3
+python-dotenv
+ruff
+pytest
+pytest-asyncio

@@ -1,0 +1,125 @@
+{
+  "id": 0,
+  "name": "Lettre du matin",
+  "default": {
+    "palette": "sable",
+    "typo": "fraunces",
+    "mode": "light",
+    "density": "aere"
+  },
+  "palettes": [
+    {
+      "id": "sable",
+      "name": "Sable & Terracotta",
+      "bg": "#f4ede2",
+      "ink": "#1a1815",
+      "accent": "#b4461e",
+      "soft": "#d8cdb8"
+    },
+    {
+      "id": "or-brule",
+      "name": "Encre & Or brûlé",
+      "bg": "#faf8f1",
+      "ink": "#303440",
+      "accent": "#b5914a",
+      "soft": "#dcdee5"
+    },
+    {
+      "id": "vert",
+      "name": "Marbre & Vert Reborn",
+      "bg": "#fbf9f5",
+      "ink": "#1a1a1a",
+      "accent": "#2c8265",
+      "soft": "#e5e1da"
+    },
+    {
+      "id": "olive",
+      "name": "Lait & Olive",
+      "bg": "#faf8f1",
+      "ink": "#0f1310",
+      "accent": "#5e7548",
+      "soft": "#e3e1d4"
+    },
+    {
+      "id": "vermillon",
+      "name": "Craie & Vermillon",
+      "bg": "#fcfaf5",
+      "ink": "#1a0c0a",
+      "accent": "#d94f32",
+      "soft": "#e7e3dc"
+    }
+  ],
+  "typos": [
+    {
+      "id": "fraunces",
+      "name": "Fraunces",
+      "family": "\"Fraunces\", serif"
+    },
+    {
+      "id": "cabinet",
+      "name": "Cabinet Grotesk",
+      "family": "\"Cabinet Grotesk\", sans-serif"
+    },
+    {
+      "id": "gambarino",
+      "name": "Gambarino",
+      "family": "\"Gambarino\", Georgia, serif"
+    }
+  ],
+  "slots": [
+    {
+      "id": "topbar",
+      "label": "Bandeau",
+      "variants": [
+        { "id": "01", "name": "Masthead journal" },
+        { "id": "02", "name": "Minimal flottant" },
+        { "id": "03", "name": "Rubrique latérale" }
+      ]
+    },
+    {
+      "id": "brief",
+      "label": "Brief IA",
+      "variants": [
+        { "id": "01", "name": "Lettre pleine largeur" },
+        { "id": "02", "name": "Carte encadrée" },
+        { "id": "03", "name": "Bandeau horizon" }
+      ]
+    },
+    {
+      "id": "planning",
+      "label": "Planning",
+      "variants": [
+        { "id": "01", "name": "Timeline filet" },
+        { "id": "02", "name": "Blocs horaires" },
+        { "id": "03", "name": "Ordre du jour" }
+      ]
+    },
+    {
+      "id": "todo",
+      "label": "Tâches",
+      "variants": [
+        { "id": "01", "name": "Liste cochable éditoriale" },
+        { "id": "02", "name": "Cartes tâches" },
+        { "id": "03", "name": "Compacte numérotée" }
+      ]
+    },
+    {
+      "id": "mails",
+      "label": "Courrier",
+      "variants": [
+        { "id": "01", "name": "Courrier du jour" },
+        { "id": "02", "name": "Cartes résumé" },
+        { "id": "03", "name": "Digest groupé" }
+      ]
+    },
+    {
+      "id": "assistant",
+      "label": "Assistant",
+      "variants": [
+        { "id": "01", "name": "Barre de dépêche" },
+        { "id": "02", "name": "Bulle flottante" },
+        { "id": "03", "name": "Encart rédaction" }
+      ]
+    }
+  ]
+}

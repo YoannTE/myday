@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyDay — Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../shared/tailwind-tokens.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+    <link rel="stylesheet" href="../shared/design-system.css" />
+    <link rel="stylesheet" href="../shared/base.css" />
+    <script src="../shared/components-loader.js" defer></script>
+    <script>
+      window.__TWEAKS__ = {
+        variants: {
+          fil: {
+            label: "Fil de conversation",
+            options: ["Bulles + actions", "Timeline d'actions", "Compact"],
+          },
+          validation: {
+            label: "Carte de validation",
+            options: ["Brouillon complet", "Résumé + déplier", "Plein écran focus"],
+          },
+          saisie: {
+            label: "Zone de saisie",
+            options: ["Barre + suggestions", "Barre simple", "Grande zone"],
+          },
+        },
+      };
+    </script>
+    <script src="../shared/tweaks-panel.js" defer></script>
+  </head>
+  <body class="bg-bg text-ink font-body min-h-screen">
+    <div data-include="../shared/components/navbar.html"></div>
+
+    <main class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10 pb-40">
+      <a href="dashboard.html" class="inline-flex items-center gap-2 font-body text-sm text-ink/50 hover:text-accent transition-colors mb-4" data-mockup-id="retour-cockpit">← Cockpit</a>
+      <h1 class="font-display font-extrabold text-ink text-xl md:text-2xl tracking-[-0.02em] mb-6" data-mockup-id="assistant-titre">Assistant</h1>
+
+      <!-- FIL - V0 Bulles + actions -->
+      <div data-variant-group="fil" data-variant="0" data-mockup-id="fil-bulles" class="flex flex-col gap-4 fade-in">
+        <!-- Échange 1 : note -->
+        <div class="self-end max-w-md rounded-card cta-gradient text-white px-5 py-3" data-mockup-id="message-user-note">
+          <p class="font-body text-sm">Prends une note : liste de courses — bananes, pommes, fraises</p>
+        </div>
+        <div class="self-start max-w-md" data-mockup-id="message-assistant-note">
+          <div class="bg-white rounded-card shadow-card px-5 py-3">
+            <p class="font-body text-sm text-ink">C'est noté ! Ta liste de courses est créée et épinglée.</p>
+          </div>
+          <div class="flex items-center gap-2 mt-2 ml-1">
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-accent bg-soft rounded-full px-2 py-0.5">✓ Note créée</span>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/30">09:14</span>
+          </div>
+        </div>
+
+        <!-- Échange 2 : événement -->
+        <div class="self-end max-w-md rounded-card cta-gradient text-white px-5 py-3" data-mockup-id="message-user-rdv">
+          <p class="font-body text-sm">Ajoute l'ostéopathe vendredi 10 juillet à 19h</p>
+        </div>
+        <div class="self-start max-w-md" data-mockup-id="message-assistant-rdv">
+          <div class="bg-white rounded-card shadow-card px-5 py-3">
+            <p class="font-body text-sm text-ink">C'est calé : ostéopathe vendredi 10 juillet à 19h, ajouté à ton planning et à Google Agenda.</p>
+          </div>
+          <div class="flex items-center gap-2 mt-2 ml-1">
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-accent bg-soft rounded-full px-2 py-0.5">✓ Événement ajouté</span>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/30">09:15</span>
+          </div>
+        </div>
+
+        <!-- Échange 3 : mail avec VALIDATION HITL -->
+        <div class="self-end max-w-md rounded-card cta-gradient text-white px-5 py-3" data-mockup-id="message-user-mail">
+          <p class="font-body text-sm">Réponds au comptable que je valide le solde</p>
+        </div>
+        <div class="self-start w-full max-w-lg" data-mockup-id="message-assistant-brouillon">
+          <div class="bg-white rounded-card shadow-card px-5 py-3 mb-3">
+            <p class="font-body text-sm text-ink">Voici le brouillon — rien ne part sans ton accord.</p>
+          </div>
+
+          <!-- CARTE VALIDATION - V0 Brouillon complet -->
+          <div data-variant-group="validation" data-variant="0" data-mockup-id="carte-validation-complete" class="bg-white rounded-card shadow-card border-2 border-accent/30 overflow-hidden">
+            <div class="px-5 py-3 bg-soft flex items-center gap-2">
+              <span class="font-mono text-[10px] uppercase tracking-[.04em] text-accent">Brouillon en attente de ta validation</span>
+              <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/40 ml-auto">Expire dans 23 h 58</span>
+            </div>
+            <div class="px-5 py-4">
+              <p class="font-body text-xs text-ink/50 mb-1">À : <span class="text-ink">comptable@cabinet-durand.fr</span></p>
+              <p class="font-body text-xs text-ink/50 mb-3">Objet : <span class="text-ink font-medium">Re: Solde à valider</span></p>
+              <div class="rounded-inner bg-bg px-4 py-3 font-body text-sm text-ink/80 leading-relaxed" data-mockup-id="brouillon-corps">
+                <p>Bonjour Marc,</p>
+                <p class="mt-2">Je valide le solde du compte pro, tu peux lancer le virement des charges de juillet.</p>
+                <p class="mt-2">Bonne journée,<br />Yoann</p>
+              </div>
+            </div>
+            <div class="px-5 py-4 border-t border-ink/5 flex flex-wrap items-center gap-2" data-mockup-id="brouillon-actions">
+              <button class="cta-gradient text-white font-display font-semibold rounded-inner px-5 py-2.5 text-sm">Approuver et envoyer</button>
+              <button class="bg-soft text-ink/70 font-body rounded-inner px-4 py-2.5 text-sm">Modifier</button>
+              <button class="bg-white border border-ink/10 text-ink/50 font-body rounded-inner px-4 py-2.5 text-sm">Refuser</button>
+            </div>
+          </div>
+          <!-- CARTE VALIDATION - V1 Résumé + déplier -->
+          <div data-variant-group="validation" data-variant="1" data-mockup-id="carte-validation-resume" class="bg-white rounded-card shadow-card border border-accent/30 px-5 py-4" style="display:none">
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-accent mb-2">Brouillon prêt</p>
+            <p class="font-body text-sm text-ink mb-1"><strong class="font-semibold">Re: Solde à valider</strong> → comptable@cabinet-durand.fr</p>
+            <p class="font-body text-xs text-ink/50 mb-3 truncate">« Bonjour Marc, je valide le solde du compte pro... »</p>
+            <div class="flex items-center gap-2">
+              <button class="cta-gradient text-white font-display font-semibold rounded-inner px-4 py-2 text-xs">Approuver</button>
+              <button class="bg-soft text-ink/70 font-body rounded-inner px-3 py-2 text-xs">Voir et modifier</button>
+              <button class="text-ink/40 font-body text-xs px-2">Refuser</button>
+            </div>
+          </div>
+          <!-- CARTE VALIDATION - V2 Plein écran focus -->
+          <div data-variant-group="validation" data-variant="2" data-mockup-id="carte-validation-focus" class="rounded-card cta-gradient p-1" style="display:none">
+            <div class="bg-white rounded-[12px] p-5">
+              <p class="font-display font-bold text-ink tracking-[-0.02em] mb-3">Relis avant d'envoyer</p>
+              <p class="font-body text-xs text-ink/50 mb-1">À : comptable@cabinet-durand.fr · Re: Solde à valider</p>
+              <p class="font-body text-sm text-ink/80 mb-4">Bonjour Marc, je valide le solde du compte pro, tu peux lancer le virement des charges de juillet. Bonne journée, Yoann</p>
+              <div class="grid grid-cols-3 gap-2">
+                <button class="cta-gradient text-white font-display font-semibold rounded-inner py-2.5 text-sm">Envoyer</button>
+                <button class="bg-soft text-ink/70 font-body rounded-inner py-2.5 text-sm">Modifier</button>
+                <button class="bg-white border border-ink/10 text-ink/50 font-body rounded-inner py-2.5 text-sm">Refuser</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FIL - V1 Timeline d'actions -->
+      <div data-variant-group="fil" data-variant="1" data-mockup-id="fil-timeline" class="flex-col gap-3" style="display:none">
+        <div class="bg-white rounded-card shadow-card divide-y divide-ink/5">
+          <div class="px-5 py-3 flex items-center gap-3">
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/30 w-12">09:14</span>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-accent bg-soft rounded-full px-2 py-0.5">Note</span>
+            <span class="font-body text-sm text-ink">Liste de courses créée et épinglée</span>
+          </div>
+          <div class="px-5 py-3 flex items-center gap-3">
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/30 w-12">09:15</span>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-accent bg-soft rounded-full px-2 py-0.5">Agenda</span>
+            <span class="font-body text-sm text-ink">Ostéopathe ajouté vendredi 19:00</span>
+          </div>
+          <div class="px-5 py-3 flex items-center gap-3 bg-soft/60">
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/30 w-12">09:16</span>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-white bg-accent rounded-full px-2 py-0.5">Mail</span>
+            <span class="font-body text-sm text-ink">Brouillon pour le comptable — en attente de validation</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FIL - V2 Compact -->
+      <div data-variant-group="fil" data-variant="2" data-mockup-id="fil-compact" class="flex-col gap-2 font-body text-sm" style="display:none">
+        <p class="text-ink/50"><span class="text-ink font-medium">Toi :</span> Prends une note : liste de courses...</p>
+        <p class="text-ink/70"><span class="text-accent font-medium">Assistant :</span> ✓ Note créée et épinglée.</p>
+        <p class="text-ink/50"><span class="text-ink font-medium">Toi :</span> Ajoute l'ostéopathe vendredi à 19h</p>
+        <p class="text-ink/70"><span class="text-accent font-medium">Assistant :</span> ✓ Événement ajouté (planning + Google).</p>
+        <p class="text-ink/50"><span class="text-ink font-medium">Toi :</span> Réponds au comptable que je valide le solde</p>
+        <p class="text-ink/70"><span class="text-accent font-medium">Assistant :</span> Brouillon prêt — en attente de ta validation.</p>
+      </div>
+    </main>
+
+    <!-- SAISIE - V0 Barre + suggestions -->
+    <div data-variant-group="saisie" data-variant="0" data-mockup-id="saisie-suggestions" class="fixed bottom-0 inset-x-0 bg-bg/95 border-t border-ink/5 py-4">
+      <div class="max-w-4xl mx-auto px-4 md:px-6">
+        <div class="flex flex-wrap gap-2 mb-3">
+          <span class="rounded-full bg-soft px-3 py-1.5 font-body text-xs text-ink/60">« Quelles sont mes priorités ? »</span>
+          <span class="rounded-full bg-soft px-3 py-1.5 font-body text-xs text-ink/60">« Cale un padel dimanche 10h30 »</span>
+          <span class="rounded-full bg-soft px-3 py-1.5 font-body text-xs text-ink/60">« Résume le mail d'AEVIO »</span>
+        </div>
+        <div class="rounded-full bg-white border border-accent/20 shadow-card px-4 py-3 flex items-center gap-3">
+          <span class="w-6 h-6 rounded-full cta-gradient text-white flex items-center justify-center text-xs font-display font-semibold flex-shrink-0">→</span>
+          <span class="font-body text-sm text-ink/40 flex-1">Dis-moi quoi faire...</span>
+          <span class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/30 bg-soft rounded-full px-2 py-0.5">⌘K</span>
+        </div>
+      </div>
+    </div>
+    <!-- SAISIE - V1 Barre simple -->
+    <div data-variant-group="saisie" data-variant="1" data-mockup-id="saisie-simple" class="fixed bottom-0 inset-x-0 bg-bg/95 border-t border-ink/5 py-4" style="display:none">
+      <div class="max-w-4xl mx-auto px-4 md:px-6">
+        <div class="rounded-full bg-white border border-accent/20 shadow-card px-4 py-3 flex items-center gap-3">
+          <span class="font-body text-sm text-ink/40 flex-1">Écris à ton assistant...</span>
+          <span class="w-8 h-8 rounded-full cta-gradient text-white flex items-center justify-center">→</span>
+        </div>
+      </div>
+    </div>
+    <!-- SAISIE - V2 Grande zone -->
+    <div data-variant-group="saisie" data-variant="2" data-mockup-id="saisie-grande" class="fixed bottom-0 inset-x-0 bg-bg/95 border-t border-ink/5 py-4" style="display:none">
+      <div class="max-w-4xl mx-auto px-4 md:px-6">
+        <div class="bg-white rounded-card shadow-card border border-accent/20 px-5 py-4">
+          <p class="font-body text-sm text-ink/40 mb-3">Décris ce que tu veux — plusieurs actions possibles dans un seul message...</p>
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/30">Entrée pour envoyer</span>
+            <button class="cta-gradient text-white font-display font-semibold rounded-inner px-4 py-2 text-sm">Envoyer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

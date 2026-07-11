@@ -1,0 +1,24 @@
+# Reborn Agents Core (URL + clé API du tenant - donnés par /provision-tenant) :
+# AGENT_PLATFORM_URL doit inclure le préfixe path exposé par ton reverse proxy.
+# Pour la prod Reborn : https://agents.reborn.dev/api
+# Le SDK construit {URL}/v1/..., donc l'URL doit pointer vers la base sous
+# laquelle l'API /v1/... est servie (et non vers la racine du domaine, sinon
+# Traefik route vers le frontend Next.js et le SDK plante sur du HTML).
+AGENT_PLATFORM_URL=REMPLACE_MOI
+AGENT_PLATFORM_API_KEY=REMPLACE_MOI
+
+# ============================================================================
+# DEV LOCAL : la valeur ci-dessous fonctionne avec le docker-compose du projet.
+# La BDD dbos_local est auto-créée par le service dbos-init au démarrage.
+# ============================================================================
+# !!! PROD : OBLIGATOIRE de remplacer par la DSN fournie par /provision-tenant !!!
+# !!! Sinon le backend plante au boot avec "connection refused localhost:5433"  !!!
+# Format prod : postgresql://client_<slug>:<pwd>@<host-core>:6432/client_<slug>_dbos_sys
+# ============================================================================
+AGENT_PLATFORM_DATABASE_URL=postgresql://app_admin:app_password_dev@localhost:5433/dbos_local
+
+# Identité tenant (UUID, donné par /provision-tenant) :
+AGENT_PLATFORM_TENANT_ID=REMPLACE_MOI
+
+# Nom de l'app cliente (libre, pour observabilité - tu peux remplacer le slug par défaut) :
+AGENT_PLATFORM_APP_NAME=REMPLACE_MOI

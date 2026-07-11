@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(npx *)",
+      "Bash(mkdir *)",
+      "Bash(curl *)",
+      "Bash(git *)"
+    ],
+    "deny": ["Bash(rm -rf *)", "Bash(sudo *)"]
+  },
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}

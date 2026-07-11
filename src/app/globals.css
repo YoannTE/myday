@@ -1,26 +1,209 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Mode sombre pilote par l'attribut html[data-mode="dark"] (bouton toggle
+   dans la navbar, persistance localStorage - cf. dark-mode-toggle.tsx) */
+@custom-variant dark (&:is([data-mode="dark"] *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+
+  /* Tokens AEVIO One bruts (source de verite : .project/design.md) */
+  --color-bg: var(--bg);
+  --color-ink: var(--ink);
+  --color-soft: var(--soft);
+  --color-success: var(--success);
+
+  --font-display: var(--font-plus-jakarta);
+  --font-body: var(--font-plus-jakarta);
+  --font-sans: var(--font-plus-jakarta);
+  --font-heading: var(--font-plus-jakarta);
+  --font-mono: var(--font-jetbrains-mono);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Rayons AEVIO One nommes (utilises tels quels dans les mockups) */
+  --radius-card: 14px;
+  --radius-inner: 12px;
+
+  --shadow-card:
+    0 1px 2px rgba(17, 26, 55, 0.04), 0 24px 48px -32px rgba(17, 26, 55, 0.28);
+  --shadow-cta: 0 10px 22px -8px rgba(47, 98, 255, 0.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  /* Tokens AEVIO One (direction validee - .project/design.md) */
+  --bg: #f5f7fb;
+  --ink: #111a37;
+  --accent: #2350e6;
+  --soft: #eaf0ff;
+  --success: var(--accent); /* aucun vert dans l'app (decision utilisateur) */
+  --surface: #ffffff;
+
+  /* Mapping semantique shadcn -> tokens AEVIO One */
+  --background: var(--bg);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--accent);
+  --primary-foreground: #ffffff;
+  --secondary: var(--soft);
+  --secondary-foreground: var(--ink);
+  --muted: var(--soft);
+  --muted-foreground: color-mix(in srgb, var(--ink) 55%, transparent);
+  --accent-foreground: #ffffff;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: color-mix(in srgb, var(--ink) 10%, transparent);
+  --input: color-mix(in srgb, var(--ink) 14%, transparent);
+  --ring: color-mix(in srgb, var(--accent) 45%, transparent);
+  --radius: 12px;
+
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--accent);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--soft);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: color-mix(in srgb, var(--ink) 10%, transparent);
+  --sidebar-ring: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* Mode sombre (bouton ☾ dans la barre du haut) */
+html[data-mode="dark"] {
+  --bg: #0c1024;
+  --ink: #eef1fb;
+  --soft: #1a2140;
+  --surface: #141a35;
+}
+
+/* Responsive mobile : base reduite sous 640px (regle validee design.md) */
+@media (max-width: 640px) {
+  html {
+    font-size: 13.5px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+    transition:
+      background 0.4s ease,
+      color 0.4s ease;
+  }
+}
+
+/* -- Utilitaires AEVIO One (transposition fidele de
+   .project/mockups/shared/design-system.css) -- */
+.cta-gradient {
+  background: linear-gradient(180deg, #3a6bff, #2350e6);
+  box-shadow: 0 10px 22px -8px rgba(47, 98, 255, 0.6);
+}
+
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.label-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* -- Animations globales -- */
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.25);
+  }
+}
+.pulse-now {
+  animation: pulse-soft 2.4s ease-in-out infinite;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-in {
+  animation: fade-in-up 0.7s ease-out both;
+}
+.delay-1 {
+  animation-delay: 0.05s;
+}
+.delay-2 {
+  animation-delay: 0.12s;
+}
+.delay-3 {
+  animation-delay: 0.19s;
+}
+.delay-4 {
+  animation-delay: 0.26s;
+}
+.delay-5 {
+  animation-delay: 0.33s;
+}
+.delay-6 {
+  animation-delay: 0.4s;
 }

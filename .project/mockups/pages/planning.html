@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyDay — Planning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../shared/tailwind-tokens.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+    <link rel="stylesheet" href="../shared/design-system.css" />
+    <link rel="stylesheet" href="../shared/base.css" />
+    <script src="../shared/components-loader.js" defer></script>
+    <script>
+      window.__TWEAKS__ = {
+        variants: {
+          entete: {
+            label: "En-tête planning",
+            options: ["Navigation semaine", "Compact avec stats", "Onglets Jour/Semaine"],
+          },
+          vue: {
+            label: "Vue calendrier",
+            options: ["Semaine en colonnes", "Jour en timeline", "Liste par jour"],
+          },
+          creation: {
+            label: "Création d'événement",
+            options: ["Bouton en en-tête", "Bouton flottant", "Ligne de saisie rapide"],
+          },
+        },
+      };
+    </script>
+    <script src="../shared/tweaks-panel.js" defer></script>
+  </head>
+  <body class="bg-bg text-ink font-body min-h-screen">
+    <div data-include="../shared/components/navbar.html"></div>
+
+    <main class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10">
+      <a href="dashboard.html" class="inline-flex items-center gap-2 font-body text-sm text-ink/50 hover:text-accent transition-colors mb-4" data-mockup-id="retour-cockpit">← Cockpit</a>
+      <!-- ENTÊTE - V0 Navigation semaine -->
+      <div data-variant-group="entete" data-variant="0" data-mockup-id="planning-entete-nav" class="flex flex-wrap items-center gap-3 mb-6 fade-in">
+        <h1 class="font-display font-extrabold text-ink text-xl md:text-2xl tracking-[-0.02em]">Planning</h1>
+        <div class="flex items-center gap-2 ml-auto">
+          <button class="w-8 h-8 rounded-inner bg-white shadow-card text-ink/60">‹</button>
+          <span class="font-mono text-xs uppercase tracking-[.04em] text-ink/60 px-2">Semaine du 6 au 12 juillet</span>
+          <button class="w-8 h-8 rounded-inner bg-white shadow-card text-ink/60">›</button>
+        </div>
+        <div data-variant-group="creation" data-variant="0" data-mockup-id="creation-bouton-entete">
+          <button class="cta-gradient text-white font-display font-semibold rounded-inner px-4 py-2 text-sm">+ Événement</button>
+        </div>
+      </div>
+      <!-- ENTÊTE - V1 Compact avec stats -->
+      <div data-variant-group="entete" data-variant="1" data-mockup-id="planning-entete-stats" class="items-center gap-4 mb-6" style="display:none">
+        <h1 class="font-display font-extrabold text-ink text-xl md:text-2xl tracking-[-0.02em]">Planning</h1>
+        <span class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40">7 événements cette semaine · 3 aujourd'hui</span>
+      </div>
+      <!-- ENTÊTE - V2 Onglets Jour/Semaine -->
+      <div data-variant-group="entete" data-variant="2" data-mockup-id="planning-entete-onglets" class="items-center gap-4 mb-6" style="display:none">
+        <h1 class="font-display font-extrabold text-ink text-xl md:text-2xl tracking-[-0.02em] mr-4">Planning</h1>
+        <div class="inline-flex bg-white rounded-full shadow-card p-1">
+          <span class="rounded-full cta-gradient text-white font-body text-sm px-4 py-1.5">Jour</span>
+          <span class="rounded-full font-body text-sm text-ink/50 px-4 py-1.5">Semaine</span>
+        </div>
+      </div>
+
+      <!-- VUE - V0 Semaine en colonnes -->
+      <div data-variant-group="vue" data-variant="0" data-mockup-id="vue-semaine-colonnes" class="bg-white rounded-card shadow-card p-4 md:p-6 overflow-x-auto fade-in delay-1">
+        <div class="grid grid-cols-7 gap-3 min-w-[900px]">
+          <div>
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-3 text-center">Lun 6</p>
+            <div class="rounded-inner bg-soft px-3 py-2.5 mb-2">
+              <p class="font-mono text-[10px] text-ink/40">09:00</p>
+              <p class="font-body text-xs text-ink">Point équipe</p>
+            </div>
+          </div>
+          <div>
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-3 text-center">Mar 7</p>
+            <div class="rounded-inner bg-soft px-3 py-2.5 mb-2">
+              <p class="font-mono text-[10px] text-ink/40">12:30</p>
+              <p class="font-body text-xs text-ink">Déjeuner client</p>
+            </div>
+          </div>
+          <div>
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-3 text-center">Mer 8</p>
+          </div>
+          <div>
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-3 text-center">Jeu 9</p>
+            <div class="rounded-inner bg-soft px-3 py-2.5 mb-2">
+              <p class="font-mono text-[10px] text-ink/40">17:00</p>
+              <p class="font-body text-xs text-ink">Appel Manon</p>
+            </div>
+          </div>
+          <div class="rounded-inner bg-soft/50 border border-accent/20 p-1">
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-accent mb-3 text-center mt-2">Ven 10 · Auj.</p>
+            <div class="rounded-inner bg-white shadow-card px-3 py-2.5 mb-2" data-mockup-id="event-point-equipe">
+              <p class="font-mono text-[10px] text-ink/40">09:30</p>
+              <p class="font-body text-xs text-ink">Point équipe</p>
+            </div>
+            <div class="rounded-inner border-2 border-accent/40 bg-white px-3 py-2.5 mb-2" data-mockup-id="event-reunion-aevio">
+              <p class="font-mono text-[10px] text-accent flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-accent pulse-now inline-block"></span>14:00</p>
+              <p class="font-body text-xs text-ink">Réunion client AEVIO</p>
+            </div>
+            <div class="rounded-inner bg-white shadow-card px-3 py-2.5 mb-2" data-mockup-id="event-padel">
+              <p class="font-mono text-[10px] text-ink/40">18:00</p>
+              <p class="font-body text-xs text-ink">Padel avec Julien</p>
+            </div>
+            <div class="rounded-inner bg-white shadow-card px-3 py-2.5 mb-2" data-mockup-id="event-osteopathe">
+              <p class="font-mono text-[10px] text-ink/40">19:00</p>
+              <p class="font-body text-xs text-ink">Ostéopathe</p>
+              <span class="font-mono text-[9px] uppercase tracking-[.04em] text-accent bg-soft rounded-full px-1.5 py-0.5 inline-block mt-1">via l'assistant</span>
+            </div>
+          </div>
+          <div>
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-3 text-center">Sam 11</p>
+            <div class="rounded-inner bg-soft px-3 py-2.5 mb-2" data-mockup-id="event-diner-manon">
+              <p class="font-mono text-[10px] text-ink/40">20:00</p>
+              <p class="font-body text-xs text-ink">Dîner chez Manon</p>
+              <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/50 bg-white border border-ink/10 rounded-full px-1.5 py-0.5 inline-block mt-1">Non synchronisé</span>
+            </div>
+          </div>
+          <div>
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-3 text-center">Dim 12</p>
+            <div class="rounded-inner bg-soft px-3 py-2.5 mb-2">
+              <p class="font-mono text-[10px] text-ink/40">10:30</p>
+              <p class="font-body text-xs text-ink">Padel Club — tournoi</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VUE - V1 Jour en timeline -->
+      <div data-variant-group="vue" data-variant="1" data-mockup-id="vue-jour-timeline" class="bg-white rounded-card shadow-card p-6 max-w-3xl" style="display:none">
+        <p class="font-mono text-[11px] uppercase tracking-[.04em] text-accent mb-5">Vendredi 10 juillet · Aujourd'hui</p>
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center gap-4">
+            <span class="font-mono text-xs text-ink/40 w-16">09:30</span>
+            <div class="flex-1 rounded-inner bg-soft px-4 py-3"><span class="font-body text-ink">Point équipe</span></div>
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="font-mono text-xs text-accent w-16 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-accent pulse-now inline-block"></span>14:00</span>
+            <div class="flex-1 rounded-inner border-2 border-accent/30 px-4 py-3">
+              <p class="font-body text-ink">Réunion client AEVIO</p>
+              <p class="font-mono text-[11px] uppercase tracking-[.04em] text-accent mt-1">Aucun ordre du jour</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="font-mono text-xs text-ink/40 w-16">18:00</span>
+            <div class="flex-1 rounded-inner bg-soft px-4 py-3"><span class="font-body text-ink">Padel avec Julien</span></div>
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="font-mono text-xs text-ink/40 w-16">19:00</span>
+            <div class="flex-1 rounded-inner bg-soft px-4 py-3 flex items-center justify-between">
+              <span class="font-body text-ink">Ostéopathe</span>
+              <span class="font-mono text-[9px] uppercase tracking-[.04em] text-accent bg-white rounded-full px-2 py-0.5">via l'assistant</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VUE - V2 Liste par jour -->
+      <div data-variant-group="vue" data-variant="2" data-mockup-id="vue-liste-jours" class="max-w-3xl flex-col gap-5" style="display:none">
+        <div class="mb-5">
+          <p class="font-mono text-[11px] uppercase tracking-[.04em] text-accent mb-2">Vendredi 10 · Aujourd'hui</p>
+          <div class="bg-white rounded-card shadow-card divide-y divide-ink/5">
+            <div class="flex items-center gap-4 px-5 py-3"><span class="font-mono text-xs text-ink/40 w-14">09:30</span><span class="font-body text-sm text-ink">Point équipe</span></div>
+            <div class="flex items-center gap-4 px-5 py-3 bg-soft/60"><span class="font-mono text-xs text-accent w-14">14:00</span><span class="font-body text-sm text-ink">Réunion client AEVIO — sans ordre du jour</span></div>
+            <div class="flex items-center gap-4 px-5 py-3"><span class="font-mono text-xs text-ink/40 w-14">18:00</span><span class="font-body text-sm text-ink">Padel avec Julien</span></div>
+            <div class="flex items-center gap-4 px-5 py-3"><span class="font-mono text-xs text-ink/40 w-14">19:00</span><span class="font-body text-sm text-ink">Ostéopathe</span></div>
+          </div>
+        </div>
+        <div>
+          <p class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 mb-2">Samedi 11</p>
+          <div class="bg-white rounded-card shadow-card px-5 py-3 flex items-center gap-4">
+            <span class="font-mono text-xs text-ink/40 w-14">20:00</span><span class="font-body text-sm text-ink">Dîner chez Manon</span>
+            <span class="font-mono text-[9px] uppercase tracking-[.04em] text-ink/50 bg-soft rounded-full px-2 py-0.5 ml-auto">Non synchronisé</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CRÉATION - V1 Bouton flottant -->
+      <div data-variant-group="creation" data-variant="1" data-mockup-id="creation-bouton-flottant" style="display:none">
+        <button class="fixed bottom-8 right-8 w-14 h-14 rounded-full cta-gradient text-white text-2xl font-display">+</button>
+      </div>
+      <!-- CRÉATION - V2 Ligne de saisie rapide -->
+      <div data-variant-group="creation" data-variant="2" data-mockup-id="creation-saisie-rapide" class="mt-5 max-w-3xl" style="display:none">
+        <div class="bg-white rounded-card shadow-card border border-accent/15 px-5 py-3.5 flex items-center gap-3">
+          <span class="text-accent font-semibold">＋</span>
+          <span class="font-body text-sm text-ink/40 flex-1">Ajoute un événement — « padel dimanche 10h30 »...</span>
+        </div>
+      </div>
+    </main>
+
+    <div data-include="../shared/components/fraicheur.html"></div>
+  </body>
+</html>

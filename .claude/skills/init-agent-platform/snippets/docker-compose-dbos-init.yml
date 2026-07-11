@@ -1,0 +1,35 @@
+# Snippet : service one-shot dbos-init à insérer dans le docker-compose.yml du projet cible.
+#
+# Pré-requis : ${POSTGRES_USER} doit avoir CREATEDB. Par défaut, l'image
+# postgres:16-alpine lui donne SUPERUSER (donc CREATEDB). Si tu as personnalisé
+# les droits, ajoute GRANT CREATEDB TO ${POSTGRES_USER}; dans ton script d'init.
+#
+# Nom du service postgres : ce snippet suppose que le service s'appelle "postgres"
+# (défaut du template kit). Si tu as renommé le service (ex: "db:"), adapte
+# depends_on et l'argument -h du psql en conséquence.
+#
+# Variables d'interpolation : ${POSTGRES_USER:-app_admin} et
+# ${POSTGRES_PASSWORD:-app_password_dev} utilisent les valeurs par défaut du
+# template kit. Si tu les as personnalisées dans .env.local, Docker Compose les
+# lira automatiquement (interpolation native).
+#
+# Idempotence : pattern `SELECT 1 ... || CREATE DATABASE`. Le container termine
+# en Exited (0) à chaque exécution, jamais en Exited (1), même si dbos_local
+# existe déjà. Postgres ne supporte pas CREATE DATABASE IF NOT EXISTS nativement.
+#
+# Ce container apparaîtra en Exited (0) après exécution - comportement normal
+# pour un container one-shot.
+
+dbos-init:
+  image: postgres:16-alpine
+  depends_on:
+    postgres:
+      condition: service_healthy
+  environment:
+    PGPASSWORD: ${POSTGRES_PASSWORD:-app_password_dev}
+  entrypoint: >
+    sh -c "
+      psql -h postgres -U ${POSTGRES_USER:-app_admin} -d postgres -tc \"SELECT 1 FROM pg_database WHERE datname='dbos_local'\" | grep -q 1 ||
+      psql -h postgres -U ${POSTGRES_USER:-app_admin} -d postgres -c \"CREATE DATABASE dbos_local;\"
+    "
+  restart: "no"

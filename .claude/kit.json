@@ -1,0 +1,563 @@
+{
+  "version": "0.2.0",
+  "runner": "pi",
+  "runners": {
+    "pi": {
+      "entry": ".claude/extensions"
+    }
+  },
+  "features": [
+    {
+      "id": "agents-platform",
+      "enabled": true
+    },
+    {
+      "id": "reborn",
+      "enabled": true
+    },
+    {
+      "id": "standalone",
+      "enabled": false
+    },
+    {
+      "id": "cmux",
+      "enabled": false
+    }
+  ],
+  "phases": {
+    "start": {
+      "command": ".claude/commands/start.md"
+    },
+    "design": {
+      "command": ".claude/commands/design.md"
+    },
+    "mockup": {
+      "command": ".claude/commands/mockup.md"
+    },
+    "roadmap": {
+      "command": ".claude/commands/roadmap.md"
+    },
+    "code": {
+      "command": ".claude/commands/code.md"
+    },
+    "deploy": {
+      "command": ".claude/commands/deploy.md"
+    },
+    "feature": {
+      "command": ".claude/commands/feature.md"
+    },
+    "polish": {
+      "command": ".claude/commands/polish.md"
+    }
+  },
+  "agents": [
+    {
+      "id": "agent-detail-writer",
+      "path": ".claude/agents/agent-detail-writer.md",
+      "feature": "agents-platform"
+    },
+    {
+      "id": "agent-graph-designer",
+      "path": ".claude/agents/agent-graph-designer.md",
+      "feature": "agents-platform"
+    },
+    {
+      "id": "agent-platform-developer",
+      "path": ".claude/agents/agent-platform-developer.md",
+      "feature": "agents-platform"
+    },
+    {
+      "id": "runtime-boundary-reviewer",
+      "path": ".claude/agents/runtime-boundary-reviewer.md",
+      "feature": "agents-platform"
+    },
+    {
+      "id": "sdk-observability-reviewer",
+      "path": ".claude/agents/sdk-observability-reviewer.md",
+      "feature": "agents-platform"
+    },
+    {
+      "id": "architect-reviewer",
+      "path": ".claude/agents/architect-reviewer.md"
+    },
+    {
+      "id": "code-reviewer",
+      "path": ".claude/agents/code-reviewer.md"
+    },
+    {
+      "id": "direction-writer",
+      "path": ".claude/agents/direction-writer.md"
+    },
+    {
+      "id": "fastapi-developer",
+      "path": ".claude/agents/fastapi-developer.md"
+    },
+    {
+      "id": "growth-reviewer",
+      "path": ".claude/agents/growth-reviewer.md"
+    },
+    {
+      "id": "kit-migrator",
+      "path": ".claude/agents/kit-migrator.md"
+    },
+    {
+      "id": "lead-dev-reviewer",
+      "path": ".claude/agents/lead-dev-reviewer.md"
+    },
+    {
+      "id": "nextjs-developer",
+      "path": ".claude/agents/nextjs-developer.md"
+    },
+    {
+      "id": "postgres-developer",
+      "path": ".claude/agents/postgres-developer.md"
+    },
+    {
+      "id": "product-owner-reviewer",
+      "path": ".claude/agents/product-owner-reviewer.md"
+    },
+    {
+      "id": "qa-tester",
+      "path": ".claude/agents/qa-tester.md"
+    },
+    {
+      "id": "sop-writer",
+      "path": ".claude/agents/sop-writer.md"
+    },
+    {
+      "id": "code-searcher-gemini",
+      "path": ".claude/agents/code-searcher-gemini.md"
+    },
+    {
+      "id": "log-summarizer-gemini",
+      "path": ".claude/agents/log-summarizer-gemini.md"
+    },
+    {
+      "id": "structure-extractor-gemini",
+      "path": ".claude/agents/structure-extractor-gemini.md"
+    }
+  ],
+  "rules": [
+    {
+      "path": ".claude/rules/agent-platform.md",
+      "feature": "agents-platform"
+    },
+    {
+      "path": ".claude/rules/kit-contribution.md",
+      "feature": "reborn"
+    },
+    {
+      "path": ".claude/rules/api.md"
+    },
+    {
+      "path": ".claude/rules/better-auth.md"
+    },
+    {
+      "path": ".claude/rules/nextjs.md"
+    },
+    {
+      "path": ".claude/rules/postgres.md"
+    },
+    {
+      "path": ".claude/rules/python.md"
+    },
+    {
+      "path": ".claude/rules/rounds.md"
+    },
+    {
+      "path": ".claude/rules/s3-storage.md"
+    },
+    {
+      "path": ".claude/rules/ui.md"
+    },
+    {
+      "path": ".claude/rules/versioning.md"
+    }
+  ],
+  "skills": [
+    {
+      "id": "agent-memory",
+      "path": ".claude/skills/agent-memory/SKILL.md"
+    },
+    {
+      "id": "agent-graph-format",
+      "path": ".claude/skills/agent-graph-format/SKILL.md",
+      "feature": "agents-platform"
+    },
+    {
+      "id": "agent-platform-design",
+      "path": ".claude/skills/agent-platform-design/SKILL.md",
+      "feature": "agents-platform"
+    },
+    {
+      "id": "foundations-pull",
+      "path": ".claude/skills/foundations-pull/SKILL.md"
+    },
+    {
+      "id": "how-to-develop",
+      "path": ".claude/skills/how-to-develop/SKILL.md"
+    },
+    {
+      "id": "image-generation",
+      "path": ".claude/skills/image-generation/SKILL.md"
+    },
+    {
+      "id": "init-agent-platform",
+      "path": ".claude/skills/init-agent-platform/SKILL.md",
+      "feature": "agents-platform"
+    },
+    {
+      "id": "init-postgres",
+      "path": ".claude/skills/init-postgres/SKILL.md"
+    },
+    {
+      "id": "init-postgres-fastapi",
+      "path": ".claude/skills/init-postgres-fastapi/SKILL.md"
+    },
+    {
+      "id": "mockup-screens-generator",
+      "path": ".claude/skills/mockup-screens-generator/SKILL.md"
+    },
+    {
+      "id": "output-format",
+      "path": ".claude/skills/output-format/SKILL.md"
+    },
+    {
+      "id": "review",
+      "path": ".claude/skills/review/SKILL.md"
+    },
+    {
+      "id": "shadcn-ui",
+      "path": ".claude/skills/shadcn-ui/SKILL.md"
+    },
+    {
+      "id": "system-prompt",
+      "path": ".claude/skills/system-prompt/SKILL.md"
+    },
+    {
+      "id": "cmux-local",
+      "path": ".claude/skills/cmux-local/SKILL.md",
+      "feature": "cmux"
+    },
+    {
+      "id": "frontend-design",
+      "path": ".claude/skills/frontend-design/SKILL.md",
+      "source": "anthropic-official",
+      "license": "Apache-2.0"
+    }
+  ],
+  "commands": [
+    {
+      "id": "add-agents-platform",
+      "path": ".claude/commands/add-agents-platform.md",
+      "feature": "agents-platform"
+    },
+    {
+      "id": "provision-tenant",
+      "path": ".claude/commands/provision-tenant.md",
+      "feature": "agents-platform"
+    },
+    {
+      "id": "rb-update",
+      "path": ".claude/commands/rb-update.md"
+    }
+  ],
+  "tools": [
+    {
+      "name": "set_project_name",
+      "feature": "reborn",
+      "description": "Renomme le projet et crée le repo Git distant. A émettre quand le nom du client a été confirmé en Phase 1A. Ne crée PAS le projet (déjà fait au clic Nouveau projet).",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nom du projet confirmé par le client (3-100 caractères).",
+            "minLength": 3,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "update_substep_progress",
+      "feature": "reborn",
+      "description": "Met à jour la progression d'une sous-étape dans le stepper interne. Déclenche un refresh_panel_view implicite pour éviter les race conditions contre le FS watcher.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "stepId": {
+            "type": "string",
+            "description": "Identifiant de l'étape parente (ex: '01_describe', '02_style')."
+          },
+          "subStep": {
+            "type": "string",
+            "enum": [
+              "a",
+              "b",
+              "c",
+              "d"
+            ],
+            "description": "Lettre de la sous-étape."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "done"
+            ],
+            "description": "Statut courant de la sous-étape."
+          },
+          "summary": {
+            "type": "string",
+            "description": "Résumé optionnel affiché sous le label de la sous-étape."
+          }
+        },
+        "required": [
+          "stepId",
+          "subStep",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "mark_step_complete",
+      "feature": "reborn",
+      "description": "Marque la pill du stepper principal en done et met à jour la vue ProjectPage pour la pill suivante.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "stepId": {
+            "type": "string",
+            "description": "Identifiant de l'étape à marquer comme terminée (ex: '01_describe', '02_style')."
+          }
+        },
+        "required": [
+          "stepId"
+        ]
+      }
+    },
+    {
+      "name": "notify_user",
+      "feature": "reborn",
+      "description": "Affiche un toast Sonner à l'utilisateur. Si actionLabel + actionTarget sont fournis, un bouton CTA est inclus dans le toast.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "enum": [
+              "info",
+              "success",
+              "warning",
+              "error"
+            ],
+            "description": "Niveau du toast."
+          },
+          "message": {
+            "type": "string",
+            "description": "Texte du message à afficher."
+          },
+          "actionLabel": {
+            "type": "string",
+            "description": "Libellé du bouton CTA optionnel dans le toast."
+          },
+          "actionTarget": {
+            "type": "string",
+            "description": "URL ou route de destination du bouton CTA optionnel."
+          }
+        },
+        "required": [
+          "level",
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "request_user_choice",
+      "feature": "reborn",
+      "description": "Active l'ActionPanel en mode QCM pour demander un choix à l'utilisateur. La réponse est renvoyée comme tool_result. Si timeoutSeconds est défini, un message est envoyé dans le chat après expiration.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "Question posée à l'utilisateur."
+          },
+          "options": {
+            "type": "array",
+            "description": "Liste des options proposées.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Identifiant unique de l'option."
+                },
+                "label": {
+                  "type": "string",
+                  "description": "Libellé affiché de l'option."
+                },
+                "hint": {
+                  "type": "string",
+                  "description": "Description courte optionnelle de l'option."
+                }
+              },
+              "required": [
+                "id",
+                "label"
+              ]
+            },
+            "minItems": 1
+          },
+          "allowFreeText": {
+            "type": "boolean",
+            "description": "Si true, l'utilisateur peut saisir une réponse libre en plus des options."
+          },
+          "timeoutSeconds": {
+            "type": "number",
+            "description": "Délai en secondes avant expiration du choix. Un message est envoyé dans le chat si le délai est dépassé."
+          }
+        },
+        "required": [
+          "question",
+          "options"
+        ]
+      }
+    },
+    {
+      "name": "refresh_panel_view",
+      "feature": "reborn",
+      "description": "Force un re-fetch du fichier dans le MarkdownViewer. Utile si le FS watcher rate un événement.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "description": "Identifiant du projet courant."
+          },
+          "relativePath": {
+            "type": "string",
+            "description": "Chemin relatif du fichier à recharger depuis la racine du projet (ex: '.project/app.md')."
+          }
+        },
+        "required": [
+          "projectId",
+          "relativePath"
+        ]
+      }
+    },
+    {
+      "name": "notify_writing",
+      "feature": "reborn",
+      "description": "Signal d'intention d'écriture/édition. À appeler AVANT un long Write ou Edit (rédaction d'un .project/*.md complet, mockup HTML, fichier de config conséquent) pour que l'UI bascule immédiatement sur l'animation plume avec le basename du fichier - sans attendre que le contenu soit rédigé en mémoire (phase qui peut durer 30-60 s). Pour un Edit court (1-2 lignes), inutile.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Chemin (relatif ou absolu) du fichier que tu vas écrire ou éditer juste après. Le basename est affiché dans la bulle UI."
+          },
+          "summary": {
+            "type": "string",
+            "description": "Phrase courte optionnelle décrivant ce que tu vas rédiger (ex: 'rédaction du brief Phase 1A'). Non affichée actuellement, utile pour la télémétrie future."
+          }
+        },
+        "required": [
+          "file_path"
+        ]
+      }
+    },
+    {
+      "name": "notify_activity",
+      "feature": "reborn",
+      "description": "Annonce ce que tu es en train de faire pour que l'UI l'affiche dans la bulle « Reborn travaille ». À appeler au début de chaque nouvelle tâche mentale significative (changement de focus, nouvelle sous-étape, bascule entre exploration et rédaction). Préserve l'icône/kind du tool en cours (sous-agent, plume, terminal...) : seule la ligne de texte est remplacée. Si tu n'appelles pas ce tool, l'UI joue la narration générique cyclique. Marche aussi bien pour le main agent que pour un sous-agent. Cf. SOP notify-activity-pattern.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "description": "Phrase courte au présent narratif décrivant l'action en cours (ex: 'Compose le hero plein écran', 'Aligne palette et typographie', 'Relit les directions existantes'). 120 caractères max. Pas de jargon technique : ce que l'utilisateur lirait dans un magazine, pas dans un log."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "set_design_direction",
+      "feature": "reborn",
+      "description": "Persiste le choix de direction de design dans .project/design.md section '## Direction choisie' avec refs vers .project/design-directions/{idx}.html et .{idx}.png. SSoT fichier, pas de colonne BDD.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "directionIndex": {
+            "type": "number",
+            "description": "Index (0-based) de la direction de design choisie par l'utilisateur."
+          },
+          "htmlPath": {
+            "type": "string",
+            "description": "Chemin relatif du fichier HTML de la direction choisie (ex: '.project/design-directions/0.html')."
+          },
+          "pngPath": {
+            "type": "string",
+            "description": "Chemin relatif du fichier PNG de la direction choisie (ex: '.project/design-directions/0.png')."
+          }
+        },
+        "required": [
+          "directionIndex",
+          "htmlPath",
+          "pngPath"
+        ]
+      }
+    },
+    {
+      "name": "generate_image",
+      "feature": "reborn",
+      "description": "Génère une image photo-réaliste via OpenAI gpt-image-2 et la sauvegarde dans le projet courant. À UTILISER pendant /design (directions de design) et /mockup-screens (écrans HTML) pour TOUS les visuels d'illustration : héros de pages, photos d'ambiance, illustrations de features, vignettes. NE PAS générer de SVG décoratif inline à la place. Le backend Reborn applique un quota mensuel par agence et un cache par hash de prompt. Le frontend Tauri écrit le PNG dans le dossier du projet et renvoie le chemin relatif à utiliser dans le HTML (ex: <img src=\"images/hero.png\">).",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 4000,
+            "description": "Description riche de l'image à générer. Inclure sujet, style photographique, ambiance, palette, cadrage."
+          },
+          "size": {
+            "type": "string",
+            "enum": [
+              "1024x1024",
+              "1536x1024",
+              "1024x1536"
+            ],
+            "description": "Dimensions : carré (défaut), paysage hero, ou portrait."
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "hd"
+            ],
+            "description": "Qualité : 'standard' (~4 cents, suffisant mockups) ou 'hd' (~17 cents, héros finaux)."
+          },
+          "saveAs": {
+            "type": "string",
+            "minLength": 3,
+            "description": "Chemin relatif depuis racine projet où sauvegarder le PNG (ex: '.project/mockups/images/hero-home.png'). Doit finir par .png."
+          }
+        },
+        "required": [
+          "prompt",
+          "saveAs"
+        ]
+      }
+    }
+  ]
+}

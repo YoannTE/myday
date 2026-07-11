@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyDay — Bienvenue</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../shared/tailwind-tokens.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+    <link rel="stylesheet" href="../shared/design-system.css" />
+    <link rel="stylesheet" href="../shared/base.css" />
+    <script src="../shared/components-loader.js" defer></script>
+    <script>
+      window.__TWEAKS__ = {
+        variants: {
+          progression: {
+            label: "Barre de progression",
+            options: ["Étapes numérotées", "Points discrets", "Barre continue"],
+          },
+          google: {
+            label: "Étape Google",
+            options: ["Carte permissions", "Explication rassurante", "Liste simple"],
+          },
+          final: {
+            label: "Étape finale",
+            options: ["Brief prêt en scène", "Carte de redirection", "Récap checklist"],
+          },
+        },
+      };
+    </script>
+    <script src="../shared/tweaks-panel.js" defer></script>
+  </head>
+  <body class="bg-bg text-ink font-body min-h-screen">
+    <!-- En-tête onboarding -->
+    <header class="max-w-3xl mx-auto px-4 md:px-6 pt-8 md:pt-12 pb-4 fade-in" data-mockup-id="onboarding-header">
+      <div class="flex items-center gap-2 mb-8">
+        <div class="w-8 h-8 rounded-inner cta-gradient flex items-center justify-center text-white font-display font-bold text-sm">M</div>
+        <span class="font-display font-bold text-ink tracking-[-0.02em]">MyDay</span>
+      </div>
+
+      <!-- PROGRESSION - V0 Étapes numérotées -->
+      <div data-variant-group="progression" data-variant="0" data-mockup-id="progression-etapes" class="flex items-center gap-2 md:gap-4 mb-2">
+        <div class="flex items-center gap-2">
+          <span class="w-7 h-7 rounded-full cta-gradient text-white font-mono text-xs flex items-center justify-center">1</span>
+          <span class="hidden md:inline font-body text-sm text-ink font-medium">Google</span>
+        </div>
+        <div class="flex-1 h-px bg-accent/30"></div>
+        <div class="flex items-center gap-2">
+          <span class="w-7 h-7 rounded-full bg-soft text-ink/50 font-mono text-xs flex items-center justify-center">2</span>
+          <span class="hidden md:inline font-body text-sm text-ink/40">Préférences</span>
+        </div>
+        <div class="flex-1 h-px bg-ink/10"></div>
+        <div class="flex items-center gap-2">
+          <span class="w-7 h-7 rounded-full bg-soft text-ink/50 font-mono text-xs flex items-center justify-center">3</span>
+          <span class="hidden md:inline font-body text-sm text-ink/40">Sur ton téléphone</span>
+        </div>
+        <div class="flex-1 h-px bg-ink/10"></div>
+        <div class="flex items-center gap-2">
+          <span class="w-7 h-7 rounded-full bg-soft text-ink/50 font-mono text-xs flex items-center justify-center">4</span>
+          <span class="hidden md:inline font-body text-sm text-ink/40">Ton brief</span>
+        </div>
+      </div>
+      <!-- PROGRESSION - V1 Points discrets -->
+      <div data-variant-group="progression" data-variant="1" data-mockup-id="progression-points" class="items-center gap-2 mb-2" style="display:none">
+        <span class="w-2.5 h-2.5 rounded-full bg-accent inline-block"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-ink/15 inline-block"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-ink/15 inline-block"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-ink/15 inline-block"></span>
+        <span class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40 ml-2">Étape 1 sur 4</span>
+      </div>
+      <!-- PROGRESSION - V2 Barre continue -->
+      <div data-variant-group="progression" data-variant="2" data-mockup-id="progression-barre" class="mb-2" style="display:none">
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-mono text-[11px] uppercase tracking-[.04em] text-ink/40">Étape 1 sur 4 · Google</span>
+          <span class="font-mono text-[11px] uppercase tracking-[.04em] text-accent">25 %</span>
+        </div>
+        <div class="h-1.5 rounded-full bg-ink/10 overflow-hidden">
+          <div class="h-full w-1/4 cta-gradient rounded-full"></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 md:px-6 pb-16 flex flex-col gap-6">
+      <!-- ÉTAPE 1 GOOGLE - V0 Carte permissions -->
+      <section data-variant-group="google" data-variant="0" data-mockup-id="etape-google-permissions" class="bg-white rounded-card shadow-card p-6 md:p-10 fade-in delay-1">
+        <span class="font-mono uppercase text-[10px] tracking-[.04em] text-accent bg-soft rounded-full px-2.5 py-1 inline-block mb-4">Étape 1 · En cours</span>
+        <h1 class="font-display font-extrabold text-ink text-xl md:text-3xl tracking-[-0.02em] mb-3">Connecte ton compte Google</h1>
+        <p class="font-body text-sm md:text-base text-ink/60 mb-6 max-w-lg">C'est lui qui remplit ton cockpit : ton agenda et tes mails arrivent tout seuls, en sécurité, via la connexion officielle Google.</p>
+        <div class="rounded-inner bg-soft p-5 mb-6 max-w-lg" data-mockup-id="google-permissions-liste">
+          <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-3">MyDay pourra</p>
+          <div class="flex flex-col gap-2.5 font-body text-sm text-ink/80">
+            <p><span class="text-accent font-semibold">✓</span> Lire ton agenda et y ajouter tes événements</p>
+            <p><span class="text-accent font-semibold">✓</span> Lire tes mails pour repérer les importants</p>
+            <p><span class="text-accent font-semibold">✓</span> Envoyer une réponse <strong class="font-semibold">uniquement quand tu la valides</strong></p>
+          </div>
+          <p class="font-body text-xs text-ink/40 mt-3">MyDay ne supprime jamais rien dans Gmail.</p>
+        </div>
+        <button class="cta-gradient text-white font-display font-semibold rounded-inner px-6 py-3.5 flex items-center gap-3" data-mockup-id="cta-connecter-google">
+          <span class="bg-white rounded-full w-6 h-6 flex items-center justify-center text-accent font-bold text-xs">G</span>
+          Continuer avec Google
+        </button>
+      </section>
+      <!-- ÉTAPE 1 GOOGLE - V1 Explication rassurante -->
+      <section data-variant-group="google" data-variant="1" data-mockup-id="etape-google-rassurante" class="bg-white rounded-card shadow-card p-6 md:p-10 md:grid md:grid-cols-2 gap-8 items-center" style="display:none">
+        <div>
+          <h1 class="font-display font-extrabold text-ink text-xl md:text-3xl tracking-[-0.02em] mb-3">Ton agenda et tes mails, en sécurité</h1>
+          <p class="font-body text-sm text-ink/60 mb-6">Connexion officielle Google (OAuth). Tu peux tout déconnecter à tout moment depuis les réglages — tes données restent chez toi.</p>
+          <button class="cta-gradient text-white font-display font-semibold rounded-inner px-6 py-3.5">Continuer avec Google</button>
+        </div>
+        <div class="hidden md:block rounded-inner bg-soft p-6">
+          <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-3">Ce qui arrive dans ton cockpit</p>
+          <p class="font-body text-sm text-ink/70 mb-2">Agenda → ta journée en timeline</p>
+          <p class="font-body text-sm text-ink/70 mb-2">Gmail → seulement les mails importants</p>
+          <p class="font-body text-sm text-ink/70">Brief IA → tes priorités, chaque jour</p>
+        </div>
+      </section>
+      <!-- ÉTAPE 1 GOOGLE - V2 Liste simple -->
+      <section data-variant-group="google" data-variant="2" data-mockup-id="etape-google-simple" class="bg-white rounded-card shadow-card p-6 md:p-10 text-center" style="display:none">
+        <h1 class="font-display font-extrabold text-ink text-xl md:text-3xl tracking-[-0.02em] mb-2">Connecte ton Google</h1>
+        <p class="font-body text-sm text-ink/50 mb-6">Agenda + Gmail · connexion officielle · réversible à tout moment</p>
+        <button class="cta-gradient text-white font-display font-semibold rounded-inner px-8 py-3.5 mx-auto">Continuer avec Google</button>
+      </section>
+
+      <!-- ÉTAPE 2 PRÉFÉRENCES (aperçu, état à venir) -->
+      <section class="bg-white/60 rounded-card border border-ink/5 p-6 md:p-8" data-mockup-id="etape-preferences">
+        <span class="font-mono uppercase text-[10px] tracking-[.04em] text-ink/30 bg-ink/5 rounded-full px-2.5 py-1 inline-block mb-4">Étape 2 · À venir</span>
+        <h2 class="font-display font-bold text-ink/70 text-lg md:text-xl tracking-[-0.02em] mb-4">Règle ton brief</h2>
+        <div class="grid md:grid-cols-2 gap-4 max-w-lg">
+          <div>
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-2">Heure du brief</p>
+            <div class="bg-white rounded-inner border border-ink/10 px-4 py-3 font-body text-ink/60 flex items-center justify-between">
+              <span>07:00</span><span class="text-ink/30">▾</span>
+            </div>
+          </div>
+          <div>
+            <p class="font-mono text-[10px] uppercase tracking-[.04em] text-ink/40 mb-2">Notifications</p>
+            <div class="bg-white rounded-inner border border-ink/10 px-4 py-3 font-body text-ink/60 flex items-center justify-between">
+              <span>Mails importants + rappels</span>
+              <span class="w-9 h-5 rounded-full cta-gradient relative flex-shrink-0"><span class="absolute right-0.5 top-0.5 w-4 h-4 rounded-full bg-white"></span></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ÉTAPE 3 PWA (aperçu, état à venir) -->
+      <section class="bg-white/60 rounded-card border border-ink/5 p-6 md:p-8" data-mockup-id="etape-pwa">
+        <span class="font-mono uppercase text-[10px] tracking-[.04em] text-ink/30 bg-ink/5 rounded-full px-2.5 py-1 inline-block mb-4">Étape 3 · À venir</span>
+        <h2 class="font-display font-bold text-ink/70 text-lg md:text-xl tracking-[-0.02em] mb-2">Installe MyDay sur ton téléphone</h2>
+        <p class="font-body text-sm text-ink/50 max-w-lg mb-4">Indispensable pour recevoir les alertes sur iPhone : ajoute MyDay à ton écran d'accueil en deux gestes (on te montre comment).</p>
+        <div class="flex items-center gap-3 font-body text-sm text-ink/60">
+          <span class="bg-soft rounded-inner px-3 py-2">1 · Touche <strong class="font-semibold">Partager</strong></span>
+          <span class="text-ink/30">→</span>
+          <span class="bg-soft rounded-inner px-3 py-2">2 · <strong class="font-semibold">Sur l'écran d'accueil</strong></span>
+        </div>
+      </section>
+
+      <!-- ÉTAPE FINALE - V0 Brief prêt en scène -->
+      <section data-variant-group="final" data-variant="0" data-mockup-id="etape-finale-brief" class="rounded-card cta-gradient p-6 md:p-10 text-white">
+        <span class="font-mono uppercase text-[10px] tracking-[.04em] text-white/70 bg-white/15 rounded-full px-2.5 py-1 inline-block mb-4">Étape 4 · Le meilleur moment</span>
+        <h2 class="font-display font-extrabold text-xl md:text-3xl tracking-[-0.02em] mb-3">Ton premier brief est prêt.</h2>
+        <p class="font-body text-sm md:text-base text-white/80 mb-6 max-w-lg">Pendant que tu réglais tout ça, l'assistant a lu ton agenda et tes mails. Voici ta journée, résumée.</p>
+        <div class="bg-white rounded-inner p-5 max-w-md" data-mockup-id="premier-brief-apercu">
+          <span class="font-mono uppercase text-[10px] tracking-[.04em] text-accent bg-soft rounded-full px-2.5 py-1 inline-block mb-3">Brief · maintenant</span>
+          <p class="font-display font-bold text-ink tracking-[-0.02em] mb-2">Trois priorités déterminent ta journée.</p>
+          <p class="font-body text-sm text-ink/50">01 — Répondre au mail du comptable avant midi...</p>
+        </div>
+        <button class="bg-white text-accent font-display font-semibold rounded-inner px-6 py-3.5 mt-6" data-mockup-id="cta-ouvrir-cockpit">Ouvrir mon cockpit →</button>
+      </section>
+      <!-- ÉTAPE FINALE - V1 Carte de redirection -->
+      <section data-variant-group="final" data-variant="1" data-mockup-id="etape-finale-redirect" class="bg-white rounded-card shadow-card p-6 md:p-10 text-center" style="display:none">
+        <div class="w-14 h-14 rounded-full cta-gradient text-white flex items-center justify-center text-2xl mx-auto mb-4">✓</div>
+        <h2 class="font-display font-extrabold text-ink text-xl md:text-3xl tracking-[-0.02em] mb-2">Tout est prêt !</h2>
+        <p class="font-body text-sm text-ink/50 mb-6">Ton premier brief t'attend sur le dashboard.</p>
+        <button class="cta-gradient text-white font-display font-semibold rounded-inner px-8 py-3.5 mx-auto">Découvrir mon cockpit</button>
+      </section>
+      <!-- ÉTAPE FINALE - V2 Récap checklist -->
+      <section data-variant-group="final" data-variant="2" data-mockup-id="etape-finale-recap" class="bg-white rounded-card shadow-card p-6 md:p-10" style="display:none">
+        <h2 class="font-display font-extrabold text-ink text-xl md:text-2xl tracking-[-0.02em] mb-5">Récap de ton installation</h2>
+        <div class="flex flex-col gap-3 font-body text-sm text-ink/80 max-w-md mb-6">
+          <p><span class="text-accent font-semibold">✓</span> Google connecté — agenda + mails synchronisés</p>
+          <p><span class="text-accent font-semibold">✓</span> Brief réglé à 07:00 avec notifications</p>
+          <p><span class="text-accent font-semibold">✓</span> MyDay installée sur ton téléphone</p>
+          <p><span class="text-accent font-semibold">✓</span> Premier brief généré</p>
+        </div>
+        <button class="cta-gradient text-white font-display font-semibold rounded-inner px-6 py-3.5">Ouvrir mon cockpit →</button>
+      </section>
+    </main>
+  </body>
+</html>

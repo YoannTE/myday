@@ -1,0 +1,3 @@
+- [Positionnement marché MyDay](project_myday_market_positioning.md) — intersection planificateurs IA / messageries unifiées, risque ToS WhatsApp, opportunité famille/couple
+- [Modèle de monétisation suggéré MyDay](project_myday_monetization_model.md) — freemium + tiers Découverte/Essentiel/Cercle, essai 14j recommandé vu friction d'onboarding
+- [Revue growth du brief MVP MyDay](project_myday_mvp_growth_review.md) — instrumentation rétention absente, critère d'ouverture publique à chiffrer, risque délai vérification OAuth Google

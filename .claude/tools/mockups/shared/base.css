@@ -1,0 +1,12 @@
+/* Tailwind CSS via CDN gere le reset (preflight).
+ * Ce fichier ne contient que les styles de base qui ne passent pas bien
+ * en classes Tailwind inline. */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Empeche les iframes de preview de consommer les evenements souris */
+iframe[data-preview] {
+  pointer-events: none;
+}
