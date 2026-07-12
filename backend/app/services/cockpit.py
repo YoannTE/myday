@@ -25,7 +25,9 @@ _MAILS_IMPORTANTS_LIMIT = 5
 _PROCHAINS_LIMIT = 10
 
 _NOTES_COLUMNS = (
-    "id::text, titre, contenu, epinglee, archivee, origine, created_at, updated_at"
+    "n.id::text, n.titre, n.contenu, n.epinglee, n.archivee, n.origine, "
+    "n.created_at, n.updated_at, "
+    "n.categorie_id::text, c.nom AS categorie_nom, c.couleur AS categorie_couleur"
 )
 _EVENTS_COLUMNS = (
     "id::text, titre, debut, fin, lieu, description, google_event_id, "
@@ -38,8 +40,13 @@ _TASKS_COLUMNS = (
 )
 
 
-def _serialize_task(row) -> dict:
-    """Aplati la ligne SQL en tache + objet `categorie` imbrique (ou None)."""
+def _serialize_avec_categorie(row) -> dict:
+    """Aplati la ligne SQL en dict + objet `categorie` imbrique (ou None).
+
+    Partage entre taches et notes : meme forme d'objet categorie
+    (`{id, nom, couleur}`) alimentee par les colonnes alias `categorie_nom` /
+    `categorie_couleur` d'une jointure `LEFT JOIN ... categories`.
+    """
     d = dict(row)
     nom = d.pop("categorie_nom", None)
     couleur = d.pop("categorie_couleur", None)
@@ -48,6 +55,11 @@ def _serialize_task(row) -> dict:
     else:
         d["categorie"] = None
     return d
+
+
+# Alias retro-compatibles : taches et notes partagent la meme serialisation.
+_serialize_task = _serialize_avec_categorie
+_serialize_note = _serialize_avec_categorie
 
 
 def _now_local() -> datetime:
@@ -75,9 +87,10 @@ async def get_cockpit(user_id: str) -> dict:
         )
 
         notes = await conn.fetch(
-            f"SELECT {_NOTES_COLUMNS} FROM notes "
-            "WHERE epinglee = true AND archivee = false "
-            "ORDER BY updated_at DESC LIMIT $1",
+            f"SELECT {_NOTES_COLUMNS} FROM notes n "
+            "LEFT JOIN note_categories c ON c.id = n.categorie_id "
+            "WHERE n.epinglee = true AND n.archivee = false "
+            "ORDER BY n.updated_at DESC LIMIT $1",
             _NOTES_LIMIT,
         )
         prochains = await conn.fetch(
@@ -125,7 +138,7 @@ async def get_cockpit(user_id: str) -> dict:
             "type": brief_row["type"],
         }
     return {
-        "notes_epinglees": [dict(r) for r in notes],
+        "notes_epinglees": [_serialize_note(r) for r in notes],
         "prochains": [dict(r) for r in prochains],
         "taches": [_serialize_task(r) for r in tasks],
         "mails_importants": mails_importants,

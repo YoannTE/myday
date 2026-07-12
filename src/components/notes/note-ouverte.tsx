@@ -3,22 +3,37 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiCall } from "@/lib/api";
+import { messageErreurApi } from "@/lib/api-error-message";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formaterFraicheur } from "@/lib/freshness";
-import type { NoteApi } from "@/components/notes/types";
+import {
+  NoteCategorySelect,
+  SANS_CATEGORIE,
+} from "@/components/notes/note-category-select";
+import type { NoteApi, NoteCategory } from "@/components/notes/types";
 
 interface NoteOuverteProps {
   note: NoteApi;
   onChange: (note: NoteApi) => void;
+  categories: NoteCategory[] | null;
+  onCategoryCreated: (categorie: NoteCategory) => void;
 }
 
 // Panneau de la note ouverte : édition du contenu, épingler/désépingler,
-// archiver/désarchiver. Badge « via l'assistant » autorisé (correction #7).
-export function NoteOuverte({ note, onChange }: NoteOuverteProps) {
+// archiver/désarchiver, catégorie (Round 015). Badge « via l'assistant »
+// autorisé (correction #7).
+export function NoteOuverte({
+  note,
+  onChange,
+  categories,
+  onCategoryCreated,
+}: NoteOuverteProps) {
   const [contenu, setContenu] = useState(note.contenu ?? "");
   const [enregistrement, setEnregistrement] = useState(false);
   const [enCours, setEnCours] = useState(false);
+  const [enCoursCategorie, setEnCoursCategorie] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -83,6 +98,22 @@ export function NoteOuverte({ note, onChange }: NoteOuverteProps) {
     }
   }
 
+  async function changerCategorie(categorieId: string) {
+    setEnCoursCategorie(true);
+    try {
+      await appliquerPatch({
+        categorie_id: categorieId === SANS_CATEGORIE ? null : categorieId,
+      });
+      toast.success("Catégorie mise à jour.");
+    } catch (erreur) {
+      toast.error(
+        messageErreurApi(erreur, "Impossible de mettre à jour la catégorie."),
+      );
+    } finally {
+      setEnCoursCategorie(false);
+    }
+  }
+
   return (
     <div className="fade-in delay-1 max-w-full overflow-hidden rounded-card bg-card p-6 shadow-card">
       <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -108,6 +139,16 @@ export function NoteOuverte({ note, onChange }: NoteOuverteProps) {
         >
           📌
         </button>
+      </div>
+      <div className="mb-4 max-w-xs space-y-1.5">
+        <Label>Catégorie</Label>
+        <NoteCategorySelect
+          categories={categories ?? []}
+          disabled={categories === null || enCoursCategorie}
+          value={note.categorie?.id ?? SANS_CATEGORIE}
+          onValueChange={changerCategorie}
+          onCategoryCreated={onCategoryCreated}
+        />
       </div>
       <Textarea
         value={contenu}

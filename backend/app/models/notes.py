@@ -1,13 +1,17 @@
 """Schémas Pydantic du domaine Notes."""
 
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, field_validator
+
+from app.models.note_categories import NoteCategoryLite
 
 
 class NoteCreate(BaseModel):
     titre: str
     contenu: str | None = None
+    categorie_id: UUID | None = None
 
     @field_validator("titre")
     @classmethod
@@ -23,6 +27,7 @@ class NoteUpdate(BaseModel):
     contenu: str | None = None
     epinglee: bool | None = None
     archivee: bool | None = None
+    categorie_id: UUID | None = None
 
     @field_validator("titre")
     @classmethod
@@ -44,5 +49,7 @@ class NoteResponse(BaseModel):
     epinglee: bool
     archivee: bool
     origine: str
+    categorie_id: str | None = None
+    categorie: NoteCategoryLite | None = None
     created_at: datetime
     updated_at: datetime

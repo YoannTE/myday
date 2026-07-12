@@ -2,6 +2,7 @@
 // cf. SOP api-response-casing-contract) — aucun accès camelCase.
 import type { Task } from "@/components/taches/types";
 import type { Mail } from "@/components/mails/types";
+import type { NoteCategoryLite } from "@/components/notes/types";
 
 export type OrigineNote = "manuelle" | "assistant";
 export type SourceEvent = "google" | "myday";
@@ -14,6 +15,8 @@ export interface Note {
   epinglee: boolean;
   archivee: boolean;
   origine: OrigineNote;
+  categorie_id: string | null;
+  categorie: NoteCategoryLite | null;
   created_at: string;
   updated_at: string;
 }

@@ -12,6 +12,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 from app.models.events import EventResponse
+from app.models.note_categories import NoteCategoryLite
 from app.models.task_categories import TaskCategoryLite
 
 
@@ -24,6 +25,8 @@ class NoteSummary(BaseModel):
     epinglee: bool
     archivee: bool
     origine: str
+    categorie_id: str | None = None
+    categorie: NoteCategoryLite | None = None
     created_at: datetime
     updated_at: datetime
 

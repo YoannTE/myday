@@ -1,6 +1,7 @@
 "use client";
 
 import { formaterFraicheur } from "@/lib/freshness";
+import { NoteCategoryBadge } from "@/components/notes/note-category-badge";
 import type { NoteApi } from "@/components/notes/types";
 
 interface NoteItemProps {
@@ -28,6 +29,11 @@ export function NoteItem({ note, selectionnee, onSelect }: NoteItemProps) {
         </p>
         {extrait && (
           <p className="truncate font-body text-xs text-ink/50">{extrait}</p>
+        )}
+        {note.categorie && (
+          <div className="mt-1">
+            <NoteCategoryBadge categorie={note.categorie} />
+          </div>
         )}
       </div>
       <div className="flex flex-shrink-0 flex-col items-end gap-1">

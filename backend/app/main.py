@@ -23,6 +23,7 @@ from app.api.google import router as google_router
 from app.api.health import router as health_router
 from app.api.mails import router as mails_router
 from app.api.me import router as me_router
+from app.api.note_categories import router as note_categories_router
 from app.api.notes import router as notes_router
 from app.api.notifications import router as notifications_router
 from app.api.preferences import router as preferences_router
@@ -110,6 +111,7 @@ app.include_router(google_router, prefix="/api")
 app.include_router(tasks_router, prefix="/api")
 app.include_router(task_categories_router, prefix="/api")
 app.include_router(notes_router, prefix="/api")
+app.include_router(note_categories_router, prefix="/api")
 app.include_router(preferences_router, prefix="/api")
 app.include_router(usage_router, prefix="/api")
 app.include_router(mails_router, prefix="/api")

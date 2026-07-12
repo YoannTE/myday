@@ -3,6 +3,7 @@
 import { useState, type ReactElement, type ReactNode } from "react";
 import { toast } from "sonner";
 import { apiCall } from "@/lib/api";
+import { messageErreurApi } from "@/lib/api-error-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +17,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import type { NoteApi } from "@/components/notes/types";
+import {
+  NoteCategorySelect,
+  SANS_CATEGORIE,
+} from "@/components/notes/note-category-select";
+import type { NoteApi, NoteCategory } from "@/components/notes/types";
 
 interface NoteQuickAddDialogProps {
   onCreated: (note: NoteApi) => void;
@@ -24,6 +29,11 @@ interface NoteQuickAddDialogProps {
   // cockpit) : par défaut, garde le bouton texte « + Note » historique.
   trigger?: ReactElement;
   children?: ReactNode;
+  // Round 015 : catégorie à la création, uniquement disponible depuis la
+  // page `/notes` (où les catégories sont chargées) - absente depuis le
+  // cockpit, qui garde une création rapide sans catégorie.
+  categories?: NoteCategory[] | null;
+  onCategoryCreated?: (categorie: NoteCategory) => void;
 }
 
 const DECLENCHEUR_PAR_DEFAUT = (
@@ -39,16 +49,22 @@ export function NoteQuickAddDialog({
   onCreated,
   trigger = DECLENCHEUR_PAR_DEFAUT,
   children = "+ Note",
+  categories,
+  onCategoryCreated,
 }: NoteQuickAddDialogProps) {
   const [open, setOpen] = useState(false);
   const [titre, setTitre] = useState("");
   const [contenu, setContenu] = useState("");
+  const [categorieId, setCategorieId] = useState(SANS_CATEGORIE);
   const [erreurTitre, setErreurTitre] = useState<string | null>(null);
   const [enregistrement, setEnregistrement] = useState(false);
+
+  const afficherCategorie = categories !== undefined;
 
   function reinitialiser() {
     setTitre("");
     setContenu("");
+    setCategorieId(SANS_CATEGORIE);
     setErreurTitre(null);
   }
 
@@ -64,16 +80,21 @@ export function NoteQuickAddDialog({
     try {
       const reponse = await apiCall<{ data: NoteApi }>("/api/notes", {
         method: "POST",
-        body: { titre: titreNettoye, contenu: contenu.trim() || undefined },
+        body: {
+          titre: titreNettoye,
+          contenu: contenu.trim() || undefined,
+          ...(afficherCategorie && {
+            categorie_id:
+              categorieId === SANS_CATEGORIE ? null : categorieId,
+          }),
+        },
       });
       toast.success("Note créée.");
       onCreated(reponse.data);
       setOpen(false);
       reinitialiser();
     } catch (erreur) {
-      toast.error(
-        erreur instanceof Error ? erreur.message : "Impossible de créer la note.",
-      );
+      toast.error(messageErreurApi(erreur, "Impossible de créer la note."));
     } finally {
       setEnregistrement(false);
     }
@@ -121,6 +142,18 @@ export function NoteQuickAddDialog({
               onChange={(evenement) => setContenu(evenement.target.value)}
             />
           </div>
+          {afficherCategorie && (
+            <div className="space-y-1.5">
+              <Label>Catégorie</Label>
+              <NoteCategorySelect
+                categories={categories ?? []}
+                disabled={categories === null}
+                value={categorieId}
+                onValueChange={setCategorieId}
+                onCategoryCreated={(categorie) => onCategoryCreated?.(categorie)}
+              />
+            </div>
+          )}
         </form>
         <DialogFooter>
           <Button type="submit" form="form-note-rapide" disabled={enregistrement}>

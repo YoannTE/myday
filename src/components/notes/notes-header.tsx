@@ -3,18 +3,24 @@
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { NoteQuickAddDialog } from "@/components/notes/note-quick-add-dialog";
-import type { NoteApi } from "@/components/notes/types";
+import type { NoteApi, NoteCategory } from "@/components/notes/types";
 
 interface NotesHeaderProps {
   recherche: string;
   onRechercheChange: (valeur: string) => void;
   onCreated: (note: NoteApi) => void;
+  categories: NoteCategory[] | null;
+  onCategoryCreated: (categorie: NoteCategory) => void;
+  onGererCategories: () => void;
 }
 
 export function NotesHeader({
   recherche,
   onRechercheChange,
   onCreated,
+  categories,
+  onCategoryCreated,
+  onGererCategories,
 }: NotesHeaderProps) {
   return (
     <div>
@@ -24,6 +30,15 @@ export function NotesHeader({
       >
         ← Cockpit
       </Link>
+      <div className="fade-in mb-2 flex justify-end">
+        <button
+          type="button"
+          onClick={onGererCategories}
+          className="font-body text-sm text-accent"
+        >
+          Gérer les catégories
+        </button>
+      </div>
       <div className="fade-in mb-6 flex flex-wrap items-center gap-3">
         <h1 className="font-display text-xl font-extrabold tracking-[-0.02em] text-ink md:text-2xl">
           Notes
@@ -36,7 +51,11 @@ export function NotesHeader({
             className="h-auto rounded-full border-none bg-card px-4 py-2 shadow-card"
           />
         </div>
-        <NoteQuickAddDialog onCreated={onCreated} />
+        <NoteQuickAddDialog
+          onCreated={onCreated}
+          categories={categories}
+          onCategoryCreated={onCategoryCreated}
+        />
       </div>
     </div>
   );

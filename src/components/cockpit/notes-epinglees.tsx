@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { SectionAddButton } from "@/components/cockpit/section-add-button";
 import { NoteQuickAddDialog } from "@/components/notes/note-quick-add-dialog";
+import { NoteCategoryBadge } from "@/components/notes/note-category-badge";
 import type { Note } from "@/components/cockpit/types";
 
 function ignorerNoteCreee() {
@@ -53,6 +54,9 @@ export function NotesEpinglees({ notes }: { notes: Note[] }) {
               <span className="flex-1 truncate font-body text-sm text-ink">
                 {note.titre}
               </span>
+              {note.categorie && (
+                <NoteCategoryBadge categorie={note.categorie} />
+              )}
               <span className="font-mono text-[10px] tracking-[.04em] text-accent uppercase">
                 Épinglée
               </span>

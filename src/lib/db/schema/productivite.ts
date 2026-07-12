@@ -98,6 +98,40 @@ export const tasks = pgTable(
 );
 
 // ====================================================================
+// Categorie de note - personnalisable par utilisateur (nom + couleur
+// obligatoire, auto-assignee depuis une palette cote frontend). Unique
+// par utilisateur sur le nom. Miroir de `task_categories` mais independante
+// (les categories de notes et de taches sont distinctes).
+// ====================================================================
+
+export const noteCategories = pgTable(
+  "note_categories",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+
+    nom: text("nom").notNull(),
+    couleur: text("couleur").notNull(),
+
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("note_categories_user_id_idx").on(table.userId),
+    uniqueIndex("note_categories_user_id_nom_unique").on(
+      table.userId,
+      table.nom,
+    ),
+  ],
+);
+
+// ====================================================================
 // Note - epinglee/archivee, origine manuelle/assistant (badge "via
 // l'assistant" sur les mockups).
 // ====================================================================
@@ -115,6 +149,9 @@ export const notes = pgTable(
     epinglee: boolean("epinglee").notNull().default(false),
     archivee: boolean("archivee").notNull().default(false),
     origine: text("origine").notNull().default("manuelle"),
+    categorieId: uuid("categorie_id").references(() => noteCategories.id, {
+      onDelete: "set null",
+    }),
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -126,6 +163,7 @@ export const notes = pgTable(
   (table) => [
     index("notes_user_id_idx").on(table.userId),
     index("notes_archivee_idx").on(table.archivee),
+    index("notes_categorie_id_idx").on(table.categorieId),
     check("notes_origine_check", sql`${table.origine} IN ('manuelle', 'assistant')`),
   ],
 );
@@ -223,6 +261,7 @@ export const events = pgTable(
 
 export type TaskCategory = typeof taskCategories.$inferSelect;
 export type Task = typeof tasks.$inferSelect;
+export type NoteCategory = typeof noteCategories.$inferSelect;
 export type Note = typeof notes.$inferSelect;
 export type NoteAppend = typeof noteAppends.$inferSelect;
 export type Event = typeof events.$inferSelect;

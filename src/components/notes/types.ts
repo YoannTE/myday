@@ -6,6 +6,22 @@
 
 export type NoteOrigine = "manuelle" | "assistant";
 
+/** Représentation légère d'une catégorie jointe dans la réponse d'une note. */
+export interface NoteCategoryLite {
+  id: string;
+  nom: string;
+  couleur: string;
+}
+
+/** Catégorie de note personnalisable (Round 015) - `GET/POST/PATCH /api/note-categories`. */
+export interface NoteCategory {
+  id: string;
+  nom: string;
+  couleur: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface NoteApi {
   id: string;
   titre: string;
@@ -13,6 +29,8 @@ export interface NoteApi {
   epinglee: boolean;
   archivee: boolean;
   origine: NoteOrigine;
+  categorie_id: string | null;
+  categorie: NoteCategoryLite | null;
   created_at: string;
   updated_at: string;
 }
