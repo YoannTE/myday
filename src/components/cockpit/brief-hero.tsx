@@ -16,6 +16,7 @@ interface GenerateBriefResponse {
 interface BriefHeroProps {
   brief: Brief | null;
   onRegenerated: () => void;
+  onMasquer: () => void;
 }
 
 /**
@@ -26,7 +27,7 @@ interface BriefHeroProps {
  * jamais d'alarme. Le bouton « Régénérer » appelle `POST /api/brief/generate`
  * puis délègue le rechargement du cockpit au parent (`onRegenerated`).
  */
-export function BriefHero({ brief, onRegenerated }: BriefHeroProps) {
+export function BriefHero({ brief, onRegenerated, onMasquer }: BriefHeroProps) {
   const [enCours, setEnCours] = useState(false);
 
   async function genererBrief(trigger: "manual" = "manual") {
@@ -56,6 +57,13 @@ export function BriefHero({ brief, onRegenerated }: BriefHeroProps) {
     return (
       <section className="fade-in delay-1 relative overflow-hidden rounded-card bg-card p-6 text-center shadow-card md:p-12">
         <div className="cta-gradient absolute inset-x-0 top-0 h-1" />
+        <button
+          type="button"
+          onClick={onMasquer}
+          className="absolute top-3 right-4 font-body text-sm text-ink/40 transition-colors hover:text-ink/70 md:top-5"
+        >
+          Masquer
+        </button>
         <h1 className="mb-3 font-display text-lg font-extrabold tracking-[-0.02em] text-ink md:text-3xl">
           Ton premier brief arrive.
         </h1>
@@ -101,14 +109,23 @@ export function BriefHero({ brief, onRegenerated }: BriefHeroProps) {
             </span>
           )}
         </div>
-        <button
-          type="button"
-          disabled={enCours}
-          onClick={() => genererBrief()}
-          className="font-body text-sm text-accent disabled:opacity-50"
-        >
-          {enCours ? "Régénération..." : "Régénérer"}
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            disabled={enCours}
+            onClick={() => genererBrief()}
+            className="font-body text-sm text-accent disabled:opacity-50"
+          >
+            {enCours ? "Régénération..." : "Régénérer"}
+          </button>
+          <button
+            type="button"
+            onClick={onMasquer}
+            className="font-body text-sm text-ink/40 transition-colors hover:text-ink/70"
+          >
+            Masquer
+          </button>
+        </div>
       </div>
 
       <h1 className="mb-4 max-w-2xl font-display text-lg leading-tight font-extrabold tracking-[-0.02em] text-ink md:mb-8 md:text-4xl">

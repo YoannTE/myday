@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Eye } from "lucide-react";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,9 +36,13 @@ function CockpitSkeleton() {
  * seule fois au montage, puis rend la carte hero Brief (F8, Round 007) suivie
  * des blocs Notes/Journée/Tâches/Mails.
  */
+/** Clé localStorage : mémorise (par appareil) si l'utilisateur a masqué le brief. */
+const CLE_BRIEF_MASQUE = "myday:brief-masque";
+
 export function CockpitClient() {
   const [donnees, setDonnees] = useState<CockpitData | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [briefVisible, setBriefVisible] = useState(true);
   const evenementEmis = useRef(false);
 
   const charger = useCallback(async () => {
@@ -59,6 +64,23 @@ export function CockpitClient() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     charger();
   }, [charger]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setBriefVisible(localStorage.getItem(CLE_BRIEF_MASQUE) !== "1");
+  }, []);
+
+  function basculerBrief() {
+    setBriefVisible((visible) => {
+      const nouveau = !visible;
+      try {
+        localStorage.setItem(CLE_BRIEF_MASQUE, nouveau ? "0" : "1");
+      } catch {
+        // Stockage indisponible (navigation privée) : on garde l'état en mémoire.
+      }
+      return nouveau;
+    });
+  }
 
   useEffect(() => {
     if (evenementEmis.current) return;
@@ -102,7 +124,22 @@ export function CockpitClient() {
 
   return (
     <div className="flex flex-col gap-10">
-      <BriefHero brief={donnees.brief} onRegenerated={charger} />
+      {briefVisible ? (
+        <BriefHero
+          brief={donnees.brief}
+          onRegenerated={charger}
+          onMasquer={basculerBrief}
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={basculerBrief}
+          className="fade-in delay-1 flex items-center justify-center gap-2 rounded-card bg-card px-4 py-3 font-body text-sm text-ink/60 shadow-card transition-colors hover:text-accent"
+        >
+          <Eye className="h-4 w-4" aria-hidden="true" />
+          Afficher le brief du jour
+        </button>
+      )}
       <OnboardingResumeBanner />
       <NotesEpinglees notes={donnees.notes_epinglees} />
       <JourneeTimeline evenements={donnees.prochains} onSuccess={charger} />
