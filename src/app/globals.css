@@ -128,6 +128,19 @@ html[data-mode="dark"] {
   }
 }
 
+/* iOS / Safari zoome automatiquement quand on met le focus sur un champ de
+   saisie dont la police fait moins de 16px. Sur les appareils tactiles, on
+   force 16px sur tous les champs editables pour supprimer ce zoom intempestif
+   (le zoom manuel a deux doigts reste possible - on ne desactive jamais le
+   user-scalable). */
+@media (hover: none) and (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
