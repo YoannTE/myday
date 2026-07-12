@@ -115,7 +115,7 @@ export function NoteOuverte({
   }
 
   return (
-    <div className="fade-in delay-1 max-w-full overflow-hidden rounded-card bg-card p-6 shadow-card">
+    <div className="fade-in delay-1 min-w-0 max-w-full overflow-hidden rounded-card bg-card p-6 shadow-card">
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <h2 className="min-w-0 flex-1 font-display text-lg font-extrabold tracking-[-0.02em] break-words text-ink">
           {note.titre}

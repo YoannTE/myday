@@ -128,7 +128,7 @@ export function NotesClient() {
               onCategoryCreated={onCategoryCreated}
             />
           ) : (
-            <div className="flex items-center justify-center rounded-card bg-card p-6 text-sm text-ink/50 shadow-card">
+            <div className="flex min-w-0 items-center justify-center rounded-card bg-card p-6 text-sm text-ink/50 shadow-card">
               Sélectionne une note pour l&apos;ouvrir.
             </div>
           )}

@@ -13,7 +13,7 @@ export function NotesListe({
   onSelect,
 }: NotesListeProps) {
   return (
-    <div className="fade-in delay-1 self-start divide-y divide-ink/5 rounded-card bg-card shadow-card">
+    <div className="fade-in delay-1 min-w-0 self-start divide-y divide-ink/5 rounded-card bg-card shadow-card">
       {notes.length === 0 ? (
         <p className="px-4 py-6 text-center text-sm text-ink/50">
           Aucune note pour le moment.
