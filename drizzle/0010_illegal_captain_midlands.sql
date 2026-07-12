@@ -1,0 +1,1 @@
+ALTER TABLE "user_preferences" ADD COLUMN "meteo_ville" text DEFAULT 'Paris' NOT NULL;

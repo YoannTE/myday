@@ -32,6 +32,9 @@ export const userPreferences = pgTable(
     briefHour: text("brief_hour").notNull().default("07:00"),
     briefTone: text("brief_tone").notNull().default("neutre"),
     timezone: text("timezone").notNull().default("Europe/Paris"),
+    // Ville affichée par le widget météo du cockpit (Round 015). Ville par
+    // défaut : Paris. Modifiable par l'utilisateur, mémorisée sur son profil.
+    meteoVille: text("meteo_ville").notNull().default("Paris"),
     notifImportantMail: boolean("notif_important_mail").notNull().default(true),
     notifEventReminder: boolean("notif_event_reminder").notNull().default(true),
     notifBriefReady: boolean("notif_brief_ready").notNull().default(true),

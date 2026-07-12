@@ -73,6 +73,8 @@ def test_get_preferences_create_or_default(client, auth_user):
     assert data["notif_brief_ready"] is True
     assert data["onboarding_completed"] is False
     assert data["onboarding_step"] == 0
+    # Round 015 : ville meteo par defaut = Paris.
+    assert data["meteo_ville"] == "Paris"
     assert _count_preferences(uid) == 1
 
     # Un deuxieme GET ne recree pas de ligne.
@@ -118,6 +120,28 @@ def test_patch_preferences_partiel(client, auth_user):
     # Les autres champs restent inchanges.
     assert data["timezone"] == "Europe/Paris"
     assert data["notif_important_mail"] is True
+
+
+def test_patch_preferences_meteo_ville(client, auth_user):
+    """Round 015 : la ville meteo est modifiable, nettoyee (trim) et memorisee."""
+    _, headers = auth_user
+    resp = client.patch(
+        "/api/preferences", json={"meteo_ville": "  Lyon  "}, headers=headers
+    )
+    assert resp.status_code == 200
+    assert resp.json()["data"]["meteo_ville"] == "Lyon"
+
+    # La valeur est bien persistee (relecture).
+    relu = client.get("/api/preferences", headers=headers)
+    assert relu.json()["data"]["meteo_ville"] == "Lyon"
+
+
+def test_patch_preferences_meteo_ville_vide_400(client, auth_user):
+    _, headers = auth_user
+    resp = client.patch(
+        "/api/preferences", json={"meteo_ville": "   "}, headers=headers
+    )
+    assert resp.status_code == 400
 
 
 def test_patch_preferences_sans_get_prealable(client, auth_user):

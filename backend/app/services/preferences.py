@@ -13,10 +13,12 @@ from app.models.preferences import BRIEF_HOUR_RE, BRIEF_TONE_VALUES, Preferences
 from app.utils.errors import bad_request
 
 _COLUMNS = (
-    "brief_hour, brief_tone, timezone, notif_important_mail, "
+    "brief_hour, brief_tone, timezone, meteo_ville, notif_important_mail, "
     "notif_event_reminder, notif_brief_ready, onboarding_completed, "
     "onboarding_step, created_at, updated_at"
 )
+
+_METEO_VILLE_MAX = 120
 
 _ENSURE_ROW_SQL = (
     "INSERT INTO user_preferences (user_id) VALUES ($1) "
@@ -39,12 +41,25 @@ def _valider_champs(fields: dict) -> None:
     if brief_tone is not None and brief_tone not in BRIEF_TONE_VALUES:
         raise bad_request("Le ton du brief doit être neutre, motivant ou direct.")
 
+    meteo_ville = fields.get("meteo_ville")
+    if meteo_ville is not None:
+        ville = meteo_ville.strip()
+        if not ville:
+            raise bad_request("La ville météo ne peut pas être vide.")
+        if len(ville) > _METEO_VILLE_MAX:
+            raise bad_request(
+                f"La ville météo ne peut pas dépasser {_METEO_VILLE_MAX} caractères."
+            )
+        # Normalisation : on stocke la valeur nettoyée (sans espaces superflus).
+        fields["meteo_ville"] = ville
+
 
 def _serialize(row: asyncpg.Record) -> dict:
     return {
         "brief_hour": row["brief_hour"],
         "brief_tone": row["brief_tone"],
         "timezone": row["timezone"],
+        "meteo_ville": row["meteo_ville"],
         "notif_important_mail": row["notif_important_mail"],
         "notif_event_reminder": row["notif_event_reminder"],
         "notif_brief_ready": row["notif_brief_ready"],
@@ -85,9 +100,10 @@ async def update_preferences(user_id: str, payload: PreferencesUpdate) -> dict:
             f"""
             UPDATE user_preferences
             SET brief_hour = $2, brief_tone = $3, timezone = $4,
-                notif_important_mail = $5, notif_event_reminder = $6,
-                notif_brief_ready = $7, onboarding_completed = $8,
-                onboarding_step = $9, updated_at = now()
+                meteo_ville = $5, notif_important_mail = $6,
+                notif_event_reminder = $7, notif_brief_ready = $8,
+                onboarding_completed = $9, onboarding_step = $10,
+                updated_at = now()
             WHERE user_id = $1
             RETURNING {_COLUMNS}
             """,
@@ -95,6 +111,7 @@ async def update_preferences(user_id: str, payload: PreferencesUpdate) -> dict:
             fields.get("brief_hour", current["brief_hour"]),
             fields.get("brief_tone", current["brief_tone"]),
             fields.get("timezone", current["timezone"]),
+            fields.get("meteo_ville", current["meteo_ville"]),
             fields.get("notif_important_mail", current["notif_important_mail"]),
             fields.get("notif_event_reminder", current["notif_event_reminder"]),
             fields.get("notif_brief_ready", current["notif_brief_ready"]),

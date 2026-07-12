@@ -71,6 +71,13 @@
       "when": 1783835108600,
       "tag": "0009_fine_ozymandias",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783844276084,
+      "tag": "0010_illegal_captain_midlands",
+      "breakpoints": true
     }
   ]
 }

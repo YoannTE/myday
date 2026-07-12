@@ -29,6 +29,7 @@ class PreferencesUpdate(BaseModel):
     brief_hour: str | None = None
     brief_tone: str | None = None
     timezone: str | None = None
+    meteo_ville: str | None = None
     notif_important_mail: bool | None = None
     notif_event_reminder: bool | None = None
     notif_brief_ready: bool | None = None
@@ -42,6 +43,7 @@ class PreferencesResponse(BaseModel):
     brief_hour: str
     brief_tone: str
     timezone: str
+    meteo_ville: str
     notif_important_mail: bool
     notif_event_reminder: bool
     notif_brief_ready: bool

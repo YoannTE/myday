@@ -6,6 +6,7 @@ import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BriefHero } from "@/components/cockpit/brief-hero";
+import { MeteoWidget } from "@/components/meteo/meteo-widget";
 import { NotesEpinglees } from "@/components/cockpit/notes-epinglees";
 import { JourneeTimeline } from "@/components/cockpit/journee-timeline";
 import { TachesChecklist } from "@/components/cockpit/taches-checklist";
@@ -144,6 +145,7 @@ export function CockpitClient() {
           Afficher le brief du jour
         </button>
       )}
+      <MeteoWidget />
       <OnboardingResumeBanner />
       <JourneeTimeline evenements={donnees.prochains} onSuccess={charger} />
       <TachesChecklist taches={donnees.taches} onUpdated={handleTacheMiseAJour} />
