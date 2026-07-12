@@ -84,7 +84,24 @@ export function CategorySelect({
         }}
       >
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Sans catégorie" />
+          <SelectValue placeholder="Sans catégorie">
+            {(valeurSelectionnee) => {
+              const categorie = categories.find(
+                (c) => c.id === valeurSelectionnee,
+              );
+              if (!categorie) return "Sans catégorie";
+              return (
+                <span className="flex items-center gap-2">
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: categorie.couleur }}
+                    aria-hidden="true"
+                  />
+                  {categorie.nom}
+                </span>
+              );
+            }}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={SANS_CATEGORIE}>Sans catégorie</SelectItem>
