@@ -113,10 +113,12 @@
 
 /* Mode sombre (bouton ☾ dans la barre du haut) */
 html[data-mode="dark"] {
-  --bg: #0c1024;
-  --ink: #eef1fb;
-  --soft: #1a2140;
-  --surface: #141a35;
+  /* Noir complet neutre (demande utilisateur) : fond noir pur + surfaces en
+     gris neutres, sans teinte bleue. */
+  --bg: #000000;
+  --ink: #f4f4f5;
+  --soft: #1f1f22;
+  --surface: #131315;
 }
 
 /* Responsive mobile : base reduite sous 640px (regle validee design.md) */
