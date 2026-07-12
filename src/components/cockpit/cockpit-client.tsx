@@ -141,9 +141,9 @@ export function CockpitClient() {
         </button>
       )}
       <OnboardingResumeBanner />
-      <NotesEpinglees notes={donnees.notes_epinglees} />
       <JourneeTimeline evenements={donnees.prochains} onSuccess={charger} />
       <TachesChecklist taches={donnees.taches} onUpdated={handleTacheMiseAJour} />
+      <NotesEpinglees notes={donnees.notes_epinglees} />
       <MailsImportants
         placeholder={donnees.mails_importants.placeholder}
         mails={donnees.mails_importants.mails ?? []}
