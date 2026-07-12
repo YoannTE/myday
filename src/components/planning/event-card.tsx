@@ -38,7 +38,7 @@ export function EventCard({ evenement, onSuccess }: EventCardProps) {
       trigger={
         <button
           type="button"
-          className={`mb-2 w-full rounded-inner px-3 py-2.5 text-left transition-colors ${
+          className={`mb-1.5 w-full rounded-inner px-1.5 py-1.5 text-left transition-colors md:mb-2 md:px-3 md:py-2.5 ${
             enCours
               ? "border-2 border-accent/40 bg-card"
               : "bg-soft hover:bg-soft/70"
@@ -52,7 +52,9 @@ export function EventCard({ evenement, onSuccess }: EventCardProps) {
         )}
         <span className={enCours ? "text-accent" : undefined}>{plageHoraire}</span>
       </p>
-      <p className="font-body text-xs text-ink">{evenement.titre}</p>
+      <p className="font-body text-[11px] break-words text-ink md:text-xs">
+        {evenement.titre}
+      </p>
       {estNonSynchronise(evenement) && (
         <span className="mt-1 inline-block rounded-full border border-ink/10 bg-card px-1.5 py-0.5 font-mono text-[9px] tracking-[.04em] text-ink/50 uppercase">
           Non synchronisé

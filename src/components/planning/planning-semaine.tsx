@@ -16,17 +16,17 @@ interface PlanningSemaineProps {
 
 // Vue semaine en colonnes (transposition fidèle de la variante « Semaine en
 // colonnes » de planning.html) : une colonne par jour, la journée en cours
-// mise en avant. La grille (min-w-[900px]) défile horizontalement sur
-// mobile (`overflow-x-auto`) : c'est le prix accepté d'une vue "semaine en
-// colonnes" choisie explicitement par l'utilisateur via le sélecteur de vue.
+// mise en avant. Les 7 colonnes tiennent dans la largeur disponible (pas de
+// défilement horizontal) : espacements et rembourrages réduits sur mobile
+// pour que les 7 jours restent visibles d'un coup d'œil.
 export function PlanningSemaine({
   jours,
   evenements,
   onSuccess,
 }: PlanningSemaineProps) {
   return (
-    <div className="fade-in delay-1 overflow-x-auto rounded-card bg-card p-4 shadow-card md:p-6">
-      <div className="grid min-w-[900px] grid-cols-7 gap-3">
+    <div className="fade-in delay-1 rounded-card bg-card p-2 shadow-card md:p-6">
+      <div className="grid grid-cols-7 gap-1 md:gap-3">
         {jours.map((jour) => {
           const aujourdHui = estAujourdHui(jour);
           const evenementsDuJour = evenements
@@ -40,13 +40,13 @@ export function PlanningSemaine({
               key={jour.toISOString()}
               className={
                 aujourdHui
-                  ? "rounded-inner border border-accent/20 bg-soft/50 p-1"
+                  ? "rounded-inner border border-accent/20 bg-soft/50 p-0.5 md:p-1"
                   : undefined
               }
             >
               <p
-                className={`mb-3 text-center font-mono text-[10px] tracking-[.04em] uppercase ${
-                  aujourdHui ? "mt-2 text-accent" : "text-ink/40"
+                className={`mb-2 text-center font-mono text-[9px] tracking-[.02em] break-words uppercase md:mb-3 md:text-[10px] md:tracking-[.04em] ${
+                  aujourdHui ? "mt-1 text-accent md:mt-2" : "text-ink/40"
                 }`}
               >
                 {formaterEnteteJour(jour)}
