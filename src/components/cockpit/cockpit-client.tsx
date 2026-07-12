@@ -36,13 +36,17 @@ function CockpitSkeleton() {
  * seule fois au montage, puis rend la carte hero Brief (F8, Round 007) suivie
  * des blocs Notes/Journée/Tâches/Mails.
  */
-/** Clé localStorage : mémorise (par appareil) si l'utilisateur a masqué le brief. */
-const CLE_BRIEF_MASQUE = "myday:brief-masque";
+/**
+ * Clé localStorage : mémorise (par appareil) si l'utilisateur a choisi
+ * d'afficher le brief. Masqué par défaut (absence de valeur) : le brief
+ * n'apparaît que si l'utilisateur l'a explicitement affiché.
+ */
+const CLE_BRIEF_AFFICHE = "myday:brief-affiche";
 
 export function CockpitClient() {
   const [donnees, setDonnees] = useState<CockpitData | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
-  const [briefVisible, setBriefVisible] = useState(true);
+  const [briefVisible, setBriefVisible] = useState(false);
   const evenementEmis = useRef(false);
 
   const charger = useCallback(async () => {
@@ -67,14 +71,14 @@ export function CockpitClient() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setBriefVisible(localStorage.getItem(CLE_BRIEF_MASQUE) !== "1");
+    setBriefVisible(localStorage.getItem(CLE_BRIEF_AFFICHE) === "1");
   }, []);
 
   function basculerBrief() {
     setBriefVisible((visible) => {
       const nouveau = !visible;
       try {
-        localStorage.setItem(CLE_BRIEF_MASQUE, nouveau ? "0" : "1");
+        localStorage.setItem(CLE_BRIEF_AFFICHE, nouveau ? "1" : "0");
       } catch {
         // Stockage indisponible (navigation privée) : on garde l'état en mémoire.
       }
