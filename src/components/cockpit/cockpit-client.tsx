@@ -44,10 +44,16 @@ function CockpitSkeleton() {
  */
 const CLE_BRIEF_AFFICHE = "myday:brief-affiche";
 
+/** Scope Google requis pour lire les mails (tri IA de la boîte Gmail). */
+const SCOPE_GMAIL = "https://www.googleapis.com/auth/gmail.readonly";
+
 export function CockpitClient() {
   const [donnees, setDonnees] = useState<CockpitData | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [briefVisible, setBriefVisible] = useState(false);
+  // La section « Mails importants » n'a de sens que si Gmail est connecté.
+  // Masquée par défaut (et tant que le statut n'est pas confirmé).
+  const [gmailConnecte, setGmailConnecte] = useState(false);
   const evenementEmis = useRef(false);
 
   const charger = useCallback(async () => {
@@ -73,6 +79,18 @@ export function CockpitClient() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setBriefVisible(localStorage.getItem(CLE_BRIEF_AFFICHE) === "1");
+  }, []);
+
+  useEffect(() => {
+    apiCall<{ data: { connected: boolean; scopes: string[] } }>(
+      "/api/google/status",
+    )
+      .then((reponse) =>
+        setGmailConnecte(
+          reponse.data.connected && reponse.data.scopes.includes(SCOPE_GMAIL),
+        ),
+      )
+      .catch(() => setGmailConnecte(false));
   }, []);
 
   function basculerBrief() {
@@ -150,10 +168,12 @@ export function CockpitClient() {
       <JourneeTimeline evenements={donnees.prochains} onSuccess={charger} />
       <TachesChecklist taches={donnees.taches} onUpdated={handleTacheMiseAJour} />
       <NotesEpinglees notes={donnees.notes_epinglees} />
-      <MailsImportants
-        placeholder={donnees.mails_importants.placeholder}
-        mails={donnees.mails_importants.mails ?? []}
-      />
+      {gmailConnecte && (
+        <MailsImportants
+          placeholder={donnees.mails_importants.placeholder}
+          mails={donnees.mails_importants.mails ?? []}
+        />
+      )}
     </div>
   );
 }
