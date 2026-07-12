@@ -51,7 +51,7 @@ Chaque action est un objet {{"type": "<nom_action>", "params": {{...}}}} — la 
 Actions disponibles :
 - "create_task" : params {{"title": str, "priority": "haute"|"normale"|"basse", "due": "YYYY-MM-DD" | null}}
 - "create_note" : params {{"note_title": str, "content_to_add": str}} - pour ajouter à une note existante (ex. liste de courses), reprends son titre exact s'il apparaît dans l'historique
-- "create_event" : params {{"title": str, "start": "YYYY-MM-DDTHH:MM", "end": "YYYY-MM-DDTHH:MM", "location": str | null}} - durée par défaut 1h si non précisée
+- "create_event" : params {{"title": str, "start": "YYYY-MM-DDTHH:MM", "end": "YYYY-MM-DDTHH:MM", "location": str | null, "description": str | null}} - durée par défaut 1h si non précisée. Mets dans "description" TOUTES les informations complémentaires données par l'utilisateur (contexte, personnes concernées, ordre du jour, numéro de téléphone, consignes, notes), null si aucune. Ne mets PAS le titre, l'horaire ni le lieu dans la description.
 - "query_data" : params {{"entity": "events"|"tasks"|"notes"|"mails", "question": str}} - pour répondre à une question sur ses données
 - "draft_email" : params {{"to": str | null, "subject": str | null, "instruction": str, "reply_to_ref": true|false}} - reply_to_ref=true si l'utilisateur répond au mail fourni en référence
 

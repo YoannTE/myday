@@ -168,6 +168,24 @@ def test_create_event_action_params_invalides_ecarte(user_id):
     assert exc_info.value.status_code == 400
 
 
+def test_create_event_action_reporte_la_description(user_id):
+    """Les informations complémentaires sont reportées dans la description de
+    l'événement (et non perdues)."""
+    params = {
+        "title": "Rendez-vous dentiste",
+        "start": "2026-08-02T10:00:00",
+        "end": "2026-08-02T10:30:00",
+        "location": "Cabinet du Dr Martin",
+        "description": "Apporter la carte Vitale et la dernière radio.",
+    }
+    result = run_in_loop(lambda: create_event_action(user_id, params, "turn-desc:0"))
+    description = admin_val(
+        "SELECT description FROM events WHERE id = $1::uuid AND user_id = $2",
+        result["event_id"], user_id,
+    )
+    assert description == "Apporter la carte Vitale et la dernière radio."
+
+
 # --- draft_email : brouillon + garde-fou destinataire ----------------------
 
 

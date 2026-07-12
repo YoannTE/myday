@@ -51,6 +51,9 @@ class EventParams(BaseModel):
     start: str
     end: str
     location: str | None = None
+    # Informations complémentaires fournies par l'utilisateur, reportées dans
+    # la description de l'événement (ex. contexte, personnes, ordre du jour).
+    description: str | None = Field(default=None, max_length=2000)
 
 
 class QueryParams(BaseModel):

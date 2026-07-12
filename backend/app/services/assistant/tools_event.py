@@ -33,6 +33,9 @@ class EventParams(BaseModel):
     start: str
     end: str
     location: str | None = None
+    # Informations complémentaires de l'utilisateur, reportées dans la
+    # description de l'événement (contexte, personnes, ordre du jour, etc.).
+    description: str | None = None
 
 
 def _parse_local_datetime(value: str) -> datetime:
@@ -82,7 +85,7 @@ async def create_event_action(user_id: str, params: dict, action_key: str) -> di
         debut=debut,
         fin=fin,
         lieu=validated.location,
-        description=None,
+        description=validated.description,
     )
     event = await create_event(user_id, payload)
 
