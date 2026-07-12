@@ -1,6 +1,7 @@
 "use client";
 
 import { EventFormDialog } from "@/components/planning/event-form-dialog";
+import { formaterPlageHoraire } from "@/components/planning/date-utils";
 import type { EvenementApi } from "@/components/planning/types";
 
 function estEnCours(evenement: EvenementApi): boolean {
@@ -28,10 +29,7 @@ interface EventCardProps {
 // l'assistant » : la table events n'a pas de colonne origine).
 export function EventCard({ evenement, onSuccess }: EventCardProps) {
   const enCours = estEnCours(evenement);
-  const heure = new Date(evenement.debut).toLocaleTimeString("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const plageHoraire = formaterPlageHoraire(evenement.debut, evenement.fin);
 
   return (
     <EventFormDialog
@@ -48,11 +46,11 @@ export function EventCard({ evenement, onSuccess }: EventCardProps) {
         />
       }
     >
-      <p className="flex items-center gap-1 font-mono text-[10px] text-ink/40">
+      <p className="flex flex-wrap items-center gap-1 font-mono text-[10px] leading-tight text-ink/40">
         {enCours && (
           <span className="pulse-now inline-block h-1.5 w-1.5 rounded-full bg-accent" />
         )}
-        <span className={enCours ? "text-accent" : undefined}>{heure}</span>
+        <span className={enCours ? "text-accent" : undefined}>{plageHoraire}</span>
       </p>
       <p className="font-body text-xs text-ink">{evenement.titre}</p>
       {estNonSynchronise(evenement) && (

@@ -58,7 +58,9 @@ export interface Brief {
 
 export interface CockpitData {
   notes_epinglees: Note[];
-  journee: CockpitEvent[];
+  // Round 014 (F8) : renommé depuis `journee` — 10 prochains événements à
+  // venir (tri croissant), pas seulement ceux du jour courant.
+  prochains: CockpitEvent[];
   taches: Task[];
   mails_importants: MailsImportantsData;
   brief: Brief | null;

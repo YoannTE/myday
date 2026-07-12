@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { apiCall } from "@/lib/api";
 import { NotesHeader } from "@/components/notes/notes-header";
 import { NotesListe } from "@/components/notes/notes-liste";
@@ -10,8 +11,12 @@ import type { NoteApi } from "@/components/notes/types";
 
 // Orchestrateur client de la page Notes : recherche (debounce), liste +
 // note ouverte, création via « Note rapide ». Les notes archivées restent
-// visibles dans la liste (grisées), comme dans le mockup.
+// visibles dans la liste (grisées), comme dans le mockup. Round 014 (F6) :
+// une note ouverte depuis le cockpit arrive via `?note=<id>` et est
+// pré-sélectionnée dès que la liste est chargée.
 export function NotesClient() {
+  const searchParams = useSearchParams();
+  const noteIdDepuisUrl = searchParams.get("note");
   const [notes, setNotes] = useState<NoteApi[] | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [recherche, setRecherche] = useState("");
@@ -43,10 +48,14 @@ export function NotesClient() {
 
   useEffect(() => {
     if (notes && noteSelectionneeId === null && notes.length > 0) {
+      const noteDemandeeExiste =
+        noteIdDepuisUrl && notes.some((note) => note.id === noteIdDepuisUrl);
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setNoteSelectionneeId(notes[0].id);
+      setNoteSelectionneeId(
+        noteDemandeeExiste ? noteIdDepuisUrl : notes[0].id,
+      );
     }
-  }, [notes, noteSelectionneeId]);
+  }, [notes, noteSelectionneeId, noteIdDepuisUrl]);
 
   function onCreated(note: NoteApi) {
     setNotes((actuelles) => (actuelles ? [note, ...actuelles] : [note]));

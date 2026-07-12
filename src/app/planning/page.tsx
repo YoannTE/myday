@@ -7,7 +7,7 @@ import { PlanningClient } from "@/components/planning/planning-client";
 export const metadata: Metadata = {
   title: "Ton planning",
   description:
-    "Ton planning de la semaine : rendez-vous, événements et synchronisation avec Google Agenda.",
+    "Ton planning en vues jour, semaine, mois et année : rendez-vous, événements et synchronisation avec Google Agenda.",
 };
 
 export default async function PlanningPage() {

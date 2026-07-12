@@ -22,7 +22,11 @@ import {
   eventFormSchema,
   type EventFormValues,
 } from "@/components/planning/event-schema";
-import { versDatetimeLocal, versIso } from "@/components/planning/date-utils";
+import {
+  formaterPlageHoraire,
+  versDatetimeLocal,
+  versIso,
+} from "@/components/planning/date-utils";
 import type { EvenementApi } from "@/components/planning/types";
 
 interface EventFormDialogProps {
@@ -142,6 +146,11 @@ export function EventFormDialog({
               : "L'événement est ajouté à ton planning et synchronisé avec Google Agenda si ton compte est connecté."}
           </DialogDescription>
         </DialogHeader>
+        {evenement && (
+          <p className="-mt-1 font-mono text-xs tracking-[.04em] text-accent uppercase">
+            {formaterPlageHoraire(evenement.debut, evenement.fin)}
+          </p>
+        )}
         <form
           id="form-evenement"
           onSubmit={handleSubmit(onSubmit)}

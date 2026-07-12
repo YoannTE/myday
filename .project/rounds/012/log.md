@@ -1,0 +1,42 @@
+# Log - Round 012
+
+## Endpoints touches
+
+(alimente par /round-implement)
+- PATCH /api/tasks/{task_id} (modifie - accepte categorie_id, echeance deja presente)
+- POST /api/tasks (modifie - accepte categorie_id)
+- DELETE /api/task-categories/{category_id} (cree)
+- PATCH /api/task-categories/{category_id} (cree)
+- POST /api/task-categories (cree)
+- GET /api/task-categories (cree)
+
+## Fichiers touches
+
+(alimente par les agents dev)
+- src/lib/db/schema/productivite.ts (modifie)
+- drizzle/0008_wooden_karen_page.sql (cree)
+- drizzle/meta/0008_snapshot.json (cree)
+- drizzle/meta/_journal.json (modifie)
+- backend/app/api/task_categories.py (cree)
+- backend/app/services/task_categories.py (cree)
+- backend/app/models/task_categories.py (cree)
+- backend/app/services/tasks.py (modifie)
+- backend/app/models/tasks.py (modifie)
+- backend/app/main.py (modifie)
+- backend/tests/test_task_categories.py (cree)
+- src/components/taches/types.ts (modifie)
+- src/components/taches/task-date-utils.ts (cree)
+- src/components/taches/category-badge.tsx (cree)
+- src/components/taches/category-select.tsx (cree)
+- src/components/taches/task-details-schema.ts (cree)
+- src/components/taches/task-details-fields.tsx (cree)
+- src/components/taches/task-details-dialog.tsx (cree)
+- src/components/taches/task-category-row.tsx (cree)
+- src/components/taches/task-categories-dialog.tsx (cree)
+- src/components/taches/taches-groupes.tsx (cree)
+- src/components/taches/task-item.tsx (modifie)
+- src/components/taches/taches-client.tsx (modifie)
+- .project/patterns.md (modifie)
+- backend/app/services/cockpit.py (modifie - jointure task_categories, fix QA)
+- backend/app/models/cockpit.py (modifie - TaskSummary + categorie)
+- backend/tests/test_cockpit.py (modifie - test non-regression categorie cockpit)

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from app.config import settings
 from app.db.client import scoped_connection
 from app.db.google_connection import get_connection
 from app.models.events import EventCreate, EventUpdate
@@ -21,17 +22,28 @@ _COLUMNS = (
 )
 
 
+def _check_window(date_from: datetime | None, date_to: datetime | None) -> None:
+    if date_from is not None and date_to is not None and date_from > date_to:
+        raise bad_request("La date de debut de la fenetre doit preceder la date de fin.")
+
+
 async def list_events(
     user_id: str, date_from: datetime | None, date_to: datetime | None
 ) -> list[dict]:
+    """Liste les evenements, filtres par chevauchement avec la fenetre [date_from, date_to].
+
+    Chevauchement (et non `debut BETWEEN ...`) pour conserver les evenements
+    multi-jours ou demarres avant la borne basse (Round 013).
+    """
+    _check_window(date_from, date_to)
     conditions = []
     params: list = [user_id]
     if date_from is not None:
         params.append(date_from)
-        conditions.append(f"fin > ${len(params)}")
+        conditions.append(f"fin >= ${len(params)}")
     if date_to is not None:
         params.append(date_to)
-        conditions.append(f"debut < ${len(params)}")
+        conditions.append(f"debut <= ${len(params)}")
     where = " AND " + " AND ".join(conditions) if conditions else ""
     async with scoped_connection(user_id) as conn:
         rows = await conn.fetch(
@@ -40,6 +52,31 @@ async def list_events(
             *params,
         )
     return [dict(r) for r in rows]
+
+
+async def get_event_counts(
+    user_id: str, date_from: datetime, date_to: datetime
+) -> list[dict]:
+    """Agrege le nombre d'evenements par jour civil (fuseau applicatif).
+
+    Utilise pour les vues mois/annee du planning : ne charge jamais les
+    evenements complets, seulement un `GROUP BY jour, COUNT`. Meme filtre de
+    chevauchement que `list_events` pour rester coherent (Round 013).
+    """
+    _check_window(date_from, date_to)
+    async with scoped_connection(user_id) as conn:
+        rows = await conn.fetch(
+            """
+            SELECT (date_trunc('day', debut AT TIME ZONE $4))::date AS jour,
+                   count(*) AS count
+            FROM events
+            WHERE user_id = $1 AND fin >= $2 AND debut <= $3
+            GROUP BY jour
+            ORDER BY jour
+            """,
+            user_id, date_from, date_to, settings.app_timezone,
+        )
+    return [{"jour": r["jour"].isoformat(), "count": r["count"]} for r in rows]
 
 
 async def _fetch_event(user_id: str, event_id: str) -> dict | None:

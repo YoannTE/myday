@@ -13,6 +13,39 @@ import { user } from "./auth";
 import { mails } from "./mails";
 
 // ====================================================================
+// Categorie de tache - personnalisable par utilisateur (nom + couleur
+// obligatoire, auto-assignee depuis une palette cote frontend). Unique
+// par utilisateur sur le nom pour eviter les doublons ("Pro" x2).
+// ====================================================================
+
+export const taskCategories = pgTable(
+  "task_categories",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+
+    nom: text("nom").notNull(),
+    couleur: text("couleur").notNull(),
+
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("task_categories_user_id_idx").on(table.userId),
+    uniqueIndex("task_categories_user_id_nom_unique").on(
+      table.userId,
+      table.nom,
+    ),
+  ],
+);
+
+// ====================================================================
 // Tâche - origine manuelle/assistant/mail. assistantActionKey rend les
 // creations de l'assistant idempotentes (retry sans doublon), unique par
 // utilisateur via index partiel.
@@ -35,6 +68,9 @@ export const tasks = pgTable(
     // Cle d'idempotence posee par l'assistant conversationnel (retry-safe)
     assistantActionKey: text("assistant_action_key"),
     mailId: uuid("mail_id").references(() => mails.id, { onDelete: "set null" }),
+    categorieId: uuid("categorie_id").references(() => taskCategories.id, {
+      onDelete: "set null",
+    }),
     completedAt: timestamp("completed_at", { withTimezone: true }),
 
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -48,6 +84,7 @@ export const tasks = pgTable(
     index("tasks_user_id_idx").on(table.userId),
     index("tasks_statut_idx").on(table.statut),
     index("tasks_echeance_idx").on(table.echeance),
+    index("tasks_categorie_id_idx").on(table.categorieId),
     uniqueIndex("tasks_assistant_action_key_unique")
       .on(table.userId, table.assistantActionKey)
       .where(sql`${table.assistantActionKey} IS NOT NULL`),
@@ -168,6 +205,9 @@ export const events = pgTable(
   (table) => [
     index("events_user_id_idx").on(table.userId),
     index("events_debut_idx").on(table.debut),
+    // Round 013 : vues mois/année filtrent par fenêtre — index composite plus
+    // sélectif (la RLS injecte déjà user_id dans chaque requête).
+    index("events_user_debut_idx").on(table.userId, table.debut),
     index("events_sync_status_idx").on(table.syncStatus),
     index("events_client_uuid_idx").on(table.clientUuid),
     uniqueIndex("events_user_google_event_id_unique")
@@ -181,6 +221,7 @@ export const events = pgTable(
   ],
 );
 
+export type TaskCategory = typeof taskCategories.$inferSelect;
 export type Task = typeof tasks.$inferSelect;
 export type Note = typeof notes.$inferSelect;
 export type NoteAppend = typeof noteAppends.$inferSelect;

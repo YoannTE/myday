@@ -105,7 +105,7 @@ export function CockpitClient() {
       <BriefHero brief={donnees.brief} onRegenerated={charger} />
       <OnboardingResumeBanner />
       <NotesEpinglees notes={donnees.notes_epinglees} />
-      <JourneeTimeline evenements={donnees.journee} />
+      <JourneeTimeline evenements={donnees.prochains} onSuccess={charger} />
       <TachesChecklist taches={donnees.taches} onUpdated={handleTacheMiseAJour} />
       <MailsImportants
         placeholder={donnees.mails_importants.placeholder}

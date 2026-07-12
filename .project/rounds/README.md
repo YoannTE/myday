@@ -22,6 +22,9 @@ future conditionnelle.
 | 009 | Notifications push et recherche | done (2026-07-11) | 008 |
 | 010 | Finitions | done (2026-07-11) | 009 |
 | 011 | Phase 2 produit (post-MVP) | available | 010 |
+| 012 | Tâches : dates & catégories | done (2026-07-12) | 010 |
+| 013 | Planning : vues jour/semaine/mois/année + heure de fin | done (2026-07-12) | 012 |
+| 014 | Cockpit & brief repensés | done (2026-07-12) | 012, 013 |
 
 ## Comptes-rendus
 

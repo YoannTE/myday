@@ -1,13 +1,14 @@
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  estAujourdHui,
+  formaterEnteteJour,
+  formaterHeure,
+} from "@/components/planning/date-utils";
+import { EventFormDialog } from "@/components/planning/event-form-dialog";
+import { SectionAddButton } from "@/components/cockpit/section-add-button";
 import type { CockpitEvent } from "@/components/cockpit/types";
-
-function formaterHeure(date: string): string {
-  return new Intl.DateTimeFormat("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(date));
-}
 
 function estEnCours(evenement: CockpitEvent): boolean {
   const maintenant = Date.now();
@@ -17,18 +18,34 @@ function estEnCours(evenement: CockpitEvent): boolean {
   );
 }
 
+interface JourneeTimelineProps {
+  evenements: CockpitEvent[];
+  onSuccess: () => void;
+}
+
 /**
- * Bloc « Ta journée » du cockpit (transposition fidèle de la variante V0
- * « Timeline produit ») : événements du jour, pastille `.pulse-now` sur
- * l'événement en cours.
+ * Bloc « Ton planning » du cockpit (F8, Round 014 — anciennement
+ * « Ta journée ») : les 10 prochains événements à venir (`prochains`, tri
+ * croissant fourni par le backend), pas seulement ceux du jour. Pastille
+ * `.pulse-now` sur l'événement en cours ; date affichée uniquement pour les
+ * jours différents d'aujourd'hui (fuseau Europe/Paris, `date-utils.ts`).
+ * Bouton « + » (F7) : création rapide d'événement sans quitter le cockpit.
  */
-export function JourneeTimeline({ evenements }: { evenements: CockpitEvent[] }) {
+export function JourneeTimeline({ evenements, onSuccess }: JourneeTimelineProps) {
   return (
     <section>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-display text-xl font-bold tracking-[-0.02em] text-ink">
-          Ta journée
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="font-display text-xl font-bold tracking-[-0.02em] text-ink">
+            Ton planning
+          </h2>
+          <EventFormDialog
+            onSuccess={onSuccess}
+            trigger={<SectionAddButton aria-label="Ajouter un événement" />}
+          >
+            <Plus className="h-4 w-4" strokeWidth={2.5} />
+          </EventFormDialog>
+        </div>
         <Link href="/planning" className="font-body text-sm text-accent">
           Tout voir →
         </Link>
@@ -36,23 +53,32 @@ export function JourneeTimeline({ evenements }: { evenements: CockpitEvent[] }) 
       <div className="flex flex-col gap-4 rounded-card bg-card p-6 shadow-card">
         {evenements.length === 0 ? (
           <p className="text-center font-body text-sm text-ink/50">
-            Aucun événement aujourd&apos;hui.
+            Aucun rendez-vous prévu.
           </p>
         ) : (
           evenements.map((evenement) => {
             const enCours = estEnCours(evenement);
+            const debut = new Date(evenement.debut);
+            const aujourdHui = estAujourdHui(debut);
             return (
               <div key={evenement.id} className="flex items-center gap-4">
                 <span
                   className={cn(
-                    "flex w-16 items-center gap-1.5 font-mono text-xs",
+                    "flex w-16 flex-shrink-0 flex-col items-start gap-0.5 font-mono text-xs",
                     enCours ? "text-accent" : "text-ink/40",
                   )}
                 >
-                  {enCours && (
-                    <span className="pulse-now inline-block h-2 w-2 rounded-full bg-accent" />
+                  {!aujourdHui && (
+                    <span className="text-[10px] text-ink/30 uppercase">
+                      {formaterEnteteJour(debut)}
+                    </span>
                   )}
-                  {formaterHeure(evenement.debut)}
+                  <span className="flex items-center gap-1.5">
+                    {enCours && (
+                      <span className="pulse-now inline-block h-2 w-2 rounded-full bg-accent" />
+                    )}
+                    {formaterHeure(evenement.debut)}
+                  </span>
                 </span>
                 <div
                   className={cn(

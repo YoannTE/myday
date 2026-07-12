@@ -14,7 +14,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, Response, status
 
 from app.auth.session import AuthUser, get_current_user
-from app.models.events import EventCreate, EventResponse, EventUpdate
+from app.models.events import EventCountResponse, EventCreate, EventResponse, EventUpdate
 from app.services import events as events_service
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -26,9 +26,24 @@ async def list_events(
     date_from: Annotated[datetime | None, Query(alias="from")] = None,
     date_to: Annotated[datetime | None, Query(alias="to")] = None,
 ):
-    """Liste les evenements de l'utilisateur, filtres par plage optionnelle."""
+    """Liste les evenements de l'utilisateur, filtres par chevauchement avec [from, to]."""
     events = await events_service.list_events(user["id"], date_from, date_to)
     return {"data": [EventResponse(**e).model_dump() for e in events]}
+
+
+@router.get("/counts")
+async def get_events_counts(
+    date_from: Annotated[datetime, Query(alias="from")],
+    date_to: Annotated[datetime, Query(alias="to")],
+    user: AuthUser = Depends(get_current_user),
+):
+    """Nombre d'evenements par jour (fuseau applicatif) sur la fenetre [from, to].
+
+    Reserve aux vues mois/annee du planning : ne charge jamais les evenements
+    complets (perf), seulement un agregat par jour civil.
+    """
+    counts = await events_service.get_event_counts(user["id"], date_from, date_to)
+    return {"data": [EventCountResponse(**c).model_dump() for c in counts]}
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)

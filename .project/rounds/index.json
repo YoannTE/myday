@@ -97,6 +97,34 @@
         "010"
       ],
       "updated_at": "2026-07-11"
+    },
+    {
+      "id": "012",
+      "title": "Tâches : dates & catégories",
+      "status": "done",
+      "depends_on": [
+        "010"
+      ],
+      "updated_at": "2026-07-12"
+    },
+    {
+      "id": "013",
+      "title": "Planning : vues jour/semaine/mois/année + heure de fin",
+      "status": "done",
+      "depends_on": [
+        "012"
+      ],
+      "updated_at": "2026-07-12"
+    },
+    {
+      "id": "014",
+      "title": "Cockpit & brief repensés",
+      "status": "done",
+      "depends_on": [
+        "012",
+        "013"
+      ],
+      "updated_at": "2026-07-12"
     }
   ]
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactElement, type ReactNode } from "react";
 import { toast } from "sonner";
 import { apiCall } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -20,11 +20,26 @@ import type { NoteApi } from "@/components/notes/types";
 
 interface NoteQuickAddDialogProps {
   onCreated: (note: NoteApi) => void;
+  // Déclencheur personnalisé (F7, Round 014 - ex. bouton rond « + » du
+  // cockpit) : par défaut, garde le bouton texte « + Note » historique.
+  trigger?: ReactElement;
+  children?: ReactNode;
 }
+
+const DECLENCHEUR_PAR_DEFAUT = (
+  <button
+    type="button"
+    className="cta-gradient rounded-inner px-4 py-2 font-display text-sm font-semibold text-white"
+  />
+);
 
 // Dialog « Note rapide » : titre obligatoire + contenu optionnel, POST
 // direct. Pas de zod ici (un seul champ obligatoire, simple à valider).
-export function NoteQuickAddDialog({ onCreated }: NoteQuickAddDialogProps) {
+export function NoteQuickAddDialog({
+  onCreated,
+  trigger = DECLENCHEUR_PAR_DEFAUT,
+  children = "+ Note",
+}: NoteQuickAddDialogProps) {
   const [open, setOpen] = useState(false);
   const [titre, setTitre] = useState("");
   const [contenu, setContenu] = useState("");
@@ -72,16 +87,7 @@ export function NoteQuickAddDialog({ onCreated }: NoteQuickAddDialogProps) {
         if (!valeur) reinitialiser();
       }}
     >
-      <DialogTrigger
-        render={
-          <button
-            type="button"
-            className="cta-gradient rounded-inner px-4 py-2 font-display text-sm font-semibold text-white"
-          />
-        }
-      >
-        + Note
-      </DialogTrigger>
+      <DialogTrigger render={trigger}>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Note rapide</DialogTitle>

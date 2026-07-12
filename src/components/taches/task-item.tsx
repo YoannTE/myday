@@ -7,6 +7,8 @@ import { messageErreurApi } from "@/lib/api-error-message";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { CategoryBadge } from "@/components/taches/category-badge";
+import { TaskDetailsDialog } from "@/components/taches/task-details-dialog";
 import type { Task } from "@/components/taches/types";
 
 /** Formate l'échéance en label court ("Aujourd'hui", "Vendredi"...). */
@@ -23,6 +25,7 @@ function formaterEcheance(echeance: string): string {
 interface TaskItemProps {
   task: Task;
   onUpdated: (task: Task) => void;
+  onCategoriesChanged?: () => void;
 }
 
 /**
@@ -30,7 +33,7 @@ interface TaskItemProps {
  * case à cocher optimiste (rollback + toast si le PATCH échoue) et édition
  * inline du titre (clic sur le texte -> input -> Entrée/perte de focus).
  */
-export function TaskItem({ task, onUpdated }: TaskItemProps) {
+export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps) {
   const [enEdition, setEnEdition] = useState(false);
   const [titreEdition, setTitreEdition] = useState(task.titre);
   const [enCours, setEnCours] = useState(false);
@@ -123,6 +126,9 @@ export function TaskItem({ task, onUpdated }: TaskItemProps) {
           {task.titre}
         </span>
       )}
+      {!estFaite && task.categorie && (
+        <CategoryBadge categorie={task.categorie} />
+      )}
       {!estFaite && task.priorite === "haute" && (
         <span className="flex-shrink-0 rounded-full bg-soft px-2.5 py-1 font-mono text-[10px] tracking-[.04em] text-accent uppercase">
           Priorité
@@ -133,6 +139,11 @@ export function TaskItem({ task, onUpdated }: TaskItemProps) {
           {formaterEcheance(task.echeance)}
         </span>
       )}
+      <TaskDetailsDialog
+        task={task}
+        onUpdated={onUpdated}
+        onCategoriesChanged={onCategoriesChanged}
+      />
     </div>
   );
 }

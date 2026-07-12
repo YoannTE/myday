@@ -1,0 +1,69 @@
+"use client";
+
+import { Controller, type Control, type UseFormRegister, type UseFormSetValue } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { CategorySelect } from "@/components/taches/category-select";
+import type { TaskDetailsValues } from "@/components/taches/task-details-schema";
+import type { TaskCategory } from "@/components/taches/types";
+
+interface TaskDetailsFieldsProps {
+  register: UseFormRegister<TaskDetailsValues>;
+  control: Control<TaskDetailsValues>;
+  setValue: UseFormSetValue<TaskDetailsValues>;
+  categories: TaskCategory[] | null;
+  onCategoryCreated: (categorie: TaskCategory) => void;
+}
+
+/**
+ * Champs « échéance » (date picker, effaçable) et « catégorie » (avec
+ * création inline) du formulaire d'édition de tâche (Round 012, F1/F2).
+ */
+export function TaskDetailsFields({
+  register,
+  control,
+  setValue,
+  categories,
+  onCategoryCreated,
+}: TaskDetailsFieldsProps) {
+  return (
+    <>
+      <div className="space-y-1.5">
+        <Label htmlFor="echeance-tache">Échéance</Label>
+        <div className="flex items-center gap-2">
+          <Input
+            id="echeance-tache"
+            type="date"
+            className="flex-1"
+            {...register("echeance")}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setValue("echeance", "")}
+          >
+            Effacer
+          </Button>
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        <Label>Catégorie</Label>
+        <Controller
+          control={control}
+          name="categorie_id"
+          render={({ field }) => (
+            <CategorySelect
+              categories={categories ?? []}
+              disabled={categories === null}
+              value={field.value}
+              onValueChange={field.onChange}
+              onCategoryCreated={onCategoryCreated}
+            />
+          )}
+        />
+      </div>
+    </>
+  );
+}

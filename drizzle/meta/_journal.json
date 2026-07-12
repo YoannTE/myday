@@ -57,6 +57,20 @@
       "when": 1783772920761,
       "tag": "0007_previous_old_lace",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1783833157656,
+      "tag": "0008_wooden_karen_page",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1783835108600,
+      "tag": "0009_fine_ozymandias",
+      "breakpoints": true
     }
   ]
 }

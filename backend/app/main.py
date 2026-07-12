@@ -28,6 +28,7 @@ from app.api.notifications import router as notifications_router
 from app.api.preferences import router as preferences_router
 from app.api.push import router as push_router
 from app.api.search import router as search_router
+from app.api.task_categories import router as task_categories_router
 from app.api.tasks import router as tasks_router
 from app.api.usage import router as usage_router
 from app.services.brief_scheduler import start_brief_scheduler, stop_brief_scheduler
@@ -107,6 +108,7 @@ app.include_router(me_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
 app.include_router(google_router, prefix="/api")
 app.include_router(tasks_router, prefix="/api")
+app.include_router(task_categories_router, prefix="/api")
 app.include_router(notes_router, prefix="/api")
 app.include_router(preferences_router, prefix="/api")
 app.include_router(usage_router, prefix="/api")

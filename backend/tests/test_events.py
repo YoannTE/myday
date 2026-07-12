@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import uuid
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 import asyncpg
 import pytest
@@ -332,3 +333,144 @@ def test_list_events_filtre_par_plage_et_rls(client, auth_user):
         assert far["id"] not in ids
     finally:
         delete_user(other_uid)
+
+
+def _create_event_between(client, cookie, debut: datetime, fin: datetime, titre: str = "Evenement") -> dict:
+    resp = client.post(
+        "/api/events",
+        json={"titre": titre, "debut": debut.isoformat(), "fin": fin.isoformat()},
+        headers=_cookie(cookie),
+    )
+    assert resp.status_code == 201
+    return resp.json()["data"]
+
+
+def test_list_events_chevauchement_multi_jours(client, auth_user):
+    """Un evenement multi-jours demarre avant la fenetre et qui la chevauche
+    doit rester visible : le filtre est un chevauchement (fin >= from ET
+    debut <= to), jamais un `debut BETWEEN ...` qui le ferait disparaitre."""
+    _, cookie = auth_user
+    now = datetime.now(timezone.utc)
+    multi_jours = _create_event_between(
+        client, cookie, now - timedelta(days=5), now + timedelta(days=5), "Seminaire"
+    )
+    hors_fenetre = _create_event_between(
+        client, cookie, now + timedelta(days=20), now + timedelta(days=21)
+    )
+
+    window_from = now - timedelta(hours=1)
+    window_to = now + timedelta(hours=1)
+    resp = client.get(
+        "/api/events",
+        params={"from": window_from.isoformat(), "to": window_to.isoformat()},
+        headers=_cookie(cookie),
+    )
+    assert resp.status_code == 200
+    ids = [e["id"] for e in resp.json()["data"]]
+    assert multi_jours["id"] in ids
+    assert hors_fenetre["id"] not in ids
+
+
+def test_list_events_bornes_inclusives(client, auth_user):
+    """Un evenement dont la `fin` coincide exactement avec `from` (ou dont le
+    `debut` coincide exactement avec `to`) doit etre inclus (comparaisons
+    >= / <=, pas strictes)."""
+    _, cookie = auth_user
+    now = datetime.now(timezone.utc)
+    fin_exacte = now - timedelta(hours=3)
+    touche_from = _create_event_between(
+        client, cookie, fin_exacte - timedelta(hours=1), fin_exacte, "Touche from"
+    )
+
+    resp = client.get(
+        "/api/events",
+        params={
+            "from": fin_exacte.isoformat(),
+            "to": (now + timedelta(hours=1)).isoformat(),
+        },
+        headers=_cookie(cookie),
+    )
+    assert resp.status_code == 200
+    ids = [e["id"] for e in resp.json()["data"]]
+    assert touche_from["id"] in ids
+
+
+def test_list_events_from_apres_to_400(client, auth_user):
+    _, cookie = auth_user
+    now = datetime.now(timezone.utc)
+    resp = client.get(
+        "/api/events",
+        params={
+            "from": (now + timedelta(hours=1)).isoformat(),
+            "to": now.isoformat(),
+        },
+        headers=_cookie(cookie),
+    )
+    assert resp.status_code == 400
+
+
+# --- Agregat /events/counts (vues mois/annee) ---
+
+
+def test_events_counts_regroupe_par_jour_europe_paris(client, auth_user):
+    _, cookie = auth_user
+    paris = ZoneInfo("Europe/Paris")
+    # 23h30 heure de Paris le jour J : reste bien range sur le jour J (et pas
+    # J+1) une fois converti en heure locale, meme si l'UTC bascule.
+    jour_a = datetime(2026, 3, 10, 23, 30, tzinfo=paris)
+    jour_a_bis = datetime(2026, 3, 10, 10, 0, tzinfo=paris)
+    jour_b = datetime(2026, 3, 12, 9, 0, tzinfo=paris)
+
+    _create_event_between(client, cookie, jour_a, jour_a + timedelta(hours=1))
+    _create_event_between(client, cookie, jour_a_bis, jour_a_bis + timedelta(hours=1))
+    _create_event_between(client, cookie, jour_b, jour_b + timedelta(hours=1))
+
+    resp = client.get(
+        "/api/events/counts",
+        params={
+            "from": datetime(2026, 3, 9, tzinfo=paris).isoformat(),
+            "to": datetime(2026, 3, 13, tzinfo=paris).isoformat(),
+        },
+        headers=_cookie(cookie),
+    )
+    assert resp.status_code == 200
+    par_jour = {r["jour"]: r["count"] for r in resp.json()["data"]}
+    assert par_jour.get("2026-03-10") == 2
+    assert par_jour.get("2026-03-12") == 1
+
+
+def test_events_counts_rls_cloisonne_par_utilisateur(client, auth_user):
+    _, cookie = auth_user
+    other_uid, other_cookie = _other_user_cookie("events-counts")
+    try:
+        now = datetime.now(timezone.utc)
+        _create_event_between(client, cookie, now, now + timedelta(hours=1))
+        _create_event_between(client, other_cookie, now, now + timedelta(hours=1))
+
+        resp = client.get(
+            "/api/events/counts",
+            params={
+                "from": (now - timedelta(days=1)).isoformat(),
+                "to": (now + timedelta(days=1)).isoformat(),
+            },
+            headers=_cookie(cookie),
+        )
+        assert resp.status_code == 200
+        total = sum(r["count"] for r in resp.json()["data"])
+        assert total == 1
+    finally:
+        delete_user(other_uid)
+
+
+def test_events_counts_from_apres_to_400(client, auth_user):
+    _, cookie = auth_user
+    now = datetime.now(timezone.utc)
+    resp = client.get(
+        "/api/events/counts",
+        params={
+            "from": (now + timedelta(hours=1)).isoformat(),
+            "to": now.isoformat(),
+        },
+        headers=_cookie(cookie),
+    )
+    assert resp.status_code == 400

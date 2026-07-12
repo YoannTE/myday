@@ -84,9 +84,9 @@ export function NoteOuverte({ note, onChange }: NoteOuverteProps) {
   }
 
   return (
-    <div className="fade-in delay-1 rounded-card bg-card p-6 shadow-card">
+    <div className="fade-in delay-1 max-w-full overflow-hidden rounded-card bg-card p-6 shadow-card">
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <h2 className="flex-1 font-display text-lg font-extrabold tracking-[-0.02em] text-ink">
+        <h2 className="min-w-0 flex-1 font-display text-lg font-extrabold tracking-[-0.02em] break-words text-ink">
           {note.titre}
         </h2>
         {note.origine === "assistant" && (
@@ -113,7 +113,7 @@ export function NoteOuverte({ note, onChange }: NoteOuverteProps) {
         value={contenu}
         onChange={(evenement) => setContenu(evenement.target.value)}
         placeholder="Écris ici..."
-        className="min-h-40 w-full resize-none border-none bg-transparent p-0 text-sm leading-relaxed text-ink/80 shadow-none focus-visible:ring-0"
+        className="min-h-40 w-full max-w-full resize-none border-none bg-transparent p-0 text-sm leading-relaxed break-words whitespace-pre-wrap text-ink/80 shadow-none focus-visible:ring-0"
       />
       <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-ink/5 pt-4">
         <span className="font-mono text-[10px] tracking-[.04em] text-ink/30 uppercase">

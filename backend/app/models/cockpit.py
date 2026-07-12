@@ -12,6 +12,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 from app.models.events import EventResponse
+from app.models.task_categories import TaskCategoryLite
 
 
 class NoteSummary(BaseModel):
@@ -38,6 +39,8 @@ class TaskSummary(BaseModel):
     statut: str
     origine: str
     mail_id: str | None = None
+    categorie_id: str | None = None
+    categorie: TaskCategoryLite | None = None
     completed_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
@@ -56,7 +59,10 @@ class BriefSummary(BaseModel):
 
 class CockpitResponse(BaseModel):
     notes_epinglees: list[NoteSummary]
-    journee: list[EventResponse]
+    # Round 014 (F8) : "Ton planning" - 10 prochains rendez-vous a venir
+    # (debut >= now(), tri croissant) - remplace l'ancien "journee" (limite
+    # aux seuls evenements du jour courant).
+    prochains: list[EventResponse]
     taches: list[TaskSummary]
     # Round 006 : forme variable ({"placeholder": True} tant qu'aucun mail
     # n'est encore trie, sinon {"placeholder": False, "mails": [mail, ...]}).

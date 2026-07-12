@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TaskItem } from "@/components/taches/task-item";
+import { TaskQuickAddDialog } from "@/components/taches/task-quick-add-dialog";
 import type { Task } from "@/components/taches/types";
 
 /**
@@ -7,7 +8,8 @@ import type { Task } from "@/components/taches/types";
  * « Checklist nette ») : tâches à faire uniquement (contrat `GET
  * /api/cockpit`). Le clic sur la case délègue à `TaskItem` (optimiste,
  * rollback + toast si échec) ; `onUpdated` retire la tâche de la liste dès
- * qu'elle passe à « faite » (cf. `cockpit-client.tsx`).
+ * qu'elle passe à « faite » (cf. `cockpit-client.tsx`) et l'y ajoute à la
+ * création (bouton « + », F7 Round 014 — `onUpdated` gère déjà les deux cas).
  */
 export function TachesChecklist({
   taches,
@@ -19,9 +21,12 @@ export function TachesChecklist({
   return (
     <section>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-display text-xl font-bold tracking-[-0.02em] text-ink">
-          Tes tâches
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="font-display text-xl font-bold tracking-[-0.02em] text-ink">
+            Tes tâches
+          </h2>
+          <TaskQuickAddDialog onCreated={onUpdated} />
+        </div>
         <Link href="/taches" className="font-body text-sm text-accent">
           Tout voir →
         </Link>

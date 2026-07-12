@@ -5,12 +5,29 @@ export type Priorite = "basse" | "normale" | "haute";
 export type StatutTache = "a_faire" | "faite";
 export type OrigineTache = "manuelle" | "assistant" | "mail";
 
+/** Représentation légère d'une catégorie jointe dans la réponse d'une tâche. */
+export interface TaskCategoryLite {
+  id: string;
+  nom: string;
+  couleur: string;
+}
+
+/** Catégorie de tâche personnalisable (Round 012) - `GET/POST/PATCH /api/task-categories`. */
+export interface TaskCategory {
+  id: string;
+  nom: string;
+  couleur: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Task {
   id: string;
   titre: string;
   description: string | null;
   priorite: Priorite;
   echeance: string | null;
+  categorie: TaskCategoryLite | null;
   statut: StatutTache;
   origine: OrigineTache;
   mail_id: string | null;

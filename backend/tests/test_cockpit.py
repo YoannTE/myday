@@ -91,11 +91,17 @@ def test_cockpit_agrege_notes_events_taches(client, auth_user):
     insert_note(uid, "Note non epinglee", epinglee=False)
     epinglee_id = insert_note(uid, "Note epinglee")
 
+    # Round 014 (F8) : "prochains" liste les 10 prochains rendez-vous a
+    # venir (pas seulement ceux du jour courant) - les deux evenements
+    # futurs doivent donc apparaitre, tries par debut croissant.
     today_event_id = insert_event(
         uid, "RDV aujourd'hui", now + timedelta(hours=1), now + timedelta(hours=2)
     )
-    insert_event(
+    dans_3_jours_id = insert_event(
         uid, "RDV dans 3 jours", now + timedelta(days=3), now + timedelta(days=3, hours=1)
+    )
+    insert_event(
+        uid, "RDV hier (passe)", now - timedelta(days=1, hours=2), now - timedelta(days=1)
     )
 
     haute_id = insert_task(uid, "Urgent", priorite="haute", echeance=now + timedelta(days=1))
@@ -112,9 +118,12 @@ def test_cockpit_agrege_notes_events_taches(client, auth_user):
     assert all(n["epinglee"] for n in data["notes_epinglees"])
     assert all(not n["archivee"] for n in data["notes_epinglees"])
 
-    event_ids = [e["id"] for e in data["journee"]]
+    event_ids = [e["id"] for e in data["prochains"]]
     assert today_event_id in event_ids
-    assert len(event_ids) == 1  # le RDV dans 3 jours n'apparait pas
+    assert dans_3_jours_id in event_ids
+    assert len(event_ids) == 2  # le RDV passe n'apparait pas
+    # tri par debut croissant : le RDV d'aujourd'hui vient avant celui dans 3 jours.
+    assert event_ids.index(today_event_id) < event_ids.index(dans_3_jours_id)
 
     task_ids = [t["id"] for t in data["taches"]]
     assert haute_id in task_ids
@@ -126,6 +135,38 @@ def test_cockpit_agrege_notes_events_taches(client, auth_user):
     assert data["mails_importants"] == {"placeholder": True}
 
 
+def test_cockpit_tache_expose_categorie(client, auth_user):
+    """Round 012 : la tache du cockpit porte sa categorie (id, nom, couleur)."""
+    uid, cookie = auth_user
+
+    async def _seed(conn):
+        cat_id = await conn.fetchval(
+            "INSERT INTO task_categories (user_id, nom, couleur) "
+            "VALUES ($1, 'Pro', '#2350E6') RETURNING id::text",
+            uid,
+        )
+        task_id = await conn.fetchval(
+            "INSERT INTO tasks (user_id, titre, statut, priorite, categorie_id) "
+            "VALUES ($1, 'Tache categorisee', 'a_faire', 'normale', $2) "
+            "RETURNING id::text",
+            uid, cat_id,
+        )
+        return cat_id, task_id
+
+    cat_id, task_id = admin(_seed)
+
+    resp = client.get("/api/cockpit", headers=_cookie(cookie))
+    assert resp.status_code == 200
+    taches = {t["id"]: t for t in resp.json()["data"]["taches"]}
+    assert task_id in taches
+    assert taches[task_id]["categorie_id"] == cat_id
+    assert taches[task_id]["categorie"] == {
+        "id": cat_id,
+        "nom": "Pro",
+        "couleur": "#2350E6",
+    }
+
+
 def test_cockpit_rls_isolation(client, auth_user):
     _, cookie = auth_user
     other_uid = create_user(f"cockpit-other-{uuid.uuid4().hex}@test.local")
@@ -134,7 +175,40 @@ def test_cockpit_rls_isolation(client, auth_user):
         resp = client.get("/api/cockpit", headers=_cookie(cookie))
         assert resp.status_code == 200
         assert resp.json()["data"]["notes_epinglees"] == []
-        assert resp.json()["data"]["journee"] == []
+        assert resp.json()["data"]["prochains"] == []
         assert resp.json()["data"]["taches"] == []
     finally:
         delete_user(other_uid)
+
+
+def test_cockpit_prochains_dix_a_venir_tries(client, auth_user):
+    """Round 014 (F8) : "prochains" = les 10 prochains rendez-vous a venir
+    (debut >= now()), tries par debut croissant, limites a 10 - un
+    evenement deja passe n'apparait jamais."""
+    uid, cookie = auth_user
+    now = datetime.now(timezone.utc)
+
+    insert_event(uid, "RDV passe", now - timedelta(hours=2), now - timedelta(hours=1))
+    futurs_ids = [
+        insert_event(
+            uid, f"RDV futur {i}", now + timedelta(hours=i), now + timedelta(hours=i, minutes=30)
+        )
+        for i in range(1, 13)  # 12 evenements futurs, tries par debut croissant
+    ]
+
+    resp = client.get("/api/cockpit", headers=_cookie(cookie))
+    assert resp.status_code == 200
+    prochains = resp.json()["data"]["prochains"]
+
+    assert len(prochains) == 10
+    assert [e["id"] for e in prochains] == futurs_ids[:10]
+
+
+def test_cockpit_prochains_vide_si_aucun_evenement_a_venir(client, auth_user):
+    uid, cookie = auth_user
+    now = datetime.now(timezone.utc)
+    insert_event(uid, "RDV passe", now - timedelta(hours=2), now - timedelta(hours=1))
+
+    resp = client.get("/api/cockpit", headers=_cookie(cookie))
+    assert resp.status_code == 200
+    assert resp.json()["data"]["prochains"] == []

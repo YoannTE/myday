@@ -181,8 +181,111 @@ def test_brief_journee_calme_zero_donnee(user_id):
     contenu = get_brief_contenu(result["brief_id"])
     assert "calme" in contenu["headline"].lower()
     assert len(contenu["priorities"]) == 1
-    assert contenu["schedule_summary"] == "Aucun évènement prévu aujourd'hui."
-    assert contenu["tasks_summary"] == "Aucune tâche en attente."
+    assert contenu["schedule_summary"] == "Aucun rendez-vous aujourd'hui."
+    assert contenu["tasks_summary"] == "Rien d'urgent aujourd'hui."
+    assert contenu["mails_summary"] == "Aucun mail important n'attend de réponse."
+
+
+# --- Ordre des blocs et blocs vides (Round 014, F5) --------------------------
+
+
+def test_brief_ordre_des_blocs_source_unique():
+    """`BriefContentModel` (chemin IA) et `build_degraded_brief` (chemin
+    dégradé) doivent produire les 3 blocs dans le MÊME ordre - rendez-vous,
+    tâches, mails - défini une seule fois par `degraded.BRIEF_BLOCK_ORDER`."""
+    from app.services.daily_brief.compose import BriefContentModel
+    from app.services.daily_brief.degraded import BRIEF_BLOCK_ORDER, build_degraded_brief
+
+    champs_modele = tuple(
+        c for c in BriefContentModel.model_fields if c in BRIEF_BLOCK_ORDER
+    )
+    assert champs_modele == BRIEF_BLOCK_ORDER
+
+    contexte_vide = {"events": [], "tasks_today": [], "important_mails": []}
+    contenu = build_degraded_brief(contexte_vide, [], 3)
+    ordre_effectif = tuple(c for c in contenu if c in BRIEF_BLOCK_ORDER)
+    assert ordre_effectif == BRIEF_BLOCK_ORDER
+
+
+def test_brief_ordre_des_blocs_contexte_riche(user_id):
+    """Contexte riche (évènement + tâche du jour + mail) : les 3 blocs sont
+    tous renseignés (aucun bloc fantôme). L'ordre réel (a -> b -> c) est
+    garanti au niveau Python par `test_brief_ordre_des_blocs_source_unique` -
+    la persistance jsonb de Postgres ne préserve pas l'ordre des clés, donc
+    ce test-ci ne vérifie que le contenu, pas l'ordre des clés en BDD."""
+    now = datetime.now(_TZ)
+    insert_event(user_id, "Point équipe", now + timedelta(hours=1), now + timedelta(hours=2))
+    insert_task(user_id, "Relire le devis", now + timedelta(hours=4))
+    insert_triaged_mail(
+        user_id, "g-ordre", "client@corp.com", "Devis à valider", 75, now - timedelta(hours=2)
+    )
+
+    result = run_in_loop(lambda: run_daily_brief(user_id, "manual", today_str()))
+    contenu = get_brief_contenu(result["brief_id"])
+
+    assert contenu["schedule_summary"] != "Aucun rendez-vous aujourd'hui."
+    assert contenu["tasks_summary"] != "Rien d'urgent aujourd'hui."
+    assert contenu["mails_summary"] != "Aucun mail important n'attend de réponse."
+
+
+def test_brief_bloc_rdv_vide_mais_taches_et_mails_presents(user_id):
+    """Aucun rendez-vous aujourd'hui mais des tâches/mails : le bloc RDV
+    affiche le message vide explicite, les autres blocs restent renseignés."""
+    now = datetime.now(_TZ)
+    insert_task(user_id, "Relancer le fournisseur", now + timedelta(hours=2))
+    insert_triaged_mail(
+        user_id, "g-vide-rdv", "fournisseur@corp.com", "Relance", 70, now - timedelta(hours=1)
+    )
+
+    result = run_in_loop(lambda: run_daily_brief(user_id, "manual", today_str()))
+    contenu = get_brief_contenu(result["brief_id"])
+
+    assert contenu["schedule_summary"] == "Aucun rendez-vous aujourd'hui."
+    assert contenu["tasks_summary"] != "Rien d'urgent aujourd'hui."
+    assert contenu["mails_summary"] != "Aucun mail important n'attend de réponse."
+
+
+def test_brief_tache_en_retard_non_incluse_dans_les_taches_du_jour(user_id):
+    """Une tâche en retard depuis plusieurs jours n'apparaît plus dans le
+    bloc "tâches du jour" (bornes strictement Europe/Paris du jour même,
+    Round 014 F5) - seule une échéance d'aujourd'hui compte."""
+    now = datetime.now(_TZ)
+    insert_task(user_id, "Tâche très en retard", now - timedelta(days=3))
+
+    result = run_in_loop(lambda: run_daily_brief(user_id, "manual", today_str()))
+    contenu = get_brief_contenu(result["brief_id"])
+
+    assert contenu["tasks_summary"] == "Rien d'urgent aujourd'hui."
+    assert not any("Tâche très en retard" in p for p in contenu["priorities"])
+
+
+def test_brief_mails_top_3_parmi_plus_de_trois(user_id):
+    """Seuls les 3 mails les plus importants (score décroissant) reçus dans
+    les 5 derniers jours composent le bloc mails (Round 014 F5) - même si
+    davantage de mails importants existent."""
+    now = datetime.now(_TZ)
+    for i, score in enumerate([90, 65, 60, 95, 80]):  # 5 mails >= seuil (60)
+        insert_triaged_mail(
+            user_id, f"g-top3-{i}", f"expediteur{i}@corp.com", f"Sujet {i}",
+            score, now - timedelta(hours=i + 1),
+        )
+
+    result = run_in_loop(lambda: run_daily_brief(user_id, "manual", today_str()))
+    contenu = get_brief_contenu(result["brief_id"])
+
+    assert contenu["mails_summary"] == "3 mail(s) important(s) attend(ent) une réponse."
+
+
+def test_brief_mails_ignore_ceux_recus_il_y_a_plus_de_cinq_jours(user_id):
+    now = datetime.now(_TZ)
+    insert_triaged_mail(
+        user_id, "g-trop-vieux", "vieux@corp.com", "Trop ancien", 90,
+        now - timedelta(days=6),
+    )
+
+    result = run_in_loop(lambda: run_daily_brief(user_id, "manual", today_str()))
+    contenu = get_brief_contenu(result["brief_id"])
+
     assert contenu["mails_summary"] == "Aucun mail important n'attend de réponse."
 
 
@@ -293,3 +396,22 @@ def test_generate_brief_anti_spam_429(client, auth_user):
 
     second = client.post("/api/brief/generate", headers=headers)
     assert second.status_code == 429
+
+
+def test_dedupe_priorities_supprime_doublons_et_complete():
+    """Round 014 (correctif) : le garde-fou peut réinjecter fallback[-1]
+    plusieurs fois et le LLM répéter la même priorité — on déduplique
+    (casefold + strip) puis on complète par des priorités distinctes."""
+    from app.services.daily_brief.compose import _dedupe_priorities
+
+    result = _dedupe_priorities(
+        ["Répondre à PayPal", "répondre à paypal ", "Répondre à PayPal"],
+        ["Répondre à PayPal", "Préparer la réunion", "Confirmer le padel"],
+        3,
+    )
+    assert result == [
+        "Répondre à PayPal",
+        "Préparer la réunion",
+        "Confirmer le padel",
+    ]
+    assert len(result) == len({p.strip().casefold() for p in result})

@@ -1,8 +1,11 @@
 """Schémas Pydantic du domaine Tâches."""
 
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, field_validator
+
+from app.models.task_categories import TaskCategoryLite
 
 PRIORITES = ("basse", "normale", "haute")
 STATUTS = ("a_faire", "faite")
@@ -13,6 +16,7 @@ class TaskCreate(BaseModel):
     description: str | None = None
     priorite: str = "normale"
     echeance: datetime | None = None
+    categorie_id: UUID | None = None
 
     @field_validator("titre")
     @classmethod
@@ -35,6 +39,7 @@ class TaskUpdate(BaseModel):
     description: str | None = None
     priorite: str | None = None
     echeance: datetime | None = None
+    categorie_id: UUID | None = None
     statut: str | None = None
 
     @field_validator("titre")
@@ -70,6 +75,8 @@ class TaskResponse(BaseModel):
     description: str | None = None
     priorite: str
     echeance: datetime | None = None
+    categorie_id: str | None = None
+    categorie: TaskCategoryLite | None = None
     statut: str
     origine: str
     mail_id: str | None = None

@@ -19,7 +19,7 @@ def compute_deterministic_alerts(context: dict, now: datetime) -> list[str]:
     reste pure vis-à-vis de son entrée, aucune horloge interne."""
     alerts: list[str] = []
     alerts.extend(_conflict_alerts(context.get("events", [])))
-    alerts.extend(_due_soon_alerts(context.get("tasks_due", []), now))
+    alerts.extend(_due_soon_alerts(context.get("tasks_today", []), now))
     sync_alert = _sync_alert(context.get("last_sync_at"), now)
     if sync_alert:
         alerts.append(sync_alert)

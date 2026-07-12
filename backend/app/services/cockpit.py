@@ -4,12 +4,16 @@ Une seule `scoped_connection` pour les 3 lectures (notes/events/tasks) : la
 RLS filtre automatiquement par utilisateur. Bornes du jour calculees en heure
 locale (`settings.app_timezone`, Europe/Paris par defaut) plutot qu'en UTC
 naif (correction #6 review Round 004).
+
+Round 014 (F8) : la section "Ton planning" ("prochains") n'affiche plus les
+seuls evenements du jour mais les 10 prochains rendez-vous a venir
+(`debut >= now()`, tri croissant), toujours en heure locale.
 """
 
 from __future__ import annotations
 
 import json
-from datetime import datetime, time
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from app.config import settings
@@ -18,6 +22,7 @@ from app.services.mails import MAIL_SELECT_COLUMNS
 
 _NOTES_LIMIT = 5
 _MAILS_IMPORTANTS_LIMIT = 5
+_PROCHAINS_LIMIT = 10
 
 _NOTES_COLUMNS = (
     "id::text, titre, contenu, epinglee, archivee, origine, created_at, updated_at"
@@ -27,22 +32,31 @@ _EVENTS_COLUMNS = (
     "source, sync_status, created_at, updated_at"
 )
 _TASKS_COLUMNS = (
-    "id::text, titre, description, priorite, echeance, statut, origine, "
-    "mail_id::text, completed_at, created_at, updated_at"
+    "t.id::text, t.titre, t.description, t.priorite, t.echeance, t.statut, "
+    "t.origine, t.mail_id::text, t.completed_at, t.created_at, t.updated_at, "
+    "t.categorie_id::text, c.nom AS categorie_nom, c.couleur AS categorie_couleur"
 )
 
 
-def _day_bounds() -> tuple[datetime, datetime]:
-    """Bornes [debut, fin] du jour courant, calculees dans le fuseau applicatif."""
-    tz = ZoneInfo(settings.app_timezone)
-    today = datetime.now(tz).date()
-    return datetime.combine(today, time.min, tzinfo=tz), datetime.combine(
-        today, time.max, tzinfo=tz
-    )
+def _serialize_task(row) -> dict:
+    """Aplati la ligne SQL en tache + objet `categorie` imbrique (ou None)."""
+    d = dict(row)
+    nom = d.pop("categorie_nom", None)
+    couleur = d.pop("categorie_couleur", None)
+    if d.get("categorie_id") is not None and nom is not None:
+        d["categorie"] = {"id": d["categorie_id"], "nom": nom, "couleur": couleur}
+    else:
+        d["categorie"] = None
+    return d
+
+
+def _now_local() -> datetime:
+    """Instant courant dans le fuseau applicatif (Europe/Paris par defaut)."""
+    return datetime.now(ZoneInfo(settings.app_timezone))
 
 
 async def get_cockpit(user_id: str) -> dict:
-    day_start, day_end = _day_bounds()
+    now = _now_local()
     async with scoped_connection(user_id) as conn:
         # Correction #5 (review Round 007) : `today_local` du brief est calcule
         # depuis le fuseau PROPRE a l'utilisateur (user_preferences.timezone),
@@ -66,16 +80,17 @@ async def get_cockpit(user_id: str) -> dict:
             "ORDER BY updated_at DESC LIMIT $1",
             _NOTES_LIMIT,
         )
-        events = await conn.fetch(
+        prochains = await conn.fetch(
             f"SELECT {_EVENTS_COLUMNS} FROM events "
-            "WHERE fin > $1 AND debut < $2 ORDER BY debut ASC",
-            day_start, day_end,
+            "WHERE debut >= $1 ORDER BY debut ASC LIMIT $2",
+            now, _PROCHAINS_LIMIT,
         )
         tasks = await conn.fetch(
-            f"SELECT {_TASKS_COLUMNS} FROM tasks "
-            "WHERE statut = 'a_faire' "
-            "ORDER BY echeance ASC NULLS LAST, "
-            "CASE priorite WHEN 'haute' THEN 0 WHEN 'normale' THEN 1 ELSE 2 END ASC"
+            f"SELECT {_TASKS_COLUMNS} FROM tasks t "
+            "LEFT JOIN task_categories c ON c.id = t.categorie_id "
+            "WHERE t.statut = 'a_faire' "
+            "ORDER BY t.echeance ASC NULLS LAST, "
+            "CASE t.priorite WHEN 'haute' THEN 0 WHEN 'normale' THEN 1 ELSE 2 END ASC"
         )
         triaged_count = await conn.fetchval(
             "SELECT count(*) FROM mails WHERE statut = 'triaged'"
@@ -111,8 +126,8 @@ async def get_cockpit(user_id: str) -> dict:
         }
     return {
         "notes_epinglees": [dict(r) for r in notes],
-        "journee": [dict(r) for r in events],
-        "taches": [dict(r) for r in tasks],
+        "prochains": [dict(r) for r in prochains],
+        "taches": [_serialize_task(r) for r in tasks],
         "mails_importants": mails_importants,
         "brief": brief,
     }

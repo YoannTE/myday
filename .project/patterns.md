@@ -166,6 +166,23 @@ un endpoint. (Créé au Round 001.)
   sur un fond `cta-gradient` (couleur de marque constante) peut rester `bg-white`.
 - **Boutons icônes** : toujours un `aria-label` (loupe « Rechercher », cloche « Notifications », ☾
   « Basculer le mode sombre », menu « Menu du compte »).
+- **Dialog d'édition auto-suffisant, réutilisable entre plusieurs parents (Round 012)** : quand un
+  composant partagé (ex. `TaskItem`, utilisé par le cockpit ET `/taches`) a besoin d'une ressource
+  annexe (ex. liste des catégories) seulement à l'ouverture d'un dialog, faire fetcher la ressource
+  PAR LE DIALOG lui-même dans un `useEffect([open])`, pas par prop drilling depuis les pages parentes.
+  Évite de synchroniser un état partagé entre cockpit et `/taches` ; le léger refetch à chaque
+  ouverture est un coût acceptable pour une petite liste. Cf. `task-details-dialog.tsx`.
+- **Sélecteur avec création inline (« + Nouvelle catégorie »), Round 012** : un item spécial
+  (valeur sentinelle `__new__`) dans un `Select` shadcn bascule un état `creation` local qui affiche
+  un `Input` + boutons Créer/Annuler juste sous le select, au lieu de fermer/rouvrir un second dialog.
+  La valeur "aucune sélection" utilise une sentinelle explicite (`"none"`) car les Select base-ui
+  n'acceptent pas de valeur vide. Cf. `category-select.tsx`.
+- **Groupement avec bucket « reste » toujours en dernier (Round 012)** : pour grouper une liste par
+  une relation optionnelle (catégorie, tag...), dériver les groupes des éléments présents (pas de la
+  liste complète des catégories) et trier avec une règle explicite qui épingle la clé « sans » en
+  dernier (`if (a.cle === CLE_SANS) return 1; if (b.cle === CLE_SANS) return -1;`). Si la relation
+  n'a AUCUNE valeur possible créée (ex. aucune catégorie n'existe encore), afficher la liste à plat
+  (pas d'en-têtes vides) + un CTA discret pour créer la première. Cf. `taches-groupes.tsx`.
 
 ## Environnement de développement
 

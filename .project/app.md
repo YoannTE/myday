@@ -207,9 +207,15 @@ Préoccupations transverses tranchées : notifications push (oui, MVP), recherch
 
 ### Tâche
 
-- Champs : titre, description, priorité, échéance, statut (à faire/faite), origine (manuelle/assistant/mail), dates de création/complétion
-- Relations : appartient à un utilisateur ; peut référencer le mail d'origine
+- Champs : titre, description, priorité, échéance (optionnelle, exposée dans l'UI depuis le Round 012), catégorie (optionnelle → `task_categories`), statut (à faire/faite), origine (manuelle/assistant/mail), dates de création/complétion
+- Relations : appartient à un utilisateur ; peut référencer le mail d'origine ; peut appartenir à une catégorie (FK nullable, `ON DELETE SET NULL`)
 - Permissions : CRUD par son propriétaire uniquement
+
+### Catégorie de tâche (Round 012)
+
+- Champs : nom, couleur (obligatoire, auto-assignée), dates de création/màj ; `UNIQUE (user_id, nom)`
+- Relations : appartient à un utilisateur ; regroupe ses tâches
+- Permissions : CRUD par son propriétaire uniquement (RLS). L'appartenance est aussi validée côté service avant d'assigner une catégorie à une tâche (la vérif FK Postgres contourne la RLS)
 
 ### Note
 

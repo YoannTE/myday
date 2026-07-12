@@ -42,3 +42,10 @@ class EventResponse(BaseModel):
     sync_status: str
     created_at: datetime
     updated_at: datetime
+
+
+class EventCountResponse(BaseModel):
+    """Agregat jour/nombre d'evenements pour les vues mois/annee (Round 013)."""
+
+    jour: str
+    count: int

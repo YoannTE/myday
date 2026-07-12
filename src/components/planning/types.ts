@@ -20,3 +20,9 @@ export interface EvenementApi {
   created_at: string;
   updated_at: string;
 }
+
+/** Agrégat de densité par jour ("YYYY-MM-DD" -> nombre d'événements), utilisé par la vue année. */
+export interface CompteurJourApi {
+  jour: string;
+  count: number;
+}

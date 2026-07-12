@@ -16,16 +16,16 @@ interface PlanningSemaineProps {
 
 // Vue semaine en colonnes (transposition fidèle de la variante « Semaine en
 // colonnes » de planning.html) : une colonne par jour, la journée en cours
-// mise en avant. Réservée au desktop (md+) : sous 768px, `PlanningJour`
-// (vue jour avec chips) prend le relais, la grille 7 colonnes étant
-// illisible compressée sur mobile.
+// mise en avant. La grille (min-w-[900px]) défile horizontalement sur
+// mobile (`overflow-x-auto`) : c'est le prix accepté d'une vue "semaine en
+// colonnes" choisie explicitement par l'utilisateur via le sélecteur de vue.
 export function PlanningSemaine({
   jours,
   evenements,
   onSuccess,
 }: PlanningSemaineProps) {
   return (
-    <div className="fade-in delay-1 hidden overflow-x-auto rounded-card bg-card p-4 shadow-card md:block md:p-6">
+    <div className="fade-in delay-1 overflow-x-auto rounded-card bg-card p-4 shadow-card md:p-6">
       <div className="grid min-w-[900px] grid-cols-7 gap-3">
         {jours.map((jour) => {
           const aujourdHui = estAujourdHui(jour);
