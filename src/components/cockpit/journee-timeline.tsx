@@ -61,7 +61,18 @@ export function JourneeTimeline({ evenements, onSuccess }: JourneeTimelineProps)
             const debut = new Date(evenement.debut);
             const aujourdHui = estAujourdHui(debut);
             return (
-              <div key={evenement.id} className="flex items-center gap-4">
+              <EventFormDialog
+                key={evenement.id}
+                evenement={evenement}
+                onSuccess={onSuccess}
+                trigger={
+                  <button
+                    type="button"
+                    aria-label={`Modifier « ${evenement.titre} »`}
+                    className="group flex w-full items-center gap-4 rounded-inner text-left"
+                  />
+                }
+              >
                 <span
                   className={cn(
                     "flex w-16 flex-shrink-0 flex-col items-start gap-0.5 font-mono text-xs",
@@ -82,8 +93,10 @@ export function JourneeTimeline({ evenements, onSuccess }: JourneeTimelineProps)
                 </span>
                 <div
                   className={cn(
-                    "flex-1 rounded-inner px-4 py-3",
-                    enCours ? "border-2 border-accent/30" : "bg-soft",
+                    "flex-1 rounded-inner px-4 py-3 transition-colors",
+                    enCours
+                      ? "border-2 border-accent/30 group-hover:bg-soft/40"
+                      : "bg-soft group-hover:bg-soft/70",
                   )}
                 >
                   <p className="font-body text-ink">{evenement.titre}</p>
@@ -93,7 +106,7 @@ export function JourneeTimeline({ evenements, onSuccess }: JourneeTimelineProps)
                     </p>
                   )}
                 </div>
-              </div>
+              </EventFormDialog>
             );
           })
         )}
