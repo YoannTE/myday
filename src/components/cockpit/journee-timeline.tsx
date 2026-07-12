@@ -37,7 +37,7 @@ export function JourneeTimeline({ evenements, onSuccess }: JourneeTimelineProps)
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="font-display text-xl font-bold tracking-[-0.02em] text-ink">
-            Ton planning
+            Planning
           </h2>
           <EventFormDialog
             onSuccess={onSuccess}
