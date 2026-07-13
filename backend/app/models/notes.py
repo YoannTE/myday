@@ -53,5 +53,7 @@ class NoteResponse(BaseModel):
     categorie_id: str | None = None
     categorie: NoteCategoryLite | None = None
     items: list[NoteItemResponse] = []
+    # Round 016 : nom du propriétaire si la note est partagée avec nous.
+    partage_par: str | None = None
     created_at: datetime
     updated_at: datetime

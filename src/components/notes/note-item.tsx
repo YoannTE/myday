@@ -2,6 +2,7 @@
 
 import { formaterFraicheur } from "@/lib/freshness";
 import { NoteCategoryBadge } from "@/components/notes/note-category-badge";
+import { PartageBadge } from "@/components/partage/partage-badge";
 import type { NoteApi } from "@/components/notes/types";
 
 interface NoteItemProps {
@@ -33,6 +34,9 @@ export function NoteItem({ note, selectionnee, onSelect }: NoteItemProps) {
         )}
         <div className="mt-1 flex flex-wrap items-center gap-1.5">
           {note.categorie && <NoteCategoryBadge categorie={note.categorie} />}
+          {note.partage_par != null && (
+            <PartageBadge nom={note.partage_par} />
+          )}
           {note.items.length > 0 && (
             <span className="font-mono text-[9px] tracking-[.04em] text-ink/40 uppercase">
               ☑ {nombreCoches}/{note.items.length}

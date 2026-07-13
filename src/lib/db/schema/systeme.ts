@@ -103,7 +103,7 @@ export const notifications = pgTable(
     ),
     check(
       "notifications_type_check",
-      sql`${table.type} IN ('mail_important', 'rappel_evenement', 'rappel_tache', 'tache_planifiee', 'brief_pret')`,
+      sql`${table.type} IN ('mail_important', 'rappel_evenement', 'rappel_tache', 'tache_planifiee', 'brief_pret', 'contact_demande', 'contact_accepte', 'partage_recu')`,
     ),
   ],
 );

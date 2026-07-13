@@ -16,18 +16,21 @@ from app.db.client import scoped_connection
 from app.models.notes import NoteCreate, NoteUpdate
 from app.services import note_categories as note_categories_service
 from app.services import note_items as note_items_service
+from app.services import partages as partages_service
 from app.utils.errors import bad_request, not_found
 
 _SELECT = """
     SELECT n.id, n.titre, n.contenu, n.epinglee, n.archivee, n.origine,
            n.categorie_id, n.created_at, n.updated_at,
+           n.user_id AS proprietaire_id, prop.name AS proprietaire_nom,
            c.nom AS categorie_nom, c.couleur AS categorie_couleur
     FROM notes n
+    LEFT JOIN "user" prop ON prop.id = n.user_id
     LEFT JOIN note_categories c ON c.id = n.categorie_id
 """
 
 
-def _serialize(row: asyncpg.Record, items: list[dict] | None = None) -> dict:
+def _serialize(row: asyncpg.Record, user_id: str, items: list[dict] | None = None) -> dict:
     categorie = None
     if row["categorie_id"] is not None and row["categorie_nom"] is not None:
         categorie = {
@@ -45,6 +48,10 @@ def _serialize(row: asyncpg.Record, items: list[dict] | None = None) -> dict:
         "categorie_id": str(row["categorie_id"]) if row["categorie_id"] else None,
         "categorie": categorie,
         "items": items or [],
+        # Round 016 : nom du proprietaire si la note est partagee avec nous.
+        "partage_par": row["proprietaire_nom"]
+        if row["proprietaire_id"] != user_id
+        else None,
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
     }
@@ -84,7 +91,7 @@ async def list_notes(user_id: str, archivee: bool, q: str | None) -> list[dict]:
             )
         note_ids = [str(r["id"]) for r in rows]
         items_par_note = await note_items_service.list_for_notes(conn, note_ids)
-    return [_serialize(r, items_par_note.get(str(r["id"]), [])) for r in rows]
+    return [_serialize(r, user_id, items_par_note.get(str(r["id"]), [])) for r in rows]
 
 
 async def create_note(user_id: str, payload: NoteCreate) -> dict:
@@ -104,7 +111,7 @@ async def create_note(user_id: str, payload: NoteCreate) -> dict:
             categorie_id,
         )
         row = await conn.fetchrow(f"{_SELECT} WHERE n.id = $1", note_id)
-    return _serialize(row, [])
+    return _serialize(row, user_id, [])
 
 
 async def update_note(user_id: str, note_id: str, payload: NoteUpdate) -> dict:
@@ -117,7 +124,7 @@ async def update_note(user_id: str, note_id: str, payload: NoteUpdate) -> dict:
             raise not_found("Note introuvable.")
         items = await note_items_service.list_for_note(conn, note_id)
         if not fields:
-            return _serialize(current, items)
+            return _serialize(current, user_id, items)
 
         titre = fields.get("titre", current["titre"])
         contenu = fields["contenu"] if "contenu" in fields else current["contenu"]
@@ -150,7 +157,7 @@ async def update_note(user_id: str, note_id: str, payload: NoteUpdate) -> dict:
         row = await conn.fetchrow(
             f"{_SELECT} WHERE n.id = $1 AND n.user_id = $2", note_id, user_id
         )
-    return _serialize(row, items)
+    return _serialize(row, user_id, items)
 
 
 async def delete_note(user_id: str, note_id: str) -> None:
@@ -160,5 +167,10 @@ async def delete_note(user_id: str, note_id: str) -> None:
             note_id,
             user_id,
         )
+        if deleted is not None:
+            # Round 016 : les partages de l'element suivent sa suppression.
+            await partages_service.supprimer_partages_element(
+                conn, user_id, "note", note_id
+            )
     if deleted is None:
         raise not_found("Note introuvable.")

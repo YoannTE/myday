@@ -27,6 +27,7 @@ class NoteSummary(BaseModel):
     origine: str
     categorie_id: str | None = None
     categorie: NoteCategoryLite | None = None
+    partage_par: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -49,6 +50,7 @@ class TaskSummary(BaseModel):
     rappel_avance_minutes: int = 30
     categorie_id: str | None = None
     categorie: TaskCategoryLite | None = None
+    partage_par: str | None = None
     completed_at: datetime | None = None
     created_at: datetime
     updated_at: datetime

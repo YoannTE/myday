@@ -18,6 +18,8 @@ export interface Note {
   origine: OrigineNote;
   categorie_id: string | null;
   categorie: NoteCategoryLite | null;
+  /** Nom du propriétaire si la note est partagée avec l'utilisateur courant, sinon `null`. */
+  partage_par: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -35,6 +37,8 @@ export interface CockpitEvent {
   categorie_id: string | null;
   categorie: EventCategoryLite | null;
   rappel_avance_minutes: number;
+  /** Nom du propriétaire si l'événement est partagé avec l'utilisateur courant, sinon `null`. */
+  partage_par: string | null;
   created_at: string;
   updated_at: string;
 }

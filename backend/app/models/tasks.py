@@ -107,6 +107,8 @@ class TaskResponse(BaseModel):
     planifie_debut: datetime | None = None
     planifie_fin: datetime | None = None
     rappel_avance_minutes: int = 30
+    # Round 016 : nom du propriétaire si la tâche est partagée avec nous.
+    partage_par: str | None = None
     completed_at: datetime | None = None
     created_at: datetime
     updated_at: datetime

@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Settings2 } from "lucide-react";
+import { Settings2, Share2 } from "lucide-react";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
+import { PartageDialog } from "@/components/partage/partage-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -62,6 +63,7 @@ export function TaskDetailsDialog({
   const [open, setOpen] = useState(false);
   const [categories, setCategories] = useState<TaskCategory[] | null>(null);
   const [enregistrement, setEnregistrement] = useState(false);
+  const [partageOuvert, setPartageOuvert] = useState(false);
 
   const { control, register, handleSubmit, reset, setValue } =
     useForm<TaskDetailsValues>({
@@ -132,12 +134,31 @@ export function TaskDetailsDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Modifier « {task.titre} »</DialogTitle>
+          <div className="flex items-center justify-between gap-2">
+            <DialogTitle>Modifier « {task.titre} »</DialogTitle>
+            {task.partage_par == null && (
+              <button
+                type="button"
+                onClick={() => setPartageOuvert(true)}
+                className="flex flex-shrink-0 items-center gap-1.5 rounded-full px-2 py-1 font-body text-xs text-ink/50 transition-colors hover:bg-soft hover:text-ink"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                Partager
+              </button>
+            )}
+          </div>
           <DialogDescription>
             Ajoute une échéance et une catégorie pour mieux organiser cette
             tâche.
           </DialogDescription>
         </DialogHeader>
+        <PartageDialog
+          open={partageOuvert}
+          onOpenChange={setPartageOuvert}
+          elementType="task"
+          elementId={task.id}
+          titre={task.titre}
+        />
         <form
           id="form-details-tache"
           onSubmit={handleSubmit(onSubmit)}

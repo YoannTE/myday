@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { SectionAddButton } from "@/components/cockpit/section-add-button";
 import { NoteQuickAddDialog } from "@/components/notes/note-quick-add-dialog";
 import { NoteCategoryBadge } from "@/components/notes/note-category-badge";
+import { PartageBadge } from "@/components/partage/partage-badge";
 import type { Note } from "@/components/cockpit/types";
 
 function ignorerNoteCreee() {
@@ -56,6 +57,9 @@ export function NotesEpinglees({ notes }: { notes: Note[] }) {
               </span>
               {note.categorie && (
                 <NoteCategoryBadge categorie={note.categorie} />
+              )}
+              {note.partage_par != null && (
+                <PartageBadge nom={note.partage_par} className="bg-card" />
               )}
               <span className="font-mono text-[10px] tracking-[.04em] text-accent uppercase">
                 Épinglée

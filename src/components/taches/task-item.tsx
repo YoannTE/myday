@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { CategoryBadge } from "@/components/taches/category-badge";
 import { TaskDetailsDialog } from "@/components/taches/task-details-dialog";
+import { PartageBadge } from "@/components/partage/partage-badge";
 import type { Task } from "@/components/taches/types";
 
 /** Formate l'échéance en label court ("Aujourd'hui", "Vendredi"...). */
@@ -48,6 +49,7 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps
   const [titreEdition, setTitreEdition] = useState(task.titre);
   const [enCours, setEnCours] = useState(false);
   const estFaite = task.statut === "faite";
+  const estPartagee = task.partage_par != null;
 
   async function basculerStatut() {
     if (enCours) return;
@@ -111,7 +113,7 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps
     <div className="flex items-center gap-4 px-5 py-4">
       <Checkbox
         checked={estFaite}
-        disabled={enCours}
+        disabled={enCours || estPartagee}
         onCheckedChange={basculerStatut}
         aria-label={estFaite ? "Marquer à faire" : "Marquer comme faite"}
         className={cn(
@@ -138,11 +140,11 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps
         />
       ) : (
         <span
-          onClick={() => !estFaite && setEnEdition(true)}
+          onClick={() => !estFaite && !estPartagee && setEnEdition(true)}
           className={cn(
             "min-w-0 flex-1 font-body text-sm break-words text-ink",
             estFaite && "text-ink/50 line-through",
-            !estFaite && "cursor-text",
+            !estFaite && !estPartagee && "cursor-text",
           )}
         >
           {task.titre}
@@ -163,6 +165,9 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps
       {!estFaite && task.categorie && (
         <CategoryBadge categorie={task.categorie} />
       )}
+      {estPartagee && (
+        <PartageBadge nom={task.partage_par as string} />
+      )}
       {!estFaite && task.priorite === "haute" && (
         <span className="flex-shrink-0 rounded-full bg-soft px-2.5 py-1 font-mono text-[10px] tracking-[.04em] text-accent uppercase">
           Priorité
@@ -173,11 +178,13 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps
           {formaterEcheance(task.echeance)}
         </span>
       )}
-      <TaskDetailsDialog
-        task={task}
-        onUpdated={onUpdated}
-        onCategoriesChanged={onCategoriesChanged}
-      />
+      {!estPartagee && (
+        <TaskDetailsDialog
+          task={task}
+          onUpdated={onUpdated}
+          onCategoriesChanged={onCategoriesChanged}
+        />
+      )}
     </div>
   );
 }

@@ -53,9 +53,15 @@ async def list_for_note(conn: asyncpg.Connection, note_id: str) -> list[dict]:
 
 
 async def _assert_note_appartient(conn: asyncpg.Connection, note_id: str) -> None:
-    """La RLS restreint déjà `notes` à l'utilisateur courant : si la note n'est
-    pas visible ici, elle n'est pas la sienne (ou n'existe pas)."""
-    existe = await conn.fetchval("SELECT 1 FROM notes WHERE id = $1", note_id)
+    """Exige la PROPRIÉTÉ de la note (filtre user_id explicite) : depuis le
+    partage (Round 016), la RLS rend aussi visibles en lecture les notes
+    partagées avec nous — le destinataire ne doit pas pouvoir y ajouter
+    d'éléments."""
+    existe = await conn.fetchval(
+        "SELECT 1 FROM notes WHERE id = $1 "
+        "AND user_id = current_setting('app.current_user_id', true)",
+        note_id,
+    )
     if existe is None:
         raise not_found("Note introuvable.")
 

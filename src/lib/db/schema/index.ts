@@ -8,3 +8,4 @@ export * from "./mails";
 export * from "./ia";
 export * from "./systeme";
 export * from "./preferences";
+export * from "./partage";

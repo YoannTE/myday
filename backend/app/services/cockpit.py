@@ -27,24 +27,28 @@ _PROCHAINS_LIMIT = 10
 _NOTES_COLUMNS = (
     "n.id::text, n.titre, n.contenu, n.epinglee, n.archivee, n.origine, "
     "n.created_at, n.updated_at, "
+    "n.user_id AS proprietaire_id, prop.name AS proprietaire_nom, "
     "n.categorie_id::text, c.nom AS categorie_nom, c.couleur AS categorie_couleur"
 )
 _EVENTS_COLUMNS = (
     "e.id::text, e.titre, e.debut, e.fin, e.lieu, e.description, "
     "e.google_event_id, e.source, e.sync_status, e.rappel_avance_minutes, "
     "e.created_at, e.updated_at, "
+    "e.user_id AS proprietaire_id, prop.name AS proprietaire_nom, "
     "e.categorie_id::text, c.nom AS categorie_nom, c.couleur AS categorie_couleur"
 )
 _TASKS_COLUMNS = (
     "t.id::text, t.titre, t.description, t.priorite, t.echeance, t.statut, "
     "t.origine, t.mail_id::text, t.recurrence, t.rappel_at, t.planifie_debut, "
     "t.planifie_fin, t.rappel_avance_minutes, t.completed_at, "
-    "t.created_at, t.updated_at, t.categorie_id::text, c.nom AS categorie_nom, "
+    "t.created_at, t.updated_at, "
+    "t.user_id AS proprietaire_id, prop.name AS proprietaire_nom, "
+    "t.categorie_id::text, c.nom AS categorie_nom, "
     "c.couleur AS categorie_couleur"
 )
 
 
-def _serialize_avec_categorie(row) -> dict:
+def _serialize_avec_categorie(row, user_id: str) -> dict:
     """Aplati la ligne SQL en dict + objet `categorie` imbrique (ou None).
 
     Partage entre taches et notes : meme forme d'objet categorie
@@ -52,6 +56,11 @@ def _serialize_avec_categorie(row) -> dict:
     `categorie_couleur` d'une jointure `LEFT JOIN ... categories`.
     """
     d = dict(row)
+    proprietaire_id = d.pop("proprietaire_id", None)
+    proprietaire_nom = d.pop("proprietaire_nom", None)
+    d["partage_par"] = (
+        proprietaire_nom if proprietaire_id and proprietaire_id != user_id else None
+    )
     nom = d.pop("categorie_nom", None)
     couleur = d.pop("categorie_couleur", None)
     if d.get("categorie_id") is not None and nom is not None:
@@ -92,6 +101,7 @@ async def get_cockpit(user_id: str) -> dict:
 
         notes = await conn.fetch(
             f"SELECT {_NOTES_COLUMNS} FROM notes n "
+            'LEFT JOIN "user" prop ON prop.id = n.user_id '
             "LEFT JOIN note_categories c ON c.id = n.categorie_id "
             "WHERE n.epinglee = true AND n.archivee = false "
             "ORDER BY n.updated_at DESC LIMIT $1",
@@ -99,12 +109,14 @@ async def get_cockpit(user_id: str) -> dict:
         )
         prochains = await conn.fetch(
             f"SELECT {_EVENTS_COLUMNS} FROM events e "
+            'LEFT JOIN "user" prop ON prop.id = e.user_id '
             "LEFT JOIN event_categories c ON c.id = e.categorie_id "
             "WHERE e.debut >= $1 ORDER BY e.debut ASC LIMIT $2",
             now, _PROCHAINS_LIMIT,
         )
         tasks = await conn.fetch(
             f"SELECT {_TASKS_COLUMNS} FROM tasks t "
+            'LEFT JOIN "user" prop ON prop.id = t.user_id '
             "LEFT JOIN task_categories c ON c.id = t.categorie_id "
             "WHERE t.statut = 'a_faire' "
             "ORDER BY t.echeance ASC NULLS LAST, "
@@ -143,9 +155,9 @@ async def get_cockpit(user_id: str) -> dict:
             "type": brief_row["type"],
         }
     return {
-        "notes_epinglees": [_serialize_note(r) for r in notes],
-        "prochains": [_serialize_avec_categorie(r) for r in prochains],
-        "taches": [_serialize_task(r) for r in tasks],
+        "notes_epinglees": [_serialize_note(r, user_id) for r in notes],
+        "prochains": [_serialize_avec_categorie(r, user_id) for r in prochains],
+        "taches": [_serialize_task(r, user_id) for r in tasks],
         "mails_importants": mails_importants,
         "brief": brief,
     }

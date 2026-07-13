@@ -2,6 +2,7 @@
 
 import { EventFormDialog } from "@/components/planning/event-form-dialog";
 import { EventCategoryBadge } from "@/components/planning/event-category-badge";
+import { PartageBadge } from "@/components/partage/partage-badge";
 import { formaterPlageHoraire } from "@/components/planning/date-utils";
 import type { EvenementApi } from "@/components/planning/types";
 
@@ -31,22 +32,10 @@ interface EventCardProps {
 export function EventCard({ evenement, onSuccess }: EventCardProps) {
   const enCours = estEnCours(evenement);
   const plageHoraire = formaterPlageHoraire(evenement.debut, evenement.fin);
+  const partage = evenement.partage_par != null;
 
-  return (
-    <EventFormDialog
-      evenement={evenement}
-      onSuccess={onSuccess}
-      trigger={
-        <button
-          type="button"
-          className={`mb-1.5 w-full rounded-inner px-1.5 py-1.5 text-left transition-colors md:mb-2 md:px-3 md:py-2.5 ${
-            enCours
-              ? "border-2 border-accent/40 bg-card"
-              : "bg-soft hover:bg-soft/70"
-          }`}
-        />
-      }
-    >
+  const contenu = (
+    <>
       <p className="flex flex-wrap items-center gap-1 font-mono text-[10px] leading-tight text-ink/40">
         {enCours && (
           <span className="pulse-now inline-block h-1.5 w-1.5 rounded-full bg-accent" />
@@ -61,11 +50,36 @@ export function EventCard({ evenement, onSuccess }: EventCardProps) {
           <EventCategoryBadge categorie={evenement.categorie} />
         </div>
       )}
+      {partage && (
+        <div className="mt-1">
+          <PartageBadge nom={evenement.partage_par as string} className="bg-card" />
+        </div>
+      )}
       {estNonSynchronise(evenement) && (
         <span className="mt-1 inline-block rounded-full border border-ink/10 bg-card px-1.5 py-0.5 font-mono text-[9px] tracking-[.04em] text-ink/50 uppercase">
           Non synchronisé
         </span>
       )}
+    </>
+  );
+
+  const classeCarte = `mb-1.5 w-full rounded-inner px-1.5 py-1.5 text-left transition-colors md:mb-2 md:px-3 md:py-2.5 ${
+    enCours ? "border-2 border-accent/40 bg-card" : "bg-soft hover:bg-soft/70"
+  }`;
+
+  // Un événement partagé (reçu d'un autre compte) est en lecture seule :
+  // pas de dialog d'édition, simple carte non cliquable.
+  if (partage) {
+    return <div className={classeCarte.replace("hover:bg-soft/70", "")}>{contenu}</div>;
+  }
+
+  return (
+    <EventFormDialog
+      evenement={evenement}
+      onSuccess={onSuccess}
+      trigger={<button type="button" className={classeCarte} />}
+    >
+      {contenu}
     </EventFormDialog>
   );
 }

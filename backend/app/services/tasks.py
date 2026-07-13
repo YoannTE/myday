@@ -19,6 +19,7 @@ import asyncpg
 
 from app.db.client import scoped_connection
 from app.models.tasks import TaskCreate, TaskPlanifier, TaskUpdate
+from app.services import partages as partages_service
 from app.services import task_categories as task_categories_service
 from app.utils.errors import bad_request, not_found
 
@@ -27,8 +28,10 @@ _SELECT = """
            t.statut, t.origine, t.mail_id, t.recurrence, t.rappel_at,
            t.planifie_debut, t.planifie_fin, t.rappel_avance_minutes,
            t.completed_at, t.created_at, t.updated_at,
+           t.user_id AS proprietaire_id, prop.name AS proprietaire_nom,
            c.nom AS categorie_nom, c.couleur AS categorie_couleur
     FROM tasks t
+    LEFT JOIN "user" prop ON prop.id = t.user_id
     LEFT JOIN task_categories c ON c.id = t.categorie_id
 """
 
@@ -58,7 +61,7 @@ def _prochaine_echeance(echeance: datetime | None, recurrence: str) -> datetime:
     return base
 
 
-def _serialize(row: asyncpg.Record) -> dict:
+def _serialize(row: asyncpg.Record, user_id: str) -> dict:
     categorie = None
     if row["categorie_id"] is not None and row["categorie_nom"] is not None:
         categorie = {
@@ -82,6 +85,10 @@ def _serialize(row: asyncpg.Record) -> dict:
         "planifie_debut": row["planifie_debut"],
         "planifie_fin": row["planifie_fin"],
         "rappel_avance_minutes": row["rappel_avance_minutes"],
+        # Round 016 : nom du proprietaire si la tache est partagee avec nous.
+        "partage_par": row["proprietaire_nom"]
+        if row["proprietaire_id"] != user_id
+        else None,
         "completed_at": row["completed_at"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
@@ -116,7 +123,7 @@ async def list_tasks(user_id: str, statut: str | None) -> list[dict]:
             rows = await conn.fetch(
                 f"{_SELECT} ORDER BY t.echeance ASC NULLS LAST, t.created_at DESC"
             )
-    return [_serialize(r) for r in rows]
+    return [_serialize(r, user_id) for r in rows]
 
 
 async def create_task(user_id: str, payload: TaskCreate) -> dict:
@@ -142,7 +149,7 @@ async def create_task(user_id: str, payload: TaskCreate) -> dict:
             payload.rappel_at,
         )
         row = await conn.fetchrow(f"{_SELECT} WHERE t.id = $1", task_id)
-    return _serialize(row)
+    return _serialize(row, user_id)
 
 
 async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
@@ -154,7 +161,7 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
         if current is None:
             raise not_found("Tâche introuvable.")
         if not fields and statut_cible is None:
-            return _serialize(current)
+            return _serialize(current, user_id)
 
         titre = fields.get("titre", current["titre"])
         description = fields["description"] if "description" in fields else current["description"]
@@ -265,7 +272,7 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
                 completed_at,
             )
             row = await _reload(conn, task_id, user_id)
-    return _serialize(row)
+    return _serialize(row, user_id)
 
 
 async def planifier_task(
@@ -301,7 +308,7 @@ async def planifier_task(
             task_id,
         )
         row = await _reload(conn, task_id, user_id)
-    return _serialize(row)
+    return _serialize(row, user_id)
 
 
 async def deplanifier_task(user_id: str, task_id: str) -> dict:
@@ -320,7 +327,7 @@ async def deplanifier_task(user_id: str, task_id: str) -> dict:
         if updated is None:
             raise not_found("Tâche introuvable.")
         row = await _reload(conn, task_id, user_id)
-    return _serialize(row)
+    return _serialize(row, user_id)
 
 
 async def list_planned_tasks(
@@ -336,7 +343,7 @@ async def list_planned_tasks(
             date_from,
             date_to,
         )
-    return [_serialize(r) for r in rows]
+    return [_serialize(r, user_id) for r in rows]
 
 
 async def delete_task(user_id: str, task_id: str) -> None:
@@ -346,5 +353,10 @@ async def delete_task(user_id: str, task_id: str) -> None:
             task_id,
             user_id,
         )
+        if deleted is not None:
+            # Round 016 : les partages de l'element suivent sa suppression.
+            await partages_service.supprimer_partages_element(
+                conn, user_id, "task", task_id
+            )
     if deleted is None:
         raise not_found("Tâche introuvable.")

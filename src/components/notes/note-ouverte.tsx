@@ -4,15 +4,16 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { formaterFraicheur } from "@/lib/freshness";
 import {
   NoteCategorySelect,
   SANS_CATEGORIE,
 } from "@/components/notes/note-category-select";
 import { NoteChecklist } from "@/components/notes/note-checklist";
+import { NoteOuverteHeader } from "@/components/notes/note-ouverte-header";
+import { NoteOuverteFooter } from "@/components/notes/note-ouverte-footer";
+import { PartageDialog } from "@/components/partage/partage-dialog";
 import type { NoteApi, NoteCategory } from "@/components/notes/types";
 
 interface NoteOuverteProps {
@@ -35,6 +36,8 @@ export function NoteOuverte({
   const [enregistrement, setEnregistrement] = useState(false);
   const [enCours, setEnCours] = useState(false);
   const [enCoursCategorie, setEnCoursCategorie] = useState(false);
+  const [partageOuvert, setPartageOuvert] = useState(false);
+  const estPartagee = note.partage_par != null;
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -117,52 +120,46 @@ export function NoteOuverte({
 
   return (
     <div className="fade-in delay-1 min-w-0 max-w-full overflow-hidden rounded-card bg-card p-6 shadow-card">
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <h2 className="min-w-0 flex-1 font-display text-lg font-extrabold tracking-[-0.02em] break-words text-ink">
-          {note.titre}
-        </h2>
-        {note.origine === "assistant" && (
-          <span className="rounded-full bg-soft px-2 py-0.5 font-mono text-[9px] tracking-[.04em] text-accent uppercase">
-            via l&apos;assistant
-          </span>
-        )}
-        <span className="rounded-full bg-soft px-2 py-0.5 font-mono text-[9px] tracking-[.04em] text-ink/40 uppercase">
-          Modifiée {formaterFraicheur(note.updated_at)}
-        </span>
-        <button
-          type="button"
-          onClick={basculerEpinglee}
-          disabled={enCours}
-          title={note.epinglee ? "Désépingler" : "Épingler"}
-          className={`flex h-8 w-8 items-center justify-center rounded-inner text-sm ${
-            note.epinglee ? "bg-accent text-white" : "bg-soft text-ink/50"
-          }`}
-        >
-          📌
-        </button>
-      </div>
-      <div className="mb-4 max-w-xs space-y-1.5">
-        <Label>Catégorie</Label>
-        <NoteCategorySelect
-          categories={categories ?? []}
-          disabled={categories === null || enCoursCategorie}
-          value={note.categorie?.id ?? SANS_CATEGORIE}
-          onValueChange={changerCategorie}
-          onCategoryCreated={onCategoryCreated}
-        />
-      </div>
+      <NoteOuverteHeader
+        note={note}
+        estPartagee={estPartagee}
+        enCours={enCours}
+        onBasculerEpinglee={basculerEpinglee}
+        onOuvrirPartage={() => setPartageOuvert(true)}
+      />
+      <PartageDialog
+        open={partageOuvert}
+        onOpenChange={setPartageOuvert}
+        elementType="note"
+        elementId={note.id}
+        titre={note.titre}
+      />
+      {!estPartagee && (
+        <div className="mb-4 max-w-xs space-y-1.5">
+          <Label>Catégorie</Label>
+          <NoteCategorySelect
+            categories={categories ?? []}
+            disabled={categories === null || enCoursCategorie}
+            value={note.categorie?.id ?? SANS_CATEGORIE}
+            onValueChange={changerCategorie}
+            onCategoryCreated={onCategoryCreated}
+          />
+        </div>
+      )}
       <NoteChecklist
         noteId={note.id}
         items={note.items}
         onItemsChange={(nouveauxItems) =>
           onChange({ ...note, items: nouveauxItems })
         }
+        lectureSeule={estPartagee}
       />
       <Textarea
         value={contenu}
         onChange={(evenement) => setContenu(evenement.target.value)}
         placeholder="Écris ici..."
-        className="min-h-40 w-full max-w-full resize-none border-none bg-transparent p-0 text-sm leading-relaxed break-words whitespace-pre-wrap text-ink/80 shadow-none focus-visible:ring-0"
+        disabled={estPartagee}
+        className="min-h-40 w-full max-w-full resize-none border-none bg-transparent p-0 text-sm leading-relaxed break-words whitespace-pre-wrap text-ink/80 shadow-none focus-visible:ring-0 disabled:opacity-100"
       />
       <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-ink/5 pt-4">
         <span className="font-mono text-[10px] tracking-[.04em] text-ink/30 uppercase">
@@ -172,26 +169,16 @@ export function NoteOuverte({
             month: "long",
           })}
         </span>
-        <div className="ml-auto flex items-center gap-3">
-          {modifie && (
-            <Button
-              type="button"
-              size="sm"
-              disabled={enregistrement}
-              onClick={sauvegarderContenu}
-            >
-              {enregistrement ? "Enregistrement..." : "Enregistrer"}
-            </Button>
-          )}
-          <button
-            type="button"
-            onClick={basculerArchivee}
-            disabled={enCours}
-            className="font-body text-xs text-ink/40 hover:text-accent"
-          >
-            {note.archivee ? "Désarchiver" : "Archiver"}
-          </button>
-        </div>
+        {!estPartagee && (
+          <NoteOuverteFooter
+            note={note}
+            modifie={modifie}
+            enregistrement={enregistrement}
+            enCours={enCours}
+            onSauvegarder={sauvegarderContenu}
+            onBasculerArchivee={basculerArchivee}
+          />
+        )}
       </div>
     </div>
   );

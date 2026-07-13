@@ -42,6 +42,8 @@ export interface NoteApi {
   categorie_id: string | null;
   categorie: NoteCategoryLite | null;
   items: NoteItemApi[];
+  /** Nom du propriétaire si la note est partagée avec l'utilisateur courant, sinon `null`. */
+  partage_par: string | null;
   created_at: string;
   updated_at: string;
 }

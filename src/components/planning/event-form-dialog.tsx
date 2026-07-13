@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Share2 } from "lucide-react";
 import { apiCall } from "@/lib/api";
+import { PartageDialog } from "@/components/partage/partage-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,6 +67,7 @@ export function EventFormDialog({
   const [enregistrement, setEnregistrement] = useState(false);
   const [confirmationSuppression, setConfirmationSuppression] = useState(false);
   const [suppression, setSuppression] = useState(false);
+  const [partageOuvert, setPartageOuvert] = useState(false);
   const [categories, setCategories] = useState<EventCategory[] | null>(null);
   const [categorieId, setCategorieId] = useState(
     evenement?.categorie?.id ?? SANS_CATEGORIE,
@@ -166,9 +169,30 @@ export function EventFormDialog({
           </DialogDescription>
         </DialogHeader>
         {evenement && (
-          <p className="-mt-1 font-mono text-xs tracking-[.04em] text-accent uppercase">
-            {formaterPlageHoraire(evenement.debut, evenement.fin)}
-          </p>
+          <div className="-mt-1 flex items-center justify-between gap-2">
+            <p className="font-mono text-xs tracking-[.04em] text-accent uppercase">
+              {formaterPlageHoraire(evenement.debut, evenement.fin)}
+            </p>
+            {evenement.partage_par == null && (
+              <button
+                type="button"
+                onClick={() => setPartageOuvert(true)}
+                className="flex items-center gap-1.5 rounded-full px-2 py-1 font-body text-xs text-ink/50 transition-colors hover:bg-soft hover:text-ink"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                Partager
+              </button>
+            )}
+          </div>
+        )}
+        {evenement && (
+          <PartageDialog
+            open={partageOuvert}
+            onOpenChange={setPartageOuvert}
+            elementType="event"
+            elementId={evenement.id}
+            titre={evenement.titre}
+          />
         )}
         <form
           id="form-evenement"

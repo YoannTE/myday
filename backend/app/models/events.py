@@ -64,6 +64,9 @@ class EventResponse(BaseModel):
     categorie_id: str | None = None
     categorie: EventCategoryLite | None = None
     rappel_avance_minutes: int = 30
+    # Round 016 : nom du propriétaire si l'événement est partagé avec nous
+    # (None pour nos propres événements). Lecture seule côté destinataire.
+    partage_par: str | None = None
     created_at: datetime
     updated_at: datetime
 

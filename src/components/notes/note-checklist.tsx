@@ -14,6 +14,7 @@ interface NoteChecklistProps {
   noteId: string;
   items: NoteItemApi[];
   onItemsChange: (items: NoteItemApi[]) => void;
+  lectureSeule?: boolean;
 }
 
 /** Trie les éléments : non cochés d'abord (par position), cochés en bas. */
@@ -32,6 +33,7 @@ export function NoteChecklist({
   noteId,
   items,
   onItemsChange,
+  lectureSeule = false,
 }: NoteChecklistProps) {
   const [nouveauContenu, setNouveauContenu] = useState("");
   const [ajoutEnCours, setAjoutEnCours] = useState(false);
@@ -75,35 +77,38 @@ export function NoteChecklist({
               item={item}
               onUpdated={remplacerItem}
               onDeleted={() => retirerItem(item.id)}
+              lectureSeule={lectureSeule}
             />
           ))}
         </div>
       )}
-      <div className="flex min-w-0 items-center gap-2">
-        <Input
-          value={nouveauContenu}
-          onChange={(evenement) => setNouveauContenu(evenement.target.value)}
-          onKeyDown={(evenement) => {
-            if (evenement.key === "Enter") {
-              evenement.preventDefault();
-              ajouterElement();
-            }
-          }}
-          placeholder="Ajouter un élément..."
-          disabled={ajoutEnCours}
-          className="h-8 min-w-0 flex-1 border-none bg-transparent px-0 font-body text-sm text-ink focus-visible:ring-0"
-        />
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-xs"
-          disabled={ajoutEnCours || !nouveauContenu.trim()}
-          onClick={ajouterElement}
-          aria-label="Ajouter l'élément"
-        >
-          <Plus className="text-accent" />
-        </Button>
-      </div>
+      {!lectureSeule && (
+        <div className="flex min-w-0 items-center gap-2">
+          <Input
+            value={nouveauContenu}
+            onChange={(evenement) => setNouveauContenu(evenement.target.value)}
+            onKeyDown={(evenement) => {
+              if (evenement.key === "Enter") {
+                evenement.preventDefault();
+                ajouterElement();
+              }
+            }}
+            placeholder="Ajouter un élément..."
+            disabled={ajoutEnCours}
+            className="h-8 min-w-0 flex-1 border-none bg-transparent px-0 font-body text-sm text-ink focus-visible:ring-0"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            disabled={ajoutEnCours || !nouveauContenu.trim()}
+            onClick={ajouterElement}
+            aria-label="Ajouter l'élément"
+          >
+            <Plus className="text-accent" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

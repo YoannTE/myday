@@ -43,6 +43,8 @@ export interface Task {
   /** Délai de notification avant le créneau planifié : 60, 30, 5 ou 0 min. */
   rappel_avance_minutes: number;
   completed_at: string | null;
+  /** Nom du propriétaire si la tâche est partagée avec l'utilisateur courant, sinon `null`. */
+  partage_par: string | null;
   created_at: string;
   updated_at: string;
 }

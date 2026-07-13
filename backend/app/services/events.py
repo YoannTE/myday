@@ -15,19 +15,22 @@ from app.db.google_connection import get_connection
 from app.models.events import EventCreate, EventUpdate
 from app.services import event_categories as event_categories_service
 from app.services import events_google
+from app.services import partages as partages_service
 from app.utils.errors import bad_request, not_found
 
 _SELECT = """
     SELECT e.id::text, e.titre, e.debut, e.fin, e.lieu, e.description,
            e.google_event_id, e.source, e.sync_status, e.categorie_id::text,
            e.rappel_avance_minutes, e.created_at, e.updated_at,
+           e.user_id AS proprietaire_id, prop.name AS proprietaire_nom,
            c.nom AS categorie_nom, c.couleur AS categorie_couleur
     FROM events e
+    LEFT JOIN "user" prop ON prop.id = e.user_id
     LEFT JOIN event_categories c ON c.id = e.categorie_id
 """
 
 
-def _serialize(row) -> dict:
+def _serialize(row, user_id: str) -> dict:
     categorie = None
     if row["categorie_id"] is not None and row["categorie_nom"] is not None:
         categorie = {
@@ -48,6 +51,10 @@ def _serialize(row) -> dict:
         "categorie_id": row["categorie_id"],
         "categorie": categorie,
         "rappel_avance_minutes": row["rappel_avance_minutes"],
+        # Round 016 : nom du proprietaire si l'element est partage avec nous.
+        "partage_par": row["proprietaire_nom"]
+        if row["proprietaire_id"] != user_id
+        else None,
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
     }
@@ -77,21 +84,24 @@ async def list_events(
     multi-jours ou demarres avant la borne basse (Round 013).
     """
     _check_window(date_from, date_to)
-    conditions = []
-    params: list = [user_id]
+    # Round 016 : plus de filtre user_id explicite ici — la RLS renvoie les
+    # evenements de l'utilisateur PLUS ceux partages avec lui (policy
+    # events_partages_select, lecture seule).
+    conditions = ["TRUE"]
+    params: list = []
     if date_from is not None:
         params.append(date_from)
         conditions.append(f"e.fin >= ${len(params)}")
     if date_to is not None:
         params.append(date_to)
         conditions.append(f"e.debut <= ${len(params)}")
-    where = " AND " + " AND ".join(conditions) if conditions else ""
+    where = " AND ".join(conditions)
     async with scoped_connection(user_id) as conn:
         rows = await conn.fetch(
-            f"{_SELECT} WHERE e.user_id = $1{where} ORDER BY e.debut ASC",
+            f"{_SELECT} WHERE {where} ORDER BY e.debut ASC",
             *params,
         )
-    return [_serialize(r) for r in rows]
+    return [_serialize(r, user_id) for r in rows]
 
 
 async def get_event_counts(
@@ -104,17 +114,18 @@ async def get_event_counts(
     chevauchement que `list_events` pour rester coherent (Round 013).
     """
     _check_window(date_from, date_to)
+    # Round 016 : pas de filtre user_id — la RLS inclut les evenements partages.
     async with scoped_connection(user_id) as conn:
         rows = await conn.fetch(
             """
-            SELECT (date_trunc('day', debut AT TIME ZONE $4))::date AS jour,
+            SELECT (date_trunc('day', debut AT TIME ZONE $3))::date AS jour,
                    count(*) AS count
             FROM events
-            WHERE user_id = $1 AND fin >= $2 AND debut <= $3
+            WHERE fin >= $1 AND debut <= $2
             GROUP BY jour
             ORDER BY jour
             """,
-            user_id, date_from, date_to, settings.app_timezone,
+            date_from, date_to, settings.app_timezone,
         )
     return [{"jour": r["jour"].isoformat(), "count": r["count"]} for r in rows]
 
@@ -125,7 +136,7 @@ async def _fetch_event(user_id: str, event_id: str) -> dict | None:
             f"{_SELECT} WHERE e.id = $1::uuid AND e.user_id = $2",
             event_id, user_id,
         )
-    return _serialize(row) if row is not None else None
+    return _serialize(row, user_id) if row is not None else None
 
 
 async def create_event(user_id: str, payload: EventCreate) -> dict:
@@ -225,6 +236,11 @@ async def delete_event(user_id: str, event_id: str) -> None:
             "RETURNING google_event_id",
             event_id, user_id,
         )
+        if row is not None:
+            # Round 016 : les partages de l'element suivent sa suppression.
+            await partages_service.supprimer_partages_element(
+                conn, user_id, "event", event_id
+            )
     if row is None:
         raise not_found("Evenement introuvable.")
     google_event_id = row["google_event_id"]

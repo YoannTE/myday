@@ -14,15 +14,19 @@ interface NoteChecklistItemProps {
   item: NoteItemApi;
   onUpdated: (item: NoteItemApi) => void;
   onDeleted: () => void;
+  lectureSeule?: boolean;
 }
 
 // Ligne d'un élément de liste à cocher : cochage optimiste (rollback + toast
 // si le PATCH échoue, miroir de `TaskItem`), édition inline du texte (clic
-// sur le texte -> input -> Entrée/perte de focus) et suppression.
+// sur le texte -> input -> Entrée/perte de focus) et suppression. En mode
+// `lectureSeule` (note partagée reçue), cochage/édition/suppression sont
+// désactivés.
 export function NoteChecklistItem({
   item,
   onUpdated,
   onDeleted,
+  lectureSeule = false,
 }: NoteChecklistItemProps) {
   const [enEdition, setEnEdition] = useState(false);
   const [contenuEdition, setContenuEdition] = useState(item.contenu);
@@ -91,7 +95,7 @@ export function NoteChecklistItem({
     <div className="flex min-w-0 items-center gap-2.5 py-0.5">
       <Checkbox
         checked={item.coche}
-        disabled={enCours}
+        disabled={enCours || lectureSeule}
         onCheckedChange={basculerCoche}
         aria-label={item.coche ? "Décocher l'élément" : "Cocher l'élément"}
         className="h-4 w-4 flex-shrink-0 rounded-[4px] border-2 border-accent/40 data-checked:border-accent data-checked:bg-accent"
@@ -116,25 +120,27 @@ export function NoteChecklistItem({
         />
       ) : (
         <span
-          onClick={() => !item.coche && setEnEdition(true)}
+          onClick={() => !item.coche && !lectureSeule && setEnEdition(true)}
           className={cn(
             "min-w-0 flex-1 font-body text-sm break-words text-ink/80",
             item.coche && "text-ink/40 line-through",
-            !item.coche && "cursor-text",
+            !item.coche && !lectureSeule && "cursor-text",
           )}
         >
           {item.contenu}
         </span>
       )}
-      <button
-        type="button"
-        onClick={supprimer}
-        disabled={enCours}
-        aria-label="Supprimer l'élément"
-        className="flex-shrink-0 text-ink/25 transition-colors hover:text-destructive disabled:opacity-40"
-      >
-        <X className="h-3.5 w-3.5" />
-      </button>
+      {!lectureSeule && (
+        <button
+          type="button"
+          onClick={supprimer}
+          disabled={enCours}
+          aria-label="Supprimer l'élément"
+          className="flex-shrink-0 text-ink/25 transition-colors hover:text-destructive disabled:opacity-40"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
     </div>
   );
 }
