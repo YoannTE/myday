@@ -1,4 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import { Share2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { formaterFraicheur } from "@/lib/freshness";
 import { PartageBadge } from "@/components/partage/partage-badge";
 import type { NoteApi } from "@/components/notes/types";
@@ -9,13 +13,15 @@ interface NoteOuverteHeaderProps {
   enCours: boolean;
   onBasculerEpinglee: () => void;
   onOuvrirPartage: () => void;
+  onRenommer: (titre: string) => void;
 }
 
 /**
  * En-tête de la note ouverte (titre + badges + actions rapides) - extrait de
- * `NoteOuverte` pour garder le parent sous ~150 lignes. Épingler et
- * « Partager » sont masqués pour une note partagée reçue (lecture seule) ;
- * `PartageBadge` prend leur place.
+ * `NoteOuverte` pour garder le parent sous ~150 lignes. Le titre s'édite en
+ * ligne (clic -> input -> Entrée/perte de focus), comme celui des tâches.
+ * Épingler et « Partager » sont masqués pour une note partagée reçue
+ * (lecture seule) ; `PartageBadge` prend leur place.
  */
 export function NoteOuverteHeader({
   note,
@@ -23,12 +29,56 @@ export function NoteOuverteHeader({
   enCours,
   onBasculerEpinglee,
   onOuvrirPartage,
+  onRenommer,
 }: NoteOuverteHeaderProps) {
+  const [enEdition, setEnEdition] = useState(false);
+  const [titreEdition, setTitreEdition] = useState(note.titre);
+
+  function validerTitre() {
+    setEnEdition(false);
+    const nettoye = titreEdition.trim();
+    if (!nettoye || nettoye === note.titre) {
+      setTitreEdition(note.titre);
+      return;
+    }
+    onRenommer(nettoye);
+  }
+
   return (
     <div className="mb-4 flex flex-wrap items-center gap-2">
-      <h2 className="min-w-0 flex-1 font-display text-lg font-extrabold tracking-[-0.02em] break-words text-ink">
-        {note.titre}
-      </h2>
+      {enEdition ? (
+        <Input
+          autoFocus
+          value={titreEdition}
+          onChange={(evenement) => setTitreEdition(evenement.target.value)}
+          onBlur={validerTitre}
+          onKeyDown={(evenement) => {
+            if (evenement.key === "Enter") {
+              evenement.preventDefault();
+              validerTitre();
+            }
+            if (evenement.key === "Escape") {
+              setTitreEdition(note.titre);
+              setEnEdition(false);
+            }
+          }}
+          className="h-auto min-w-0 flex-1 border-none bg-transparent p-0 font-display text-lg font-extrabold tracking-[-0.02em] text-ink focus-visible:ring-0"
+        />
+      ) : (
+        <h2
+          onClick={() => {
+            if (estPartagee) return;
+            setTitreEdition(note.titre);
+            setEnEdition(true);
+          }}
+          title={estPartagee ? undefined : "Cliquer pour renommer"}
+          className={`min-w-0 flex-1 font-display text-lg font-extrabold tracking-[-0.02em] break-words text-ink ${
+            estPartagee ? "" : "cursor-text"
+          }`}
+        >
+          {note.titre}
+        </h2>
+      )}
       {note.origine === "assistant" && (
         <span className="rounded-full bg-soft px-2 py-0.5 font-mono text-[9px] tracking-[.04em] text-accent uppercase">
           via l&apos;assistant

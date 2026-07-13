@@ -102,6 +102,15 @@ export function NoteOuverte({
     }
   }
 
+  async function renommer(titre: string) {
+    try {
+      await appliquerPatch({ titre });
+      toast.success("Note renommée.");
+    } catch (erreur) {
+      toast.error(messageErreurApi(erreur, "Impossible de renommer la note."));
+    }
+  }
+
   async function changerCategorie(categorieId: string) {
     setEnCoursCategorie(true);
     try {
@@ -126,6 +135,7 @@ export function NoteOuverte({
         enCours={enCours}
         onBasculerEpinglee={basculerEpinglee}
         onOuvrirPartage={() => setPartageOuvert(true)}
+        onRenommer={renommer}
       />
       <PartageDialog
         open={partageOuvert}
