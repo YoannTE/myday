@@ -39,6 +39,7 @@ function valeursParDefaut(task: Task): TaskDetailsValues {
   return {
     echeance: task.echeance ? versDateLocale(task.echeance) : "",
     categorie_id: task.categorie?.id ?? SANS_CATEGORIE,
+    recurrence: task.recurrence,
   };
 }
 
@@ -94,6 +95,7 @@ export function TaskDetailsDialog({
             valeurs.categorie_id === SANS_CATEGORIE
               ? null
               : valeurs.categorie_id,
+          recurrence: valeurs.recurrence,
         },
       });
       toast.success("Tâche mise à jour.");

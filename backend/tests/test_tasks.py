@@ -200,3 +200,87 @@ def test_delete_task_cross_user_404(client, auth_user):
         assert resp.status_code == 404
     finally:
         delete_user(other_uid)
+
+
+# --- Récurrence (Round 015) ---
+
+
+def test_create_task_recurrence(client, auth_user):
+    _, headers = auth_user
+    resp = client.post(
+        "/api/tasks",
+        json={"titre": "Sortir les poubelles", "recurrence": "hebdomadaire"},
+        headers=headers,
+    )
+    assert resp.status_code == 201
+    assert resp.json()["data"]["recurrence"] == "hebdomadaire"
+
+
+def test_create_task_recurrence_invalide_422(client, auth_user):
+    _, headers = auth_user
+    resp = client.post(
+        "/api/tasks",
+        json={"titre": "X", "recurrence": "toutes_les_lunes"},
+        headers=headers,
+    )
+    assert resp.status_code == 422
+
+
+def test_completion_tache_recurrente_reprogramme(client, auth_user):
+    """Cocher une tâche récurrente la reprogramme (reste « à faire », échéance
+    avancée) et compte une occurrence terminée (usage_event)."""
+    uid, headers = auth_user
+    echeance = (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat()
+    task = client.post(
+        "/api/tasks",
+        json={"titre": "Médicament", "recurrence": "quotidienne", "echeance": echeance},
+        headers=headers,
+    ).json()["data"]
+
+    resp = client.patch(
+        f"/api/tasks/{task['id']}", json={"statut": "faite"}, headers=headers
+    )
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    # Toujours à faire (reprogrammée), pas archivée en « faite ».
+    assert data["statut"] == "a_faire"
+    assert data["completed_at"] is None
+    assert data["recurrence"] == "quotidienne"
+    # Nouvelle échéance ~ +1 jour (strictement après l'échéance initiale).
+    assert data["echeance"] is not None
+    assert datetime.fromisoformat(data["echeance"]) > datetime.fromisoformat(echeance)
+    # L'occurrence compte comme terminée.
+    assert run_async(_count_usage_events(uid, "task_completed")) == 1
+
+
+def test_completion_tache_recurrente_sans_echeance_repart_du_present(client, auth_user):
+    _, headers = auth_user
+    task = client.post(
+        "/api/tasks",
+        json={"titre": "Étirements", "recurrence": "quotidienne"},
+        headers=headers,
+    ).json()["data"]
+    assert task["echeance"] is None
+
+    resp = client.patch(
+        f"/api/tasks/{task['id']}", json={"statut": "faite"}, headers=headers
+    )
+    data = resp.json()["data"]
+    assert data["statut"] == "a_faire"
+    # Sans échéance de départ, la prochaine est calée dans le futur.
+    assert data["echeance"] is not None
+    assert datetime.fromisoformat(data["echeance"]) > datetime.now(timezone.utc)
+
+
+def test_tache_non_recurrente_reste_faite(client, auth_user):
+    """Garde-fou : une tâche NON récurrente se comporte comme avant (passe faite)."""
+    _, headers = auth_user
+    task = client.post(
+        "/api/tasks", json={"titre": "Tâche unique"}, headers=headers
+    ).json()["data"]
+    resp = client.patch(
+        f"/api/tasks/{task['id']}", json={"statut": "faite"}, headers=headers
+    )
+    data = resp.json()["data"]
+    assert data["statut"] == "faite"
+    assert data["completed_at"] is not None

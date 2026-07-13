@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { Repeat } from "lucide-react";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,15 @@ function formaterEcheance(echeance: string): string {
     date,
   );
   return brut.charAt(0).toUpperCase() + brut.slice(1);
+}
+
+/** Date complète pour le toast de reprogrammation ("vendredi 18 juillet"). */
+function formaterDateComplete(echeance: string): string {
+  return new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(new Date(echeance));
 }
 
 interface TaskItemProps {
@@ -51,6 +61,18 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps
         body: { statut: nouveauStatut },
       });
       onUpdated(reponse.data);
+      // Tâche récurrente cochée : le backend la reprogramme (elle revient
+      // « à faire » avec une nouvelle échéance) plutôt que de la terminer.
+      if (
+        nouveauStatut === "faite" &&
+        reponse.data.statut === "a_faire" &&
+        reponse.data.recurrence !== "aucune" &&
+        reponse.data.echeance
+      ) {
+        toast.success(
+          `Reprogrammée au ${formaterDateComplete(reponse.data.echeance)}.`,
+        );
+      }
     } catch (erreur) {
       onUpdated(precedent);
       toast.error(
@@ -125,6 +147,12 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps
         >
           {task.titre}
         </span>
+      )}
+      {!estFaite && task.recurrence !== "aucune" && (
+        <Repeat
+          className="h-3.5 w-3.5 flex-shrink-0 text-ink/40"
+          aria-label="Tâche qui se répète"
+        />
       )}
       {!estFaite && task.categorie && (
         <CategoryBadge categorie={task.categorie} />

@@ -9,6 +9,10 @@ from app.models.task_categories import TaskCategoryLite
 
 PRIORITES = ("basse", "normale", "haute")
 STATUTS = ("a_faire", "faite")
+# Récurrence des tâches (Round 015) : une tâche « quotidienne / hebdomadaire /
+# mensuelle » se reprogramme automatiquement à la prochaine échéance quand on
+# la coche (elle réapparaît au lieu de disparaître).
+RECURRENCES = ("aucune", "quotidienne", "hebdomadaire", "mensuelle")
 
 
 class TaskCreate(BaseModel):
@@ -17,6 +21,7 @@ class TaskCreate(BaseModel):
     priorite: str = "normale"
     echeance: datetime | None = None
     categorie_id: UUID | None = None
+    recurrence: str = "aucune"
 
     @field_validator("titre")
     @classmethod
@@ -33,6 +38,13 @@ class TaskCreate(BaseModel):
             raise ValueError("Priorité invalide.")
         return value
 
+    @field_validator("recurrence")
+    @classmethod
+    def _recurrence_valide(cls, value: str) -> str:
+        if value not in RECURRENCES:
+            raise ValueError("Récurrence invalide.")
+        return value
+
 
 class TaskUpdate(BaseModel):
     titre: str | None = None
@@ -41,6 +53,7 @@ class TaskUpdate(BaseModel):
     echeance: datetime | None = None
     categorie_id: UUID | None = None
     statut: str | None = None
+    recurrence: str | None = None
 
     @field_validator("titre")
     @classmethod
@@ -66,6 +79,13 @@ class TaskUpdate(BaseModel):
             raise ValueError("Statut invalide.")
         return value
 
+    @field_validator("recurrence")
+    @classmethod
+    def _recurrence_valide(cls, value: str | None) -> str | None:
+        if value is not None and value not in RECURRENCES:
+            raise ValueError("Récurrence invalide.")
+        return value
+
 
 class TaskResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -80,6 +100,7 @@ class TaskResponse(BaseModel):
     statut: str
     origine: str
     mail_id: str | None = None
+    recurrence: str
     completed_at: datetime | None = None
     created_at: datetime
     updated_at: datetime

@@ -12,6 +12,9 @@ isolation par `user_id` (elle contourne la RLS) : toute affectation passe donc
 par `task_categories_service.category_belongs_to_user` avant d'être écrite.
 """
 
+import calendar
+from datetime import datetime, timedelta, timezone
+
 import asyncpg
 
 from app.db.client import scoped_connection
@@ -21,11 +24,37 @@ from app.utils.errors import bad_request, not_found
 
 _SELECT = """
     SELECT t.id, t.titre, t.description, t.priorite, t.echeance, t.categorie_id,
-           t.statut, t.origine, t.mail_id, t.completed_at, t.created_at, t.updated_at,
+           t.statut, t.origine, t.mail_id, t.recurrence, t.completed_at,
+           t.created_at, t.updated_at,
            c.nom AS categorie_nom, c.couleur AS categorie_couleur
     FROM tasks t
     LEFT JOIN task_categories c ON c.id = t.categorie_id
 """
+
+
+def _ajouter_mois(dt: datetime, n: int) -> datetime:
+    """Ajoute `n` mois en bornant le jour au dernier jour du mois cible
+    (ex. 31 janvier + 1 mois -> 28/29 février)."""
+    index = dt.month - 1 + n
+    annee = dt.year + index // 12
+    mois = index % 12 + 1
+    jour = min(dt.day, calendar.monthrange(annee, mois)[1])
+    return dt.replace(year=annee, month=mois, day=jour)
+
+
+def _prochaine_echeance(echeance: datetime | None, recurrence: str) -> datetime:
+    """Calcule la prochaine échéance d'une tâche récurrente. On avance depuis
+    l'échéance si elle est future, sinon depuis maintenant (une tâche en retard
+    repart donc dans le futur, jamais coincée dans le passé)."""
+    maintenant = datetime.now(timezone.utc)
+    base = echeance if echeance is not None and echeance > maintenant else maintenant
+    if recurrence == "quotidienne":
+        return base + timedelta(days=1)
+    if recurrence == "hebdomadaire":
+        return base + timedelta(days=7)
+    if recurrence == "mensuelle":
+        return _ajouter_mois(base, 1)
+    return base
 
 
 def _serialize(row: asyncpg.Record) -> dict:
@@ -47,6 +76,7 @@ def _serialize(row: asyncpg.Record) -> dict:
         "statut": row["statut"],
         "origine": row["origine"],
         "mail_id": str(row["mail_id"]) if row["mail_id"] else None,
+        "recurrence": row["recurrence"],
         "completed_at": row["completed_at"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
@@ -91,8 +121,9 @@ async def create_task(user_id: str, payload: TaskCreate) -> dict:
     async with scoped_connection(user_id) as conn:
         task_id = await conn.fetchval(
             """
-            INSERT INTO tasks (user_id, titre, description, priorite, echeance, categorie_id)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO tasks
+                (user_id, titre, description, priorite, echeance, categorie_id, recurrence)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING id
             """,
             user_id,
@@ -101,6 +132,7 @@ async def create_task(user_id: str, payload: TaskCreate) -> dict:
             payload.priorite,
             payload.echeance,
             categorie_id,
+            payload.recurrence,
         )
         row = await conn.fetchrow(f"{_SELECT} WHERE t.id = $1", task_id)
     return _serialize(row)
@@ -121,6 +153,7 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
         description = fields["description"] if "description" in fields else current["description"]
         priorite = fields.get("priorite", current["priorite"])
         echeance = fields["echeance"] if "echeance" in fields else current["echeance"]
+        recurrence = fields.get("recurrence", current["recurrence"])
 
         if "categorie_id" in fields:
             categorie_id = str(fields["categorie_id"]) if fields["categorie_id"] else None
@@ -132,13 +165,42 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
         devient_a_faire = statut_cible == "a_faire" and current["statut"] != "a_faire"
         nouveau_statut = statut_cible if statut_cible is not None else current["statut"]
 
-        if devient_faite:
+        if devient_faite and recurrence != "aucune":
+            # Tâche récurrente cochée : au lieu de la marquer « faite », on la
+            # reprogramme à la prochaine échéance et elle reste « à faire ». Le
+            # pointage compte comme une occurrence terminée (usage_event).
+            nouvelle_echeance = _prochaine_echeance(echeance, recurrence)
             updated_id = await conn.fetchval(
                 """
                 UPDATE tasks
                 SET titre = $3, description = $4, priorite = $5, echeance = $6,
-                    categorie_id = $7, statut = 'faite', completed_at = now(),
-                    updated_at = now()
+                    categorie_id = $7, recurrence = $8, statut = 'a_faire',
+                    completed_at = NULL, updated_at = now()
+                WHERE id = $1 AND user_id = $2 AND statut <> 'faite'
+                RETURNING id
+                """,
+                task_id,
+                user_id,
+                titre,
+                description,
+                priorite,
+                nouvelle_echeance,
+                categorie_id,
+                recurrence,
+            )
+            if updated_id is not None:
+                await conn.execute(
+                    "INSERT INTO usage_events (user_id, type) VALUES ($1, 'task_completed')",
+                    user_id,
+                )
+            row = await _reload(conn, task_id, user_id)
+        elif devient_faite:
+            updated_id = await conn.fetchval(
+                """
+                UPDATE tasks
+                SET titre = $3, description = $4, priorite = $5, echeance = $6,
+                    categorie_id = $7, recurrence = $8, statut = 'faite',
+                    completed_at = now(), updated_at = now()
                 WHERE id = $1 AND user_id = $2 AND statut <> 'faite'
                 RETURNING id
                 """,
@@ -149,6 +211,7 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
                 priorite,
                 echeance,
                 categorie_id,
+                recurrence,
             )
             if updated_id is not None:
                 await conn.execute(
@@ -164,8 +227,8 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
                 """
                 UPDATE tasks
                 SET titre = $3, description = $4, priorite = $5, echeance = $6,
-                    categorie_id = $7, statut = $8, completed_at = $9,
-                    updated_at = now()
+                    categorie_id = $7, recurrence = $8, statut = $9,
+                    completed_at = $10, updated_at = now()
                 WHERE id = $1 AND user_id = $2
                 """,
                 task_id,
@@ -175,6 +238,7 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
                 priorite,
                 echeance,
                 categorie_id,
+                recurrence,
                 nouveau_statut,
                 completed_at,
             )

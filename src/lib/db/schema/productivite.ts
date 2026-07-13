@@ -65,6 +65,9 @@ export const tasks = pgTable(
     echeance: timestamp("echeance", { withTimezone: true }),
     statut: text("statut").notNull().default("a_faire"),
     origine: text("origine").notNull().default("manuelle"),
+    // Recurrence (Round 015) : une tache recurrente se reprogramme a la
+    // prochaine echeance quand on la coche.
+    recurrence: text("recurrence").notNull().default("aucune"),
     // Cle d'idempotence posee par l'assistant conversationnel (retry-safe)
     assistantActionKey: text("assistant_action_key"),
     mailId: uuid("mail_id").references(() => mails.id, { onDelete: "set null" }),
@@ -90,6 +93,10 @@ export const tasks = pgTable(
       .where(sql`${table.assistantActionKey} IS NOT NULL`),
     check("tasks_priorite_check", sql`${table.priorite} IN ('basse', 'normale', 'haute')`),
     check("tasks_statut_check", sql`${table.statut} IN ('a_faire', 'faite')`),
+    check(
+      "tasks_recurrence_check",
+      sql`${table.recurrence} IN ('aucune', 'quotidienne', 'hebdomadaire', 'mensuelle')`,
+    ),
     check(
       "tasks_origine_check",
       sql`${table.origine} IN ('manuelle', 'assistant', 'mail')`,

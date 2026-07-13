@@ -8,6 +8,12 @@ import { z } from "zod";
 export const taskDetailsSchema = z.object({
   echeance: z.string(),
   categorie_id: z.string().min(1, "Choisis une catégorie."),
+  recurrence: z.enum([
+    "aucune",
+    "quotidienne",
+    "hebdomadaire",
+    "mensuelle",
+  ]),
 });
 
 export type TaskDetailsValues = z.infer<typeof taskDetailsSchema>;

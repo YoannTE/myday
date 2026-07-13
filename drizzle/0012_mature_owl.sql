@@ -1,0 +1,2 @@
+ALTER TABLE "tasks" ADD COLUMN "recurrence" text DEFAULT 'aucune' NOT NULL;--> statement-breakpoint
+ALTER TABLE "tasks" ADD CONSTRAINT "tasks_recurrence_check" CHECK ("tasks"."recurrence" IN ('aucune', 'quotidienne', 'hebdomadaire', 'mensuelle'));

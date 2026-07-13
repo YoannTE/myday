@@ -42,6 +42,7 @@ class TaskSummary(BaseModel):
     statut: str
     origine: str
     mail_id: str | None = None
+    recurrence: str = "aucune"
     categorie_id: str | None = None
     categorie: TaskCategoryLite | None = None
     completed_at: datetime | None = None

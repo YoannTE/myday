@@ -4,6 +4,11 @@
 export type Priorite = "basse" | "normale" | "haute";
 export type StatutTache = "a_faire" | "faite";
 export type OrigineTache = "manuelle" | "assistant" | "mail";
+export type Recurrence =
+  | "aucune"
+  | "quotidienne"
+  | "hebdomadaire"
+  | "mensuelle";
 
 /** Représentation légère d'une catégorie jointe dans la réponse d'une tâche. */
 export interface TaskCategoryLite {
@@ -31,6 +36,7 @@ export interface Task {
   statut: StatutTache;
   origine: OrigineTache;
   mail_id: string | null;
+  recurrence: Recurrence;
   completed_at: string | null;
   created_at: string;
   updated_at: string;
