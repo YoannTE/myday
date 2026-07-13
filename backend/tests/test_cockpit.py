@@ -212,3 +212,34 @@ def test_cockpit_prochains_vide_si_aucun_evenement_a_venir(client, auth_user):
     resp = client.get("/api/cockpit", headers=_cookie(cookie))
     assert resp.status_code == 200
     assert resp.json()["data"]["prochains"] == []
+
+
+def test_cockpit_evenement_expose_categorie(client, auth_user):
+    """Round 015 : les prochains evenements du cockpit portent leur categorie."""
+    uid, cookie = auth_user
+    now = datetime.now(timezone.utc)
+
+    async def _seed(conn):
+        cat_id = await conn.fetchval(
+            "INSERT INTO event_categories (user_id, nom, couleur) "
+            "VALUES ($1, 'Sport', '#0EA5E9') RETURNING id::text",
+            uid,
+        )
+        event_id = await conn.fetchval(
+            "INSERT INTO events (user_id, titre, debut, fin, categorie_id) "
+            "VALUES ($1, 'Padel', $2, $3, $4) RETURNING id::text",
+            uid, now + timedelta(hours=2), now + timedelta(hours=3), cat_id,
+        )
+        return cat_id, event_id
+
+    cat_id, event_id = admin(_seed)
+
+    resp = client.get("/api/cockpit", headers=_cookie(cookie))
+    assert resp.status_code == 200
+    prochains = {e["id"]: e for e in resp.json()["data"]["prochains"]}
+    assert event_id in prochains
+    assert prochains[event_id]["categorie"] == {
+        "id": cat_id,
+        "nom": "Sport",
+        "couleur": "#0EA5E9",
+    }

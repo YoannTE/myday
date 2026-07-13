@@ -7,6 +7,7 @@ import {
   formaterHeure,
 } from "@/components/planning/date-utils";
 import { EventFormDialog } from "@/components/planning/event-form-dialog";
+import { EventCategoryBadge } from "@/components/planning/event-category-badge";
 import { SectionAddButton } from "@/components/cockpit/section-add-button";
 import type { CockpitEvent } from "@/components/cockpit/types";
 
@@ -93,13 +94,23 @@ export function JourneeTimeline({ evenements, onSuccess }: JourneeTimelineProps)
                 </span>
                 <div
                   className={cn(
-                    "flex-1 rounded-inner px-4 py-3 transition-colors",
+                    "min-w-0 flex-1 rounded-inner px-4 py-3 transition-colors",
                     enCours
                       ? "border-2 border-accent/30 group-hover:bg-soft/40"
                       : "bg-soft group-hover:bg-soft/70",
                   )}
                 >
-                  <p className="font-body text-ink">{evenement.titre}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="min-w-0 font-body break-words text-ink">
+                      {evenement.titre}
+                    </p>
+                    {evenement.categorie && (
+                      <EventCategoryBadge
+                        categorie={evenement.categorie}
+                        className="bg-card"
+                      />
+                    )}
+                  </div>
                   {evenement.lieu && (
                     <p className="mt-0.5 font-body text-xs text-ink/50">
                       {evenement.lieu}

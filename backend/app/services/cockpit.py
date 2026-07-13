@@ -30,8 +30,9 @@ _NOTES_COLUMNS = (
     "n.categorie_id::text, c.nom AS categorie_nom, c.couleur AS categorie_couleur"
 )
 _EVENTS_COLUMNS = (
-    "id::text, titre, debut, fin, lieu, description, google_event_id, "
-    "source, sync_status, created_at, updated_at"
+    "e.id::text, e.titre, e.debut, e.fin, e.lieu, e.description, "
+    "e.google_event_id, e.source, e.sync_status, e.created_at, e.updated_at, "
+    "e.categorie_id::text, c.nom AS categorie_nom, c.couleur AS categorie_couleur"
 )
 _TASKS_COLUMNS = (
     "t.id::text, t.titre, t.description, t.priorite, t.echeance, t.statut, "
@@ -95,8 +96,9 @@ async def get_cockpit(user_id: str) -> dict:
             _NOTES_LIMIT,
         )
         prochains = await conn.fetch(
-            f"SELECT {_EVENTS_COLUMNS} FROM events "
-            "WHERE debut >= $1 ORDER BY debut ASC LIMIT $2",
+            f"SELECT {_EVENTS_COLUMNS} FROM events e "
+            "LEFT JOIN event_categories c ON c.id = e.categorie_id "
+            "WHERE e.debut >= $1 ORDER BY e.debut ASC LIMIT $2",
             now, _PROCHAINS_LIMIT,
         )
         tasks = await conn.fetch(
@@ -140,7 +142,7 @@ async def get_cockpit(user_id: str) -> dict:
         }
     return {
         "notes_epinglees": [_serialize_note(r) for r in notes],
-        "prochains": [dict(r) for r in prochains],
+        "prochains": [_serialize_avec_categorie(r) for r in prochains],
         "taches": [_serialize_task(r) for r in tasks],
         "mails_importants": mails_importants,
         "brief": brief,
