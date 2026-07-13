@@ -26,7 +26,7 @@ export function MailListe({
   onVoirEcartes,
 }: MailListeProps) {
   return (
-    <div className="flex flex-col gap-3 self-start">
+    <div className="flex min-w-0 flex-col gap-3 self-start">
       {mails.map((mail) => (
         <MailItem
           key={mail.id}

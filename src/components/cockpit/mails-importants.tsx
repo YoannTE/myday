@@ -43,8 +43,8 @@ export function MailsImportants({ placeholder, mails }: MailsImportantsProps) {
                 <span className="cta-gradient flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full font-mono text-xs text-white">
                   {mail.score ?? "…"}
                 </span>
-                <div className="min-w-0">
-                  <p className="font-display font-semibold text-ink">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-display font-semibold text-ink">
                     {formaterExpediteur(mail.expediteur)} — {mail.sujet}
                   </p>
                   <p className="truncate font-body text-sm text-ink/50">

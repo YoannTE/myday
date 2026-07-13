@@ -49,7 +49,7 @@ export function MailItem({ mail, selectionne, onSelectionner }: MailItemProps) {
       >
         {mail.score ?? "…"}
       </span>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <p className="truncate font-display text-sm font-semibold text-ink">
           {formaterExpediteur(mail.expediteur)}
         </p>

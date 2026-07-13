@@ -38,7 +38,7 @@ export function MailDetail({ mail, feedbackEnCoursId, onFeedback }: MailDetailPr
 
   if (!mail) {
     return (
-      <div className="rounded-card bg-card p-6 text-center shadow-card">
+      <div className="min-w-0 rounded-card bg-card p-6 text-center shadow-card">
         <p className="font-body text-sm text-ink/50">
           Sélectionne un mail pour voir son détail.
         </p>
@@ -49,16 +49,16 @@ export function MailDetail({ mail, feedbackEnCoursId, onFeedback }: MailDetailPr
   const enCours = feedbackEnCoursId === mail.id;
 
   return (
-    <div className="rounded-card bg-card p-6 shadow-card">
+    <div className="min-w-0 max-w-full overflow-hidden rounded-card bg-card p-6 shadow-card">
       <div className="mb-4 flex items-start gap-3">
         <span className="cta-gradient flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full font-mono text-sm text-white">
           {mail.score ?? "…"}
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="font-display font-extrabold tracking-[-0.02em] text-ink">
+          <h2 className="font-display font-extrabold tracking-[-0.02em] break-words text-ink">
             {mail.sujet}
           </h2>
-          <p className="font-body text-sm text-ink/50">
+          <p className="font-body text-sm break-words text-ink/50">
             {formaterExpediteur(mail.expediteur)} ·{" "}
             {formaterDateHeure(mail.date_reception)}
           </p>
@@ -69,13 +69,13 @@ export function MailDetail({ mail, feedbackEnCoursId, onFeedback }: MailDetailPr
         <p className="mb-1 font-mono text-[10px] tracking-[.04em] text-accent uppercase">
           {mail.resume_ia ? "Résumé IA" : "Extrait"}
         </p>
-        <p className="font-body text-sm text-ink/80">
+        <p className="font-body text-sm break-words text-ink/80">
           {mail.resume_ia ?? mail.extrait}
         </p>
       </div>
 
       {mail.raison_score && (
-        <p className="mb-4 font-mono text-[10px] tracking-[.04em] text-ink/40 uppercase">
+        <p className="mb-4 font-mono text-[10px] tracking-[.04em] break-words text-ink/40 uppercase">
           Score {mail.score ?? "…"} — {mail.raison_score}
         </p>
       )}
