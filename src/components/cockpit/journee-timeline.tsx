@@ -100,8 +100,8 @@ export function JourneeTimeline({ evenements, onSuccess }: JourneeTimelineProps)
                       : "bg-soft group-hover:bg-soft/70",
                   )}
                 >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="min-w-0 font-body break-words text-ink">
+                  <div className="flex items-center gap-2">
+                    <p className="min-w-0 flex-1 font-body break-words text-ink">
                       {evenement.titre}
                     </p>
                     {evenement.categorie && (
