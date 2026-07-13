@@ -24,8 +24,8 @@ from app.utils.errors import bad_request, not_found
 
 _SELECT = """
     SELECT t.id, t.titre, t.description, t.priorite, t.echeance, t.categorie_id,
-           t.statut, t.origine, t.mail_id, t.recurrence, t.completed_at,
-           t.created_at, t.updated_at,
+           t.statut, t.origine, t.mail_id, t.recurrence, t.rappel_at,
+           t.completed_at, t.created_at, t.updated_at,
            c.nom AS categorie_nom, c.couleur AS categorie_couleur
     FROM tasks t
     LEFT JOIN task_categories c ON c.id = t.categorie_id
@@ -77,6 +77,7 @@ def _serialize(row: asyncpg.Record) -> dict:
         "origine": row["origine"],
         "mail_id": str(row["mail_id"]) if row["mail_id"] else None,
         "recurrence": row["recurrence"],
+        "rappel_at": row["rappel_at"],
         "completed_at": row["completed_at"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
@@ -122,8 +123,9 @@ async def create_task(user_id: str, payload: TaskCreate) -> dict:
         task_id = await conn.fetchval(
             """
             INSERT INTO tasks
-                (user_id, titre, description, priorite, echeance, categorie_id, recurrence)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+                (user_id, titre, description, priorite, echeance, categorie_id,
+                 recurrence, rappel_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING id
             """,
             user_id,
@@ -133,6 +135,7 @@ async def create_task(user_id: str, payload: TaskCreate) -> dict:
             payload.echeance,
             categorie_id,
             payload.recurrence,
+            payload.rappel_at,
         )
         row = await conn.fetchrow(f"{_SELECT} WHERE t.id = $1", task_id)
     return _serialize(row)
@@ -154,6 +157,7 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
         priorite = fields.get("priorite", current["priorite"])
         echeance = fields["echeance"] if "echeance" in fields else current["echeance"]
         recurrence = fields.get("recurrence", current["recurrence"])
+        rappel_at = fields["rappel_at"] if "rappel_at" in fields else current["rappel_at"]
 
         if "categorie_id" in fields:
             categorie_id = str(fields["categorie_id"]) if fields["categorie_id"] else None
@@ -174,8 +178,8 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
                 """
                 UPDATE tasks
                 SET titre = $3, description = $4, priorite = $5, echeance = $6,
-                    categorie_id = $7, recurrence = $8, statut = 'a_faire',
-                    completed_at = NULL, updated_at = now()
+                    categorie_id = $7, recurrence = $8, rappel_at = $9,
+                    statut = 'a_faire', completed_at = NULL, updated_at = now()
                 WHERE id = $1 AND user_id = $2 AND statut <> 'faite'
                 RETURNING id
                 """,
@@ -187,6 +191,7 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
                 nouvelle_echeance,
                 categorie_id,
                 recurrence,
+                rappel_at,
             )
             if updated_id is not None:
                 await conn.execute(
@@ -199,8 +204,8 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
                 """
                 UPDATE tasks
                 SET titre = $3, description = $4, priorite = $5, echeance = $6,
-                    categorie_id = $7, recurrence = $8, statut = 'faite',
-                    completed_at = now(), updated_at = now()
+                    categorie_id = $7, recurrence = $8, rappel_at = $9,
+                    statut = 'faite', completed_at = now(), updated_at = now()
                 WHERE id = $1 AND user_id = $2 AND statut <> 'faite'
                 RETURNING id
                 """,
@@ -212,6 +217,7 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
                 echeance,
                 categorie_id,
                 recurrence,
+                rappel_at,
             )
             if updated_id is not None:
                 await conn.execute(
@@ -227,8 +233,8 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
                 """
                 UPDATE tasks
                 SET titre = $3, description = $4, priorite = $5, echeance = $6,
-                    categorie_id = $7, recurrence = $8, statut = $9,
-                    completed_at = $10, updated_at = now()
+                    categorie_id = $7, recurrence = $8, rappel_at = $9,
+                    statut = $10, completed_at = $11, updated_at = now()
                 WHERE id = $1 AND user_id = $2
                 """,
                 task_id,
@@ -239,6 +245,7 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
                 echeance,
                 categorie_id,
                 recurrence,
+                rappel_at,
                 nouveau_statut,
                 completed_at,
             )

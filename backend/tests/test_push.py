@@ -24,6 +24,7 @@ from app.config import settings
 from app.services.event_reminders import run_event_reminders
 from app.services.push import subscriptions as push_subscriptions
 from app.services.push.sender import dispatch_push
+from app.services.task_reminders import run_task_reminders
 
 from conftest import create_user, delete_user, make_session_for, sign_token
 
@@ -122,6 +123,14 @@ def insert_event(user_id, titre, debut, fin) -> str:
         "INSERT INTO events (user_id, titre, debut, fin) VALUES ($1, $2, $3, $4) "
         "RETURNING id::text",
         user_id, titre, debut, fin,
+    )
+
+
+def insert_task_avec_rappel(user_id, titre, rappel_at, statut="a_faire") -> str:
+    return admin_val(
+        "INSERT INTO tasks (user_id, titre, statut, rappel_at) "
+        "VALUES ($1, $2, $3, $4) RETURNING id::text",
+        user_id, titre, statut, rappel_at,
     )
 
 
@@ -270,6 +279,45 @@ def test_event_reminders_idempotent_deux_ticks_une_notif(user_id, monkeypatch):
     assert first == 1
     assert second == 0
     assert count_notifications(user_id, "rappel_evenement") == 1
+
+
+# --- Rappels de tâches (Round 015) -------------------------------------------
+
+
+def test_task_reminder_fire_a_l_heure_et_idempotent(user_id, monkeypatch):
+    monkeypatch.setattr(sender, "webpush", lambda **kwargs: None)
+    # Rappel dont l'heure vient de passer (dans la fenêtre du tick).
+    rappel = datetime.now(timezone.utc) - timedelta(minutes=1)
+    insert_task_avec_rappel(user_id, "Appeler le médecin", rappel)
+
+    interval = settings.event_reminder_interval_minutes
+    first = run_in_loop(lambda: run_task_reminders(interval))
+    second = run_in_loop(lambda: run_task_reminders(interval))
+    assert first == 1
+    assert second == 0
+    assert count_notifications(user_id, "rappel_tache") == 1
+
+
+def test_task_reminder_futur_pas_de_notif(user_id, monkeypatch):
+    monkeypatch.setattr(sender, "webpush", lambda **kwargs: None)
+    rappel = datetime.now(timezone.utc) + timedelta(hours=2)
+    insert_task_avec_rappel(user_id, "Plus tard", rappel)
+    created = run_in_loop(
+        lambda: run_task_reminders(settings.event_reminder_interval_minutes)
+    )
+    assert created == 0
+    assert count_notifications(user_id, "rappel_tache") == 0
+
+
+def test_task_reminder_tache_faite_pas_de_notif(user_id, monkeypatch):
+    monkeypatch.setattr(sender, "webpush", lambda **kwargs: None)
+    rappel = datetime.now(timezone.utc) - timedelta(minutes=1)
+    insert_task_avec_rappel(user_id, "Déjà faite", rappel, statut="faite")
+    created = run_in_loop(
+        lambda: run_task_reminders(settings.event_reminder_interval_minutes)
+    )
+    assert created == 0
+    assert count_notifications(user_id, "rappel_tache") == 0
 
 
 # --- Endpoints HTTP -----------------------------------------------------------

@@ -69,6 +69,9 @@ export const tasks = pgTable(
     // Recurrence (Round 015) : une tache recurrente se reprogramme a la
     // prochaine echeance quand on la coche.
     recurrence: text("recurrence").notNull().default("aucune"),
+    // Rappel (Round 015) : date+heure a laquelle envoyer une notification push
+    // pour la tache (null = pas de rappel). Envoye une fois par le scheduler.
+    rappelAt: timestamp("rappel_at", { withTimezone: true }),
     // Cle d'idempotence posee par l'assistant conversationnel (retry-safe)
     assistantActionKey: text("assistant_action_key"),
     mailId: uuid("mail_id").references(() => mails.id, { onDelete: "set null" }),

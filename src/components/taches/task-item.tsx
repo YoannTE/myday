@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Repeat } from "lucide-react";
+import { Bell, Repeat } from "lucide-react";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
 import { cn } from "@/lib/utils";
@@ -152,6 +152,12 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps
         <Repeat
           className="h-3.5 w-3.5 flex-shrink-0 text-ink/40"
           aria-label="Tâche qui se répète"
+        />
+      )}
+      {!estFaite && task.rappel_at && (
+        <Bell
+          className="h-3.5 w-3.5 flex-shrink-0 text-accent/70"
+          aria-label="Rappel programmé"
         />
       )}
       {!estFaite && task.categorie && (

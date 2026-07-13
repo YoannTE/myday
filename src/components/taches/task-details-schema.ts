@@ -14,6 +14,8 @@ export const taskDetailsSchema = z.object({
     "hebdomadaire",
     "mensuelle",
   ]),
+  // Valeur d'un `<input type="datetime-local">` ("AAAA-MM-JJTHH:MM") ou vide.
+  rappel_at: z.string(),
 });
 
 export type TaskDetailsValues = z.infer<typeof taskDetailsSchema>;

@@ -284,3 +284,22 @@ def test_tache_non_recurrente_reste_faite(client, auth_user):
     data = resp.json()["data"]
     assert data["statut"] == "faite"
     assert data["completed_at"] is not None
+
+
+def test_create_et_patch_rappel_at(client, auth_user):
+    """Round 015 : le rappel (date+heure) est enregistré et modifiable."""
+    _, headers = auth_user
+    rappel = (datetime.now(timezone.utc) + timedelta(hours=3)).isoformat()
+    task = client.post(
+        "/api/tasks",
+        json={"titre": "Appeler le dentiste", "rappel_at": rappel},
+        headers=headers,
+    ).json()["data"]
+    assert task["rappel_at"] is not None
+
+    # On retire le rappel.
+    resp = client.patch(
+        f"/api/tasks/{task['id']}", json={"rappel_at": None}, headers=headers
+    )
+    assert resp.status_code == 200
+    assert resp.json()["data"]["rappel_at"] is None

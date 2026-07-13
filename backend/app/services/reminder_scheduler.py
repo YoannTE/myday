@@ -16,6 +16,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.config import settings
 from app.services.event_reminders import run_event_reminders
+from app.services.task_reminders import run_task_reminders
 
 logger = logging.getLogger("myday.event_reminders.scheduler")
 
@@ -23,12 +24,19 @@ _scheduler: AsyncIOScheduler | None = None
 
 
 async def _tick() -> None:
+    interval = settings.event_reminder_interval_minutes
     try:
-        created = await run_event_reminders(settings.event_reminder_interval_minutes)
+        created = await run_event_reminders(interval)
         if created:
             logger.info("rappels d'événements: %s notification(s) créée(s)", created)
     except Exception as exc:  # BDD indisponible : on retentera au prochain cycle
-        logger.warning("scheduler rappels: cycle en échec: %r", exc)
+        logger.warning("scheduler rappels événements: cycle en échec: %r", exc)
+    try:
+        created_taches = await run_task_reminders(interval)
+        if created_taches:
+            logger.info("rappels de tâches: %s notification(s) créée(s)", created_taches)
+    except Exception as exc:
+        logger.warning("scheduler rappels tâches: cycle en échec: %r", exc)
 
 
 def start_reminder_scheduler() -> None:

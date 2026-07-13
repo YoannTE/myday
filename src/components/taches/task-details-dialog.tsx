@@ -26,6 +26,8 @@ import { SANS_CATEGORIE } from "@/components/taches/category-select";
 import {
   versDateLocale,
   dateLocaleVersIso,
+  versDatetimeLocale,
+  datetimeLocaleVersIso,
 } from "@/components/taches/task-date-utils";
 import type { Task, TaskCategory } from "@/components/taches/types";
 
@@ -40,6 +42,7 @@ function valeursParDefaut(task: Task): TaskDetailsValues {
     echeance: task.echeance ? versDateLocale(task.echeance) : "",
     categorie_id: task.categorie?.id ?? SANS_CATEGORIE,
     recurrence: task.recurrence,
+    rappel_at: task.rappel_at ? versDatetimeLocale(task.rappel_at) : "",
   };
 }
 
@@ -96,6 +99,9 @@ export function TaskDetailsDialog({
               ? null
               : valeurs.categorie_id,
           recurrence: valeurs.recurrence,
+          rappel_at: valeurs.rappel_at
+            ? datetimeLocaleVersIso(valeurs.rappel_at)
+            : null,
         },
       });
       toast.success("Tâche mise à jour.");

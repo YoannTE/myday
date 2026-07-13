@@ -35,8 +35,8 @@ _EVENTS_COLUMNS = (
 )
 _TASKS_COLUMNS = (
     "t.id::text, t.titre, t.description, t.priorite, t.echeance, t.statut, "
-    "t.origine, t.mail_id::text, t.recurrence, t.completed_at, t.created_at, "
-    "t.updated_at, t.categorie_id::text, c.nom AS categorie_nom, "
+    "t.origine, t.mail_id::text, t.recurrence, t.rappel_at, t.completed_at, "
+    "t.created_at, t.updated_at, t.categorie_id::text, c.nom AS categorie_nom, "
     "c.couleur AS categorie_couleur"
 )
 

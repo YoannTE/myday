@@ -64,6 +64,28 @@ export function TaskDetailsFields({
         </div>
       </div>
       <div className="space-y-1.5">
+        <Label htmlFor="rappel-tache">Rappel</Label>
+        <div className="flex items-center gap-2">
+          <Input
+            id="rappel-tache"
+            type="datetime-local"
+            className="flex-1"
+            {...register("rappel_at")}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setValue("rappel_at", "")}
+          >
+            Effacer
+          </Button>
+        </div>
+        <p className="font-body text-xs text-ink/40">
+          Reçois une notification à l&apos;heure choisie.
+        </p>
+      </div>
+      <div className="space-y-1.5">
         <Label>Répétition</Label>
         <Controller
           control={control}

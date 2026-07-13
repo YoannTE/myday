@@ -37,6 +37,7 @@ export interface Task {
   origine: OrigineTache;
   mail_id: string | null;
   recurrence: Recurrence;
+  rappel_at: string | null;
   completed_at: string | null;
   created_at: string;
   updated_at: string;

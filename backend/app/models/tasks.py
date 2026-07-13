@@ -22,6 +22,7 @@ class TaskCreate(BaseModel):
     echeance: datetime | None = None
     categorie_id: UUID | None = None
     recurrence: str = "aucune"
+    rappel_at: datetime | None = None
 
     @field_validator("titre")
     @classmethod
@@ -54,6 +55,7 @@ class TaskUpdate(BaseModel):
     categorie_id: UUID | None = None
     statut: str | None = None
     recurrence: str | None = None
+    rappel_at: datetime | None = None
 
     @field_validator("titre")
     @classmethod
@@ -101,6 +103,7 @@ class TaskResponse(BaseModel):
     origine: str
     mail_id: str | None = None
     recurrence: str
+    rappel_at: datetime | None = None
     completed_at: datetime | None = None
     created_at: datetime
     updated_at: datetime

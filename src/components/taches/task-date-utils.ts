@@ -17,3 +17,18 @@ export function versDateLocale(iso: string): string {
 export function dateLocaleVersIso(valeurLocale: string): string {
   return new Date(`${valeurLocale}T12:00:00`).toISOString();
 }
+
+/**
+ * Convertit une date ISO API en valeur locale "AAAA-MM-JJTHH:MM" pour un
+ * champ `<input type="datetime-local">` (rappel avec heure, Round 015).
+ */
+export function versDatetimeLocale(iso: string): string {
+  const date = new Date(iso);
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
+/** Convertit la valeur locale "AAAA-MM-JJTHH:MM" d'un datetime-local en ISO. */
+export function datetimeLocaleVersIso(valeurLocale: string): string {
+  return new Date(valeurLocale).toISOString();
+}
