@@ -18,13 +18,14 @@ from datetime import datetime, timedelta, timezone
 import asyncpg
 
 from app.db.client import scoped_connection
-from app.models.tasks import TaskCreate, TaskUpdate
+from app.models.tasks import TaskCreate, TaskPlanifier, TaskUpdate
 from app.services import task_categories as task_categories_service
 from app.utils.errors import bad_request, not_found
 
 _SELECT = """
     SELECT t.id, t.titre, t.description, t.priorite, t.echeance, t.categorie_id,
            t.statut, t.origine, t.mail_id, t.recurrence, t.rappel_at,
+           t.planifie_debut, t.planifie_fin,
            t.completed_at, t.created_at, t.updated_at,
            c.nom AS categorie_nom, c.couleur AS categorie_couleur
     FROM tasks t
@@ -78,6 +79,8 @@ def _serialize(row: asyncpg.Record) -> dict:
         "mail_id": str(row["mail_id"]) if row["mail_id"] else None,
         "recurrence": row["recurrence"],
         "rappel_at": row["rappel_at"],
+        "planifie_debut": row["planifie_debut"],
+        "planifie_fin": row["planifie_fin"],
         "completed_at": row["completed_at"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
@@ -251,6 +254,66 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
             )
             row = await _reload(conn, task_id, user_id)
     return _serialize(row)
+
+
+async def planifier_task(
+    user_id: str, task_id: str, payload: TaskPlanifier
+) -> dict:
+    """Réserve un créneau (planifie_debut/fin) pour faire la tâche (time-blocking)."""
+    if payload.fin <= payload.debut:
+        raise bad_request("L'heure de fin doit être après l'heure de début.")
+    async with scoped_connection(user_id) as conn:
+        updated = await conn.fetchval(
+            """
+            UPDATE tasks
+            SET planifie_debut = $3, planifie_fin = $4, updated_at = now()
+            WHERE id = $1 AND user_id = $2
+            RETURNING id
+            """,
+            task_id,
+            user_id,
+            payload.debut,
+            payload.fin,
+        )
+        if updated is None:
+            raise not_found("Tâche introuvable.")
+        row = await _reload(conn, task_id, user_id)
+    return _serialize(row)
+
+
+async def deplanifier_task(user_id: str, task_id: str) -> dict:
+    """Retire la tâche du planning (planifie_debut/fin repassent à NULL)."""
+    async with scoped_connection(user_id) as conn:
+        updated = await conn.fetchval(
+            """
+            UPDATE tasks
+            SET planifie_debut = NULL, planifie_fin = NULL, updated_at = now()
+            WHERE id = $1 AND user_id = $2
+            RETURNING id
+            """,
+            task_id,
+            user_id,
+        )
+        if updated is None:
+            raise not_found("Tâche introuvable.")
+        row = await _reload(conn, task_id, user_id)
+    return _serialize(row)
+
+
+async def list_planned_tasks(
+    user_id: str, date_from: datetime, date_to: datetime
+) -> list[dict]:
+    """Tâches ayant un créneau planifié qui chevauche la fenêtre [from, to]."""
+    async with scoped_connection(user_id) as conn:
+        rows = await conn.fetch(
+            f"{_SELECT} "
+            "WHERE t.planifie_debut IS NOT NULL "
+            "AND t.planifie_fin >= $1 AND t.planifie_debut <= $2 "
+            "ORDER BY t.planifie_debut ASC",
+            date_from,
+            date_to,
+        )
+    return [_serialize(r) for r in rows]
 
 
 async def delete_task(user_id: str, task_id: str) -> None:

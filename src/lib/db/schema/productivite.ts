@@ -72,6 +72,11 @@ export const tasks = pgTable(
     // Rappel (Round 015) : date+heure a laquelle envoyer une notification push
     // pour la tache (null = pas de rappel). Envoye une fois par le scheduler.
     rappelAt: timestamp("rappel_at", { withTimezone: true }),
+    // Planification (Round 015) : creneau reserve dans le planning pour faire la
+    // tache (time-blocking). Distinct de l'echeance (date limite). Les deux
+    // ensemble ou aucun. Reste natif MyDay (pas de sync Google).
+    planifieDebut: timestamp("planifie_debut", { withTimezone: true }),
+    planifieFin: timestamp("planifie_fin", { withTimezone: true }),
     // Cle d'idempotence posee par l'assistant conversationnel (retry-safe)
     assistantActionKey: text("assistant_action_key"),
     mailId: uuid("mail_id").references(() => mails.id, { onDelete: "set null" }),

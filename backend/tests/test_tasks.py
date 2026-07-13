@@ -303,3 +303,84 @@ def test_create_et_patch_rappel_at(client, auth_user):
     )
     assert resp.status_code == 200
     assert resp.json()["data"]["rappel_at"] is None
+
+
+# --- Planification dans le planning (time-blocking, Round 015) ---
+
+
+def test_planifier_et_lister_tache(client, auth_user):
+    _, headers = auth_user
+    task = client.post(
+        "/api/tasks", json={"titre": "Écrire le rapport"}, headers=headers
+    ).json()["data"]
+    debut = datetime.now(timezone.utc) + timedelta(hours=1)
+    fin = debut + timedelta(hours=1)
+
+    resp = client.post(
+        f"/api/tasks/{task['id']}/planifier",
+        json={"debut": debut.isoformat(), "fin": fin.isoformat()},
+        headers=headers,
+    )
+    assert resp.status_code == 200
+    assert resp.json()["data"]["planifie_debut"] is not None
+
+    # Elle apparaît dans la fenêtre du planning.
+    planifiees = client.get(
+        "/api/tasks/planned",
+        params={
+            "from": (debut - timedelta(hours=1)).isoformat(),
+            "to": (fin + timedelta(hours=1)).isoformat(),
+        },
+        headers=headers,
+    ).json()["data"]
+    assert any(t["id"] == task["id"] for t in planifiees)
+
+
+def test_planifier_fin_avant_debut_rejete(client, auth_user):
+    _, headers = auth_user
+    task = client.post("/api/tasks", json={"titre": "X"}, headers=headers).json()["data"]
+    debut = datetime.now(timezone.utc) + timedelta(hours=2)
+    fin = debut - timedelta(hours=1)
+    resp = client.post(
+        f"/api/tasks/{task['id']}/planifier",
+        json={"debut": debut.isoformat(), "fin": fin.isoformat()},
+        headers=headers,
+    )
+    assert resp.status_code == 400
+
+
+def test_planned_hors_fenetre_absente(client, auth_user):
+    _, headers = auth_user
+    task = client.post("/api/tasks", json={"titre": "Loin"}, headers=headers).json()["data"]
+    debut = datetime.now(timezone.utc) + timedelta(days=10)
+    fin = debut + timedelta(hours=1)
+    client.post(
+        f"/api/tasks/{task['id']}/planifier",
+        json={"debut": debut.isoformat(), "fin": fin.isoformat()},
+        headers=headers,
+    )
+    # Fenêtre "aujourd'hui" : la tâche planifiée dans 10 jours ne doit pas sortir.
+    planifiees = client.get(
+        "/api/tasks/planned",
+        params={
+            "from": datetime.now(timezone.utc).isoformat(),
+            "to": (datetime.now(timezone.utc) + timedelta(hours=6)).isoformat(),
+        },
+        headers=headers,
+    ).json()["data"]
+    assert all(t["id"] != task["id"] for t in planifiees)
+
+
+def test_deplanifier_tache(client, auth_user):
+    _, headers = auth_user
+    task = client.post("/api/tasks", json={"titre": "Y"}, headers=headers).json()["data"]
+    debut = datetime.now(timezone.utc) + timedelta(hours=1)
+    client.post(
+        f"/api/tasks/{task['id']}/planifier",
+        json={"debut": debut.isoformat(), "fin": (debut + timedelta(hours=1)).isoformat()},
+        headers=headers,
+    )
+    resp = client.delete(f"/api/tasks/{task['id']}/planifier", headers=headers)
+    assert resp.status_code == 200
+    assert resp.json()["data"]["planifie_debut"] is None
+    assert resp.json()["data"]["planifie_fin"] is None

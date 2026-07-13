@@ -104,6 +104,15 @@ class TaskResponse(BaseModel):
     mail_id: str | None = None
     recurrence: str
     rappel_at: datetime | None = None
+    planifie_debut: datetime | None = None
+    planifie_fin: datetime | None = None
     completed_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class TaskPlanifier(BaseModel):
+    """Créneau réservé pour faire la tâche (time-blocking, Round 015)."""
+
+    debut: datetime
+    fin: datetime

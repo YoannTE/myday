@@ -22,6 +22,7 @@ import {
   type VuePlanning,
 } from "@/components/planning/date-utils";
 import type { CompteurJourApi, EvenementApi } from "@/components/planning/types";
+import type { Task } from "@/components/taches/types";
 
 const CLE_VUE_PLANNING = "myday-planning-vue";
 const VUES_VALIDES: VuePlanning[] = ["jour", "semaine", "mois", "annee"];
@@ -54,6 +55,7 @@ export function PlanningClient() {
   const [vue, setVue] = useState<VuePlanning>("semaine");
   const [reference, setReference] = useState(() => new Date());
   const [evenements, setEvenements] = useState<EvenementApi[] | null>(null);
+  const [tachesPlanifiees, setTachesPlanifiees] = useState<Task[] | null>(null);
   const [compteurs, setCompteurs] = useState<CompteurJourApi[] | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -83,10 +85,26 @@ export function PlanningClient() {
         setCompteurs(reponse.data);
       } else {
         const { debut, fin } = fenetreVue(vue, reference);
-        const reponse = await apiCall<{ data: EvenementApi[] }>(
-          `/api/events?from=${encodeURIComponent(debut.toISOString())}&to=${encodeURIComponent(fin.toISOString())}`,
-        );
-        setEvenements(reponse.data);
+        const depuis = encodeURIComponent(debut.toISOString());
+        const jusqua = encodeURIComponent(fin.toISOString());
+        if (vue === "jour" || vue === "semaine") {
+          const [reponseEvenements, reponseTaches] = await Promise.all([
+            apiCall<{ data: EvenementApi[] }>(
+              `/api/events?from=${depuis}&to=${jusqua}`,
+            ),
+            apiCall<{ data: Task[] }>(
+              `/api/tasks/planned?from=${depuis}&to=${jusqua}`,
+            ),
+          ]);
+          setEvenements(reponseEvenements.data);
+          setTachesPlanifiees(reponseTaches.data);
+        } else {
+          const reponse = await apiCall<{ data: EvenementApi[] }>(
+            `/api/events?from=${depuis}&to=${jusqua}`,
+          );
+          setEvenements(reponse.data);
+          setTachesPlanifiees(null);
+        }
       }
       setErreur(null);
     } catch (erreurChargement) {
@@ -101,6 +119,7 @@ export function PlanningClient() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setEvenements(null);
+    setTachesPlanifiees(null);
     setCompteurs(null);
     recharger();
   }, [recharger]);
@@ -140,11 +159,17 @@ export function PlanningClient() {
       ) : evenements === null ? (
         <PlanningSkeleton />
       ) : vue === "jour" ? (
-        <PlanningJour jour={reference} evenements={evenements} onSuccess={recharger} />
+        <PlanningJour
+          jour={reference}
+          evenements={evenements}
+          tachesPlanifiees={tachesPlanifiees ?? []}
+          onSuccess={recharger}
+        />
       ) : vue === "semaine" ? (
         <PlanningSemaine
           jours={joursDeLaSemaine(debutSemaine(reference))}
           evenements={evenements}
+          tachesPlanifiees={tachesPlanifiees ?? []}
           onSuccess={recharger}
         />
       ) : (

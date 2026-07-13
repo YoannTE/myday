@@ -22,6 +22,7 @@ import {
   type TaskDetailsValues,
 } from "@/components/taches/task-details-schema";
 import { TaskDetailsFields } from "@/components/taches/task-details-fields";
+import { TaskPlanningSection } from "@/components/taches/task-planning-section";
 import { SANS_CATEGORIE } from "@/components/taches/category-select";
 import {
   versDateLocale,
@@ -153,6 +154,7 @@ export function TaskDetailsDialog({
             }}
           />
         </form>
+        <TaskPlanningSection task={task} open={open} onUpdated={onUpdated} />
         <DialogFooter>
           <Button
             type="submit"
