@@ -12,6 +12,7 @@ import {
   NoteCategorySelect,
   SANS_CATEGORIE,
 } from "@/components/notes/note-category-select";
+import { NoteChecklist } from "@/components/notes/note-checklist";
 import type { NoteApi, NoteCategory } from "@/components/notes/types";
 
 interface NoteOuverteProps {
@@ -150,6 +151,13 @@ export function NoteOuverte({
           onCategoryCreated={onCategoryCreated}
         />
       </div>
+      <NoteChecklist
+        noteId={note.id}
+        items={note.items}
+        onItemsChange={(nouveauxItems) =>
+          onChange({ ...note, items: nouveauxItems })
+        }
+      />
       <Textarea
         value={contenu}
         onChange={(evenement) => setContenu(evenement.target.value)}

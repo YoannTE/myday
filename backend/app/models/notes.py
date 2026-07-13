@@ -6,6 +6,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from app.models.note_categories import NoteCategoryLite
+from app.models.note_items import NoteItemResponse
 
 
 class NoteCreate(BaseModel):
@@ -51,5 +52,6 @@ class NoteResponse(BaseModel):
     origine: str
     categorie_id: str | None = None
     categorie: NoteCategoryLite | None = None
+    items: list[NoteItemResponse] = []
     created_at: datetime
     updated_at: datetime

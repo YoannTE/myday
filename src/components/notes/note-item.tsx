@@ -14,6 +14,7 @@ interface NoteItemProps {
 // (note.origine existe, contrairement aux events - correction #7).
 export function NoteItem({ note, selectionnee, onSelect }: NoteItemProps) {
   const extrait = note.contenu?.trim().split("\n").find(Boolean) ?? "";
+  const nombreCoches = note.items.filter((item) => item.coche).length;
 
   return (
     <button
@@ -30,11 +31,14 @@ export function NoteItem({ note, selectionnee, onSelect }: NoteItemProps) {
         {extrait && (
           <p className="truncate font-body text-xs text-ink/50">{extrait}</p>
         )}
-        {note.categorie && (
-          <div className="mt-1">
-            <NoteCategoryBadge categorie={note.categorie} />
-          </div>
-        )}
+        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+          {note.categorie && <NoteCategoryBadge categorie={note.categorie} />}
+          {note.items.length > 0 && (
+            <span className="font-mono text-[9px] tracking-[.04em] text-ink/40 uppercase">
+              ☑ {nombreCoches}/{note.items.length}
+            </span>
+          )}
+        </div>
       </div>
       <div className="flex flex-shrink-0 flex-col items-end gap-1">
         {note.archivee ? (

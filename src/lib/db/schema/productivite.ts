@@ -3,6 +3,7 @@ import {
   boolean,
   check,
   index,
+  integer,
   pgTable,
   text,
   timestamp,
@@ -176,6 +177,40 @@ export const notes = pgTable(
 );
 
 // ====================================================================
+// Element de note - case a cocher d'une liste (ex. article d'une liste de
+// courses). userId denormalise depuis notes pour une policy RLS directe.
+// `position` ordonne les elements ; les coches passent en bas cote UI.
+// ====================================================================
+
+export const noteItems = pgTable(
+  "note_items",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    noteId: uuid("note_id")
+      .notNull()
+      .references(() => notes.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+
+    contenu: text("contenu").notNull(),
+    coche: boolean("coche").notNull().default(false),
+    position: integer("position").notNull().default(0),
+
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("note_items_user_id_idx").on(table.userId),
+    index("note_items_note_id_idx").on(table.noteId),
+  ],
+);
+
+// ====================================================================
 // Ajout de note - historique des ajouts realises par l'assistant sur une
 // note existante (ex. ajout d'un article a une liste de courses).
 // actionKey unique par note pour l'idempotence des retries assistant.
@@ -270,5 +305,6 @@ export type TaskCategory = typeof taskCategories.$inferSelect;
 export type Task = typeof tasks.$inferSelect;
 export type NoteCategory = typeof noteCategories.$inferSelect;
 export type Note = typeof notes.$inferSelect;
+export type NoteItem = typeof noteItems.$inferSelect;
 export type NoteAppend = typeof noteAppends.$inferSelect;
 export type Event = typeof events.$inferSelect;

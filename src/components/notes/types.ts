@@ -22,6 +22,16 @@ export interface NoteCategory {
   updated_at: string;
 }
 
+/** Élément de liste à cocher d'une note (ex. liste de courses). */
+export interface NoteItemApi {
+  id: string;
+  contenu: string;
+  coche: boolean;
+  position: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface NoteApi {
   id: string;
   titre: string;
@@ -31,6 +41,7 @@ export interface NoteApi {
   origine: NoteOrigine;
   categorie_id: string | null;
   categorie: NoteCategoryLite | null;
+  items: NoteItemApi[];
   created_at: string;
   updated_at: string;
 }

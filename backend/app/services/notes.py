@@ -15,6 +15,7 @@ import asyncpg
 from app.db.client import scoped_connection
 from app.models.notes import NoteCreate, NoteUpdate
 from app.services import note_categories as note_categories_service
+from app.services import note_items as note_items_service
 from app.utils.errors import bad_request, not_found
 
 _SELECT = """
@@ -26,7 +27,7 @@ _SELECT = """
 """
 
 
-def _serialize(row: asyncpg.Record) -> dict:
+def _serialize(row: asyncpg.Record, items: list[dict] | None = None) -> dict:
     categorie = None
     if row["categorie_id"] is not None and row["categorie_nom"] is not None:
         categorie = {
@@ -43,6 +44,7 @@ def _serialize(row: asyncpg.Record) -> dict:
         "origine": row["origine"],
         "categorie_id": str(row["categorie_id"]) if row["categorie_id"] else None,
         "categorie": categorie,
+        "items": items or [],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
     }
@@ -80,7 +82,9 @@ async def list_notes(user_id: str, archivee: bool, q: str | None) -> list[dict]:
                 """,
                 archivee,
             )
-    return [_serialize(r) for r in rows]
+        note_ids = [str(r["id"]) for r in rows]
+        items_par_note = await note_items_service.list_for_notes(conn, note_ids)
+    return [_serialize(r, items_par_note.get(str(r["id"]), [])) for r in rows]
 
 
 async def create_note(user_id: str, payload: NoteCreate) -> dict:
@@ -100,7 +104,7 @@ async def create_note(user_id: str, payload: NoteCreate) -> dict:
             categorie_id,
         )
         row = await conn.fetchrow(f"{_SELECT} WHERE n.id = $1", note_id)
-    return _serialize(row)
+    return _serialize(row, [])
 
 
 async def update_note(user_id: str, note_id: str, payload: NoteUpdate) -> dict:
@@ -111,8 +115,9 @@ async def update_note(user_id: str, note_id: str, payload: NoteUpdate) -> dict:
         )
         if current is None:
             raise not_found("Note introuvable.")
+        items = await note_items_service.list_for_note(conn, note_id)
         if not fields:
-            return _serialize(current)
+            return _serialize(current, items)
 
         titre = fields.get("titre", current["titre"])
         contenu = fields["contenu"] if "contenu" in fields else current["contenu"]
@@ -145,7 +150,7 @@ async def update_note(user_id: str, note_id: str, payload: NoteUpdate) -> dict:
         row = await conn.fetchrow(
             f"{_SELECT} WHERE n.id = $1 AND n.user_id = $2", note_id, user_id
         )
-    return _serialize(row)
+    return _serialize(row, items)
 
 
 async def delete_note(user_id: str, note_id: str) -> None:
