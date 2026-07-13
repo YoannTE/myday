@@ -14,7 +14,8 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     display: "standalone",
     background_color: "#F5F7FB",
-    theme_color: "#2350E6",
+    // Barre de fenêtre/onglet noire (préférence utilisateur), pas bleue.
+    theme_color: "#000000",
     icons: [
       {
         src: "/icons/icon-192.png",

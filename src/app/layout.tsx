@@ -62,7 +62,9 @@ export const metadata: Metadata = {
 
 // `theme_color` vit dans `viewport` (pas `metadata`) depuis Next 16.
 export const viewport: Viewport = {
-  themeColor: "#2350E6",
+  // Noir : Safari (macOS/iOS) teinte la barre de fenêtre/onglet avec cette
+  // couleur — préférence utilisateur : barre noire, pas bleue.
+  themeColor: "#000000",
 };
 
 export default function RootLayout({
