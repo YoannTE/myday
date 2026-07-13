@@ -168,6 +168,17 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
         else:
             categorie_id = current["categorie_id"]
 
+        # Rappel modifié : on retire la notification précédente pour qu'une
+        # nouvelle alerte parte à la nouvelle heure (sinon l'unique
+        # (user_id, ref_id, type) bloquerait toute re-notification).
+        if "rappel_at" in fields and fields["rappel_at"] != current["rappel_at"]:
+            await conn.execute(
+                "DELETE FROM notifications "
+                "WHERE user_id = $1 AND ref_id = $2::uuid AND type = 'rappel_tache'",
+                user_id,
+                task_id,
+            )
+
         devient_faite = statut_cible == "faite" and current["statut"] != "faite"
         devient_a_faire = statut_cible == "a_faire" and current["statut"] != "a_faire"
         nouveau_statut = statut_cible if statut_cible is not None else current["statut"]
@@ -277,6 +288,15 @@ async def planifier_task(
         )
         if updated is None:
             raise not_found("Tâche introuvable.")
+        # Replanification : on retire la notification du créneau précédent pour
+        # qu'une nouvelle alerte parte avant le nouveau créneau (l'unique
+        # (user_id, ref_id, type) bloquerait sinon toute nouvelle notification).
+        await conn.execute(
+            "DELETE FROM notifications "
+            "WHERE user_id = $1 AND ref_id = $2::uuid AND type = 'tache_planifiee'",
+            user_id,
+            task_id,
+        )
         row = await _reload(conn, task_id, user_id)
     return _serialize(row)
 

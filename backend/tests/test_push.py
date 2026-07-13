@@ -376,3 +376,40 @@ def test_subscribe_sans_cookie_401(client):
         json={"endpoint": "https://push.example.com/x", "keys": {"p256dh": "p", "auth": "a"}},
     )
     assert resp.status_code == 401
+
+
+def insert_task_planifiee(user_id, titre, planifie_debut) -> str:
+    return admin_val(
+        "INSERT INTO tasks (user_id, titre, statut, planifie_debut, planifie_fin) "
+        "VALUES ($1, $2, 'a_faire', $3::timestamptz, "
+        "$3::timestamptz + interval '1 hour') RETURNING id::text",
+        user_id, titre, planifie_debut,
+    )
+
+
+def test_tache_planifiee_notifiee_avant_creneau(user_id, monkeypatch):
+    """Une tâche planifiée déclenche une notification ~event_reminder_minutes
+    avant le début du créneau, une seule fois."""
+    monkeypatch.setattr(sender, "webpush", lambda **kwargs: None)
+    debut = datetime.now(timezone.utc) + timedelta(
+        minutes=settings.event_reminder_minutes
+    )
+    insert_task_planifiee(user_id, "Écrire le rapport", debut)
+
+    interval = settings.event_reminder_interval_minutes
+    first = run_in_loop(lambda: run_task_reminders(interval))
+    second = run_in_loop(lambda: run_task_reminders(interval))
+    assert first == 1
+    assert second == 0
+    assert count_notifications(user_id, "tache_planifiee") == 1
+
+
+def test_tache_planifiee_lointaine_pas_de_notif(user_id, monkeypatch):
+    monkeypatch.setattr(sender, "webpush", lambda **kwargs: None)
+    debut = datetime.now(timezone.utc) + timedelta(hours=6)
+    insert_task_planifiee(user_id, "Plus tard", debut)
+    created = run_in_loop(
+        lambda: run_task_reminders(settings.event_reminder_interval_minutes)
+    )
+    assert created == 0
+    assert count_notifications(user_id, "tache_planifiee") == 0
