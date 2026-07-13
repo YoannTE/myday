@@ -118,7 +118,7 @@ class TaskPlanifier(BaseModel):
     """Créneau réservé pour faire la tâche (time-blocking, Round 015).
 
     `rappel_avance_minutes` : délai de notification avant le créneau —
-    60 (1 h), 30, 5 ou 0 (au moment même).
+    60 (1 h), 30, 5, 0 (au moment même) ou -1 (aucune notification).
     """
 
     debut: datetime
@@ -128,8 +128,9 @@ class TaskPlanifier(BaseModel):
     @field_validator("rappel_avance_minutes")
     @classmethod
     def _rappel_avance_valide(cls, value: int) -> int:
-        if value not in (0, 5, 30, 60):
+        if value not in (-1, 0, 5, 30, 60):
             raise ValueError(
-                "Le délai de notification doit être 0, 5, 30 ou 60 minutes."
+                "Le délai de notification doit être 0, 5, 30 ou 60 minutes, "
+                "ou -1 pour aucune notification."
             )
         return value

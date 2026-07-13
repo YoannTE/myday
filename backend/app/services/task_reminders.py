@@ -37,12 +37,14 @@ _DUE_TASKS_SQL = """
 """
 
 # Le délai est PAR tâche (`rappel_avance_minutes` : 60/30/5/0 min avant le
-# créneau, choisi par l'utilisateur). Instant cible = planifie_debut - avance.
+# créneau, choisi par l'utilisateur ; -1 = aucune notification, exclu ici).
+# Instant cible = planifie_debut - avance.
 _DUE_PLANNED_SQL = """
     SELECT t.id::text AS task_id, t.user_id, t.titre, t.planifie_debut
     FROM tasks t
     WHERE t.planifie_debut IS NOT NULL
       AND t.statut = 'a_faire'
+      AND t.rappel_avance_minutes >= 0
       AND (t.planifie_debut - t.rappel_avance_minutes * interval '1 minute')
           BETWEEN now() - $1::int * interval '1 minute'
           AND now() + $1::int * interval '1 minute'

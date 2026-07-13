@@ -141,6 +141,20 @@
       "when": 1783955802603,
       "tag": "0019_mushy_rage",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1783977126351,
+      "tag": "0020_daffy_the_fury",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1783977136409,
+      "tag": "0021_rappel_avance_aucune",
+      "breakpoints": true
     }
   ]
 }

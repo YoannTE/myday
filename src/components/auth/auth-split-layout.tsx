@@ -1,3 +1,5 @@
+import { LogoMyDay } from "@/components/layout/logo-myday";
+
 // Panneau partagé des pages d'authentification - transposition fidèle de
 // .project/mockups/pages/login.html (variante retenue : « Pitch dégradé »).
 // Server Component : purement statique, aucune interactivité.
@@ -6,8 +8,8 @@ export function AuthSplitLayout({ children }: { children: React.ReactNode }) {
     <div className="grid min-h-screen bg-bg text-ink lg:grid-cols-[45%_1fr]">
       <aside className="fade-in flex min-h-[220px] flex-col justify-between cta-gradient p-8 text-white lg:min-h-screen lg:p-14">
         <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-inner bg-white/15 font-display font-bold">
-            M
+          <div className="flex h-9 w-9 items-center justify-center rounded-inner bg-white/15">
+            <LogoMyDay variante="trace" className="h-7 w-7" />
           </div>
           <span className="font-display text-lg font-bold tracking-[-0.02em]">
             MyDay

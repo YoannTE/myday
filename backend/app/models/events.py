@@ -15,13 +15,16 @@ from pydantic import BaseModel, ConfigDict, field_validator
 from app.models.event_categories import EventCategoryLite
 
 # Délais de notification proposés (minutes avant le début) : 1 h, 30 min,
-# 5 min, ou au moment même.
-RAPPEL_AVANCE_VALEURS = (0, 5, 30, 60)
+# 5 min, au moment même, ou -1 pour « aucune notification ».
+RAPPEL_AVANCE_VALEURS = (-1, 0, 5, 30, 60)
 
 
 def _valider_rappel_avance(value: int | None) -> int | None:
     if value is not None and value not in RAPPEL_AVANCE_VALEURS:
-        raise ValueError("Le délai de notification doit être 0, 5, 30 ou 60 minutes.")
+        raise ValueError(
+            "Le délai de notification doit être 0, 5, 30 ou 60 minutes, "
+            "ou -1 pour aucune notification."
+        )
     return value
 
 

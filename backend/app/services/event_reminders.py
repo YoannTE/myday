@@ -21,12 +21,14 @@ from app.db.client import get_admin_pool, scoped_connection
 from app.services.push.sender import dispatch_push
 
 # Le délai est PAR événement (`rappel_avance_minutes` : 60/30/5/0 min avant
-# le début, choisi par l'utilisateur). L'instant cible est `debut - avance`,
-# notifié dans la fenêtre [now - delta, now + delta].
+# le début, choisi par l'utilisateur ; -1 = aucune notification, exclu ici).
+# L'instant cible est `debut - avance`, notifié dans la fenêtre
+# [now - delta, now + delta].
 _DUE_EVENTS_SQL = """
     SELECT e.id::text AS event_id, e.user_id, e.titre, e.debut
     FROM events e
-    WHERE (e.debut - e.rappel_avance_minutes * interval '1 minute') BETWEEN
+    WHERE e.rappel_avance_minutes >= 0
+      AND (e.debut - e.rappel_avance_minutes * interval '1 minute') BETWEEN
         now() - $1::int * interval '1 minute'
         AND now() + $1::int * interval '1 minute'
       AND NOT EXISTS (

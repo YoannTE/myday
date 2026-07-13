@@ -11,13 +11,14 @@ import {
 /**
  * Délais de notification proposés avant un événement ou un créneau planifié.
  * Les valeurs (minutes) doivent rester alignées sur la contrainte CHECK
- * backend (0, 5, 30, 60).
+ * backend (-1, 0, 5, 30, 60). La valeur -1 signifie « aucune notification ».
  */
 export const RAPPEL_AVANCE_OPTIONS: { valeur: number; libelle: string }[] = [
   { valeur: 60, libelle: "1 heure avant" },
   { valeur: 30, libelle: "30 minutes avant" },
   { valeur: 5, libelle: "5 minutes avant" },
   { valeur: 0, libelle: "Au moment même" },
+  { valeur: -1, libelle: "Aucune" },
 ];
 
 function libellePour(valeur: number): string {

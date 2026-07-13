@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DarkModeToggle } from "@/components/layout/dark-mode-toggle";
+import { LogoMyDay } from "@/components/layout/logo-myday";
 import { NavbarAssistantBar } from "@/components/layout/navbar-assistant-bar";
 import { NavbarUserMenu } from "@/components/layout/navbar-user-menu";
 import { NotificationsBell } from "@/components/layout/notifications-bell";
@@ -46,9 +47,7 @@ export function Navbar({ user }: NavbarProps) {
     <header className="fade-in border-b border-ink/5">
       <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 md:px-6 md:py-4">
         <div className="flex items-center gap-2">
-          <div className="cta-gradient flex h-8 w-8 items-center justify-center rounded-inner font-display text-sm font-bold text-white">
-            M
-          </div>
+          <LogoMyDay className="h-8 w-8" />
           <span className="font-display font-bold tracking-[-0.02em] text-ink">
             {dateDuJour}
           </span>
