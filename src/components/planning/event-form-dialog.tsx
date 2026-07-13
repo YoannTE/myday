@@ -27,7 +27,11 @@ import {
   versDatetimeLocal,
   versIso,
 } from "@/components/planning/date-utils";
-import type { EvenementApi } from "@/components/planning/types";
+import {
+  EventCategorySelect,
+  SANS_CATEGORIE,
+} from "@/components/planning/event-category-select";
+import type { EventCategory, EvenementApi } from "@/components/planning/types";
 
 interface EventFormDialogProps {
   evenement?: EvenementApi;
@@ -60,6 +64,10 @@ export function EventFormDialog({
   const [enregistrement, setEnregistrement] = useState(false);
   const [confirmationSuppression, setConfirmationSuppression] = useState(false);
   const [suppression, setSuppression] = useState(false);
+  const [categories, setCategories] = useState<EventCategory[] | null>(null);
+  const [categorieId, setCategorieId] = useState(
+    evenement?.categorie?.id ?? SANS_CATEGORIE,
+  );
 
   const {
     register,
@@ -74,8 +82,12 @@ export function EventFormDialog({
   useEffect(() => {
     if (open) {
       reset(valeursParDefaut(evenement));
+      setCategorieId(evenement?.categorie?.id ?? SANS_CATEGORIE);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setConfirmationSuppression(false);
+      apiCall<{ data: EventCategory[] }>("/api/event-categories")
+        .then((reponse) => setCategories(reponse.data))
+        .catch(() => setCategories((actuelles) => actuelles ?? []));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -89,6 +101,7 @@ export function EventFormDialog({
         fin: versIso(valeurs.fin),
         lieu: valeurs.lieu || null,
         description: valeurs.description || null,
+        categorie_id: categorieId === SANS_CATEGORIE ? null : categorieId,
       };
       if (evenement) {
         await apiCall(`/api/events/${evenement.id}`, {
@@ -199,6 +212,18 @@ export function EventFormDialog({
               id="description"
               placeholder="Optionnel"
               {...register("description")}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Catégorie</Label>
+            <EventCategorySelect
+              categories={categories ?? []}
+              disabled={categories === null}
+              value={categorieId}
+              onValueChange={setCategorieId}
+              onCategoryCreated={(categorie) =>
+                setCategories((actuelles) => [...(actuelles ?? []), categorie])
+              }
             />
           </div>
         </form>

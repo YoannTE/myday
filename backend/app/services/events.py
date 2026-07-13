@@ -13,13 +13,53 @@ from app.config import settings
 from app.db.client import scoped_connection
 from app.db.google_connection import get_connection
 from app.models.events import EventCreate, EventUpdate
+from app.services import event_categories as event_categories_service
 from app.services import events_google
 from app.utils.errors import bad_request, not_found
 
-_COLUMNS = (
-    "id::text, titre, debut, fin, lieu, description, google_event_id, "
-    "source, sync_status, created_at, updated_at"
-)
+_SELECT = """
+    SELECT e.id::text, e.titre, e.debut, e.fin, e.lieu, e.description,
+           e.google_event_id, e.source, e.sync_status, e.categorie_id::text,
+           e.created_at, e.updated_at,
+           c.nom AS categorie_nom, c.couleur AS categorie_couleur
+    FROM events e
+    LEFT JOIN event_categories c ON c.id = e.categorie_id
+"""
+
+
+def _serialize(row) -> dict:
+    categorie = None
+    if row["categorie_id"] is not None and row["categorie_nom"] is not None:
+        categorie = {
+            "id": row["categorie_id"],
+            "nom": row["categorie_nom"],
+            "couleur": row["categorie_couleur"],
+        }
+    return {
+        "id": row["id"],
+        "titre": row["titre"],
+        "debut": row["debut"],
+        "fin": row["fin"],
+        "lieu": row["lieu"],
+        "description": row["description"],
+        "google_event_id": row["google_event_id"],
+        "source": row["source"],
+        "sync_status": row["sync_status"],
+        "categorie_id": row["categorie_id"],
+        "categorie": categorie,
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"],
+    }
+
+
+async def _assert_categorie_valide(user_id: str, categorie_id: str | None) -> None:
+    if categorie_id is None:
+        return
+    appartient = await event_categories_service.category_belongs_to_user(
+        user_id, categorie_id
+    )
+    if not appartient:
+        raise bad_request("Catégorie invalide ou appartenant à un autre utilisateur.")
 
 
 def _check_window(date_from: datetime | None, date_to: datetime | None) -> None:
@@ -40,18 +80,17 @@ async def list_events(
     params: list = [user_id]
     if date_from is not None:
         params.append(date_from)
-        conditions.append(f"fin >= ${len(params)}")
+        conditions.append(f"e.fin >= ${len(params)}")
     if date_to is not None:
         params.append(date_to)
-        conditions.append(f"debut <= ${len(params)}")
+        conditions.append(f"e.debut <= ${len(params)}")
     where = " AND " + " AND ".join(conditions) if conditions else ""
     async with scoped_connection(user_id) as conn:
         rows = await conn.fetch(
-            f"SELECT {_COLUMNS} FROM events WHERE user_id = $1{where} "
-            "ORDER BY debut ASC",
+            f"{_SELECT} WHERE e.user_id = $1{where} ORDER BY e.debut ASC",
             *params,
         )
-    return [dict(r) for r in rows]
+    return [_serialize(r) for r in rows]
 
 
 async def get_event_counts(
@@ -82,31 +121,34 @@ async def get_event_counts(
 async def _fetch_event(user_id: str, event_id: str) -> dict | None:
     async with scoped_connection(user_id) as conn:
         row = await conn.fetchrow(
-            f"SELECT {_COLUMNS} FROM events WHERE id = $1::uuid AND user_id = $2",
+            f"{_SELECT} WHERE e.id = $1::uuid AND e.user_id = $2",
             event_id, user_id,
         )
-    return dict(row) if row is not None else None
+    return _serialize(row) if row is not None else None
 
 
 async def create_event(user_id: str, payload: EventCreate) -> dict:
     if payload.fin <= payload.debut:
         raise bad_request("La date de fin doit etre apres la date de debut.")
 
+    categorie_id = str(payload.categorie_id) if payload.categorie_id else None
+    await _assert_categorie_valide(user_id, categorie_id)
+
     connected = await get_connection(user_id) is not None
     sync_status = "sync_pending" if connected else "synced"
 
     async with scoped_connection(user_id) as conn:
-        row = await conn.fetchrow(
-            f"""
+        event_id = await conn.fetchval(
+            """
             INSERT INTO events (user_id, titre, debut, fin, lieu, description,
-                                 source, sync_status)
-            VALUES ($1, $2, $3, $4, $5, $6, 'myday', $7)
-            RETURNING {_COLUMNS}
+                                 source, sync_status, categorie_id)
+            VALUES ($1, $2, $3, $4, $5, $6, 'myday', $7, $8)
+            RETURNING id::text
             """,
             user_id, payload.titre, payload.debut, payload.fin,
-            payload.lieu, payload.description, sync_status,
+            payload.lieu, payload.description, sync_status, categorie_id,
         )
-    event = dict(row)
+    event = await _fetch_event(user_id, event_id)
 
     if connected:
         # Best-effort, inline : ne fait jamais echouer la sauvegarde locale.
@@ -132,6 +174,10 @@ async def update_event(user_id: str, event_id: str, payload: EventUpdate) -> dic
     if ("debut" in updates or "fin" in updates) and new_fin <= new_debut:
         raise bad_request("La date de fin doit etre apres la date de debut.")
 
+    if "categorie_id" in updates:
+        cid = str(updates["categorie_id"]) if updates["categorie_id"] else None
+        await _assert_categorie_valide(user_id, cid)
+
     set_clauses = []
     values: list = []
     for key, value in updates.items():
@@ -141,15 +187,15 @@ async def update_event(user_id: str, event_id: str, payload: EventUpdate) -> dic
     idx_user = len(values) + 2
 
     async with scoped_connection(user_id) as conn:
-        row = await conn.fetchrow(
+        updated_id = await conn.fetchval(
             f"UPDATE events SET {', '.join(set_clauses)}, updated_at = now() "
             f"WHERE id = ${idx_id}::uuid AND user_id = ${idx_user} "
-            f"RETURNING {_COLUMNS}",
+            f"RETURNING id::text",
             *values, event_id, user_id,
         )
-    if row is None:
+    if updated_id is None:
         raise not_found("Evenement introuvable.")
-    event = dict(row)
+    event = await _fetch_event(user_id, event_id)
 
     if event["google_event_id"]:
         # Le push insert-only ne propage pas une modif : update_event best-effort.

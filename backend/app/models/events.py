@@ -8,8 +8,11 @@ Pydantic) mais dans `services/events.py`, qui renvoie un 400 explicite via
 from __future__ import annotations
 
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
+
+from app.models.event_categories import EventCategoryLite
 
 
 class EventCreate(BaseModel):
@@ -18,6 +21,7 @@ class EventCreate(BaseModel):
     fin: datetime
     lieu: str | None = None
     description: str | None = None
+    categorie_id: UUID | None = None
 
 
 class EventUpdate(BaseModel):
@@ -26,6 +30,7 @@ class EventUpdate(BaseModel):
     fin: datetime | None = None
     lieu: str | None = None
     description: str | None = None
+    categorie_id: UUID | None = None
 
 
 class EventResponse(BaseModel):
@@ -40,6 +45,8 @@ class EventResponse(BaseModel):
     google_event_id: str | None = None
     source: str
     sync_status: str
+    categorie_id: str | None = None
+    categorie: EventCategoryLite | None = None
     created_at: datetime
     updated_at: datetime
 

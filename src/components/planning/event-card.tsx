@@ -1,6 +1,7 @@
 "use client";
 
 import { EventFormDialog } from "@/components/planning/event-form-dialog";
+import { EventCategoryBadge } from "@/components/planning/event-category-badge";
 import { formaterPlageHoraire } from "@/components/planning/date-utils";
 import type { EvenementApi } from "@/components/planning/types";
 
@@ -55,6 +56,11 @@ export function EventCard({ evenement, onSuccess }: EventCardProps) {
       <p className="font-body text-[11px] break-words text-ink md:text-xs">
         {evenement.titre}
       </p>
+      {evenement.categorie && (
+        <div className="mt-1">
+          <EventCategoryBadge categorie={evenement.categorie} />
+        </div>
+      )}
       {estNonSynchronise(evenement) && (
         <span className="mt-1 inline-block rounded-full border border-ink/10 bg-card px-1.5 py-0.5 font-mono text-[9px] tracking-[.04em] text-ink/50 uppercase">
           Non synchronisé

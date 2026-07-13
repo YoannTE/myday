@@ -8,6 +8,7 @@ import { PlanningSemaine } from "@/components/planning/planning-semaine";
 import { PlanningMois } from "@/components/planning/planning-mois";
 import { PlanningAnnee } from "@/components/planning/planning-annee";
 import { PlanningSkeleton } from "@/components/planning/planning-skeleton";
+import { EventCategoriesDialog } from "@/components/planning/event-categories-dialog";
 import {
   debutAnnee,
   debutSemaine,
@@ -21,7 +22,11 @@ import {
   joursDeLaSemaine,
   type VuePlanning,
 } from "@/components/planning/date-utils";
-import type { CompteurJourApi, EvenementApi } from "@/components/planning/types";
+import type {
+  CompteurJourApi,
+  EventCategory,
+  EvenementApi,
+} from "@/components/planning/types";
 import type { Task } from "@/components/taches/types";
 
 const CLE_VUE_PLANNING = "myday-planning-vue";
@@ -58,6 +63,24 @@ export function PlanningClient() {
   const [tachesPlanifiees, setTachesPlanifiees] = useState<Task[] | null>(null);
   const [compteurs, setCompteurs] = useState<CompteurJourApi[] | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [categories, setCategories] = useState<EventCategory[] | null>(null);
+  const [dialogCategoriesOuvert, setDialogCategoriesOuvert] = useState(false);
+
+  const chargerCategories = useCallback(async () => {
+    try {
+      const reponse = await apiCall<{ data: EventCategory[] }>(
+        "/api/event-categories",
+      );
+      setCategories(reponse.data);
+    } catch {
+      setCategories((actuelles) => actuelles ?? []);
+    }
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    chargerCategories();
+  }, [chargerCategories]);
 
   // Lit la préférence de vue une fois montée côté client (évite un
   // décalage d'hydratation SSR/CSR : le premier rendu reste "semaine" des
@@ -138,6 +161,7 @@ export function PlanningClient() {
         }
         onAujourdHui={() => setReference(new Date())}
         onSuccess={recharger}
+        onGererCategories={() => setDialogCategoriesOuvert(true)}
       />
       {erreur ? (
         <p className="rounded-card bg-card p-6 text-sm text-destructive shadow-card">
@@ -182,6 +206,12 @@ export function PlanningClient() {
           }}
         />
       )}
+      <EventCategoriesDialog
+        open={dialogCategoriesOuvert}
+        onOpenChange={setDialogCategoriesOuvert}
+        categories={categories ?? []}
+        onChanged={chargerCategories}
+      />
     </div>
   );
 }

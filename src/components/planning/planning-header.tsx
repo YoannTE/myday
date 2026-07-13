@@ -20,6 +20,7 @@ interface PlanningHeaderProps {
   onSuivant: () => void;
   onAujourdHui: () => void;
   onSuccess: () => void;
+  onGererCategories: () => void;
 }
 
 export function PlanningHeader({
@@ -30,6 +31,7 @@ export function PlanningHeader({
   onSuivant,
   onAujourdHui,
   onSuccess,
+  onGererCategories,
 }: PlanningHeaderProps) {
   return (
     <div>
@@ -39,6 +41,15 @@ export function PlanningHeader({
       >
         ← Cockpit
       </Link>
+      <div className="fade-in mb-2 flex justify-end">
+        <button
+          type="button"
+          onClick={onGererCategories}
+          className="font-body text-sm text-accent"
+        >
+          Gérer les catégories
+        </button>
+      </div>
       <div className="fade-in mb-4 flex flex-wrap items-center gap-3">
         <h1 className="font-display text-xl font-extrabold tracking-[-0.02em] text-ink md:text-2xl">
           Planning

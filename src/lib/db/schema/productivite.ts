@@ -253,6 +253,39 @@ export const noteAppends = pgTable(
 );
 
 // ====================================================================
+// Categorie d'evenement - personnalisable par utilisateur (nom + couleur).
+// Miroir de task_categories / note_categories, independante. Champ purement
+// local MyDay : la synchro Google ne le touche jamais.
+// ====================================================================
+
+export const eventCategories = pgTable(
+  "event_categories",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+
+    nom: text("nom").notNull(),
+    couleur: text("couleur").notNull(),
+
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("event_categories_user_id_idx").on(table.userId),
+    uniqueIndex("event_categories_user_id_nom_unique").on(
+      table.userId,
+      table.nom,
+    ),
+  ],
+);
+
+// ====================================================================
 // Événement - synchronisation bidirectionnelle avec Google Agenda.
 // Google reste la source de verite en cas de conflit (decisions.md).
 // Unicite (userId, googleEventId) en index partiel : anti-doublons de
@@ -282,6 +315,10 @@ export const events = pgTable(
     // google : cree/importe depuis Google Agenda - myday : cree nativement dans MyDay
     source: text("source").notNull().default("myday"),
     syncStatus: text("sync_status").notNull().default("synced"),
+    // Categorie locale MyDay (Round 015). La synchro Google ne l'ecrase jamais.
+    categorieId: uuid("categorie_id").references(() => eventCategories.id, {
+      onDelete: "set null",
+    }),
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -293,6 +330,7 @@ export const events = pgTable(
   (table) => [
     index("events_user_id_idx").on(table.userId),
     index("events_debut_idx").on(table.debut),
+    index("events_categorie_id_idx").on(table.categorieId),
     // Round 013 : vues mois/année filtrent par fenêtre — index composite plus
     // sélectif (la RLS injecte déjà user_id dans chaque requête).
     index("events_user_debut_idx").on(table.userId, table.debut),
@@ -314,5 +352,6 @@ export type Task = typeof tasks.$inferSelect;
 export type NoteCategory = typeof noteCategories.$inferSelect;
 export type Note = typeof notes.$inferSelect;
 export type NoteItem = typeof noteItems.$inferSelect;
+export type EventCategory = typeof eventCategories.$inferSelect;
 export type NoteAppend = typeof noteAppends.$inferSelect;
 export type Event = typeof events.$inferSelect;

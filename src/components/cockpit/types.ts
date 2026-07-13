@@ -3,6 +3,7 @@
 import type { Task } from "@/components/taches/types";
 import type { Mail } from "@/components/mails/types";
 import type { NoteCategoryLite } from "@/components/notes/types";
+import type { EventCategoryLite } from "@/components/planning/types";
 
 export type OrigineNote = "manuelle" | "assistant";
 export type SourceEvent = "google" | "myday";
@@ -31,6 +32,8 @@ export interface CockpitEvent {
   google_event_id: string | null;
   source: SourceEvent;
   sync_status: SyncStatus;
+  categorie_id: string | null;
+  categorie: EventCategoryLite | null;
   created_at: string;
   updated_at: string;
 }
