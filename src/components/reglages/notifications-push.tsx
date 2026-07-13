@@ -107,6 +107,34 @@ export function NotificationsPush() {
     }
   }
 
+  async function envoyerTest() {
+    setEnCours(true);
+    try {
+      const { data } = await apiCall<{
+        data: { subscriptions: number; sent: number };
+      }>("/api/push/test", { method: "POST" });
+      if (data.sent > 0) {
+        toast.success(
+          `Notification de test envoyée à ${data.sent} appareil(s) — tu devrais la recevoir dans quelques secondes.`,
+        );
+      } else if (data.subscriptions === 0) {
+        toast.error(
+          "Aucun appareil abonné : active les notifications sur chaque appareil concerné.",
+        );
+      } else {
+        toast.error(
+          "Envoi impossible (abonnement expiré ou limite atteinte). Désactive puis réactive les notifications sur cet appareil.",
+        );
+      }
+    } catch (erreur) {
+      toast.error(
+        messageErreurApi(erreur, "Impossible d'envoyer la notification de test."),
+      );
+    } finally {
+      setEnCours(false);
+    }
+  }
+
   async function desactiver() {
     setEnCours(true);
     try {
@@ -173,11 +201,20 @@ export function NotificationsPush() {
       )}
 
       {etat === "actif" && (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[.04em] text-accent">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
             Activées sur cet appareil
           </span>
+          <button
+            type="button"
+            onClick={envoyerTest}
+            disabled={enCours}
+            className="inline-flex items-center gap-2 rounded-inner border border-accent/30 bg-soft px-3 py-1.5 font-body text-xs text-accent disabled:opacity-60"
+          >
+            <Bell className="h-3.5 w-3.5" />
+            {enCours ? "Envoi..." : "Notification de test"}
+          </button>
           <button
             type="button"
             onClick={desactiver}
@@ -185,7 +222,7 @@ export function NotificationsPush() {
             className="ml-auto inline-flex items-center gap-2 rounded-inner border border-ink/10 bg-card px-3 py-1.5 font-body text-xs text-ink/60 disabled:opacity-60"
           >
             <BellOff className="h-3.5 w-3.5" />
-            {enCours ? "Désactivation..." : "Désactiver"}
+            {enCours ? "..." : "Désactiver"}
           </button>
         </div>
       )}
