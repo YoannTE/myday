@@ -34,6 +34,7 @@ export interface CockpitEvent {
   sync_status: SyncStatus;
   categorie_id: string | null;
   categorie: EventCategoryLite | null;
+  rappel_avance_minutes: number;
   created_at: string;
   updated_at: string;
 }

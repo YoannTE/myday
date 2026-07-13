@@ -25,7 +25,7 @@ from app.utils.errors import bad_request, not_found
 _SELECT = """
     SELECT t.id, t.titre, t.description, t.priorite, t.echeance, t.categorie_id,
            t.statut, t.origine, t.mail_id, t.recurrence, t.rappel_at,
-           t.planifie_debut, t.planifie_fin,
+           t.planifie_debut, t.planifie_fin, t.rappel_avance_minutes,
            t.completed_at, t.created_at, t.updated_at,
            c.nom AS categorie_nom, c.couleur AS categorie_couleur
     FROM tasks t
@@ -81,6 +81,7 @@ def _serialize(row: asyncpg.Record) -> dict:
         "rappel_at": row["rappel_at"],
         "planifie_debut": row["planifie_debut"],
         "planifie_fin": row["planifie_fin"],
+        "rappel_avance_minutes": row["rappel_avance_minutes"],
         "completed_at": row["completed_at"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
@@ -277,7 +278,8 @@ async def planifier_task(
         updated = await conn.fetchval(
             """
             UPDATE tasks
-            SET planifie_debut = $3, planifie_fin = $4, updated_at = now()
+            SET planifie_debut = $3, planifie_fin = $4,
+                rappel_avance_minutes = $5, updated_at = now()
             WHERE id = $1 AND user_id = $2
             RETURNING id
             """,
@@ -285,6 +287,7 @@ async def planifier_task(
             user_id,
             payload.debut,
             payload.fin,
+            payload.rappel_avance_minutes,
         )
         if updated is None:
             raise not_found("Tâche introuvable.")

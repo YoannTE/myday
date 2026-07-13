@@ -44,6 +44,9 @@ class TaskSummary(BaseModel):
     mail_id: str | None = None
     recurrence: str = "aucune"
     rappel_at: datetime | None = None
+    planifie_debut: datetime | None = None
+    planifie_fin: datetime | None = None
+    rappel_avance_minutes: int = 30
     categorie_id: str | None = None
     categorie: TaskCategoryLite | None = None
     completed_at: datetime | None = None

@@ -413,3 +413,52 @@ def test_tache_planifiee_lointaine_pas_de_notif(user_id, monkeypatch):
     )
     assert created == 0
     assert count_notifications(user_id, "tache_planifiee") == 0
+
+
+def test_rappel_avance_personnalise_5_minutes(user_id, monkeypatch):
+    """Un événement avec délai 5 min notifie ~5 min avant (pas 30)."""
+    monkeypatch.setattr(sender, "webpush", lambda **kwargs: None)
+    debut = datetime.now(timezone.utc) + timedelta(minutes=5)
+    admin_exec(
+        "INSERT INTO events (user_id, titre, debut, fin, rappel_avance_minutes) "
+        "VALUES ($1, 'Visio', $2::timestamptz, $2::timestamptz + interval '30 minutes', 5)",
+        user_id, debut,
+    )
+    created = run_in_loop(
+        lambda: run_event_reminders(settings.event_reminder_interval_minutes)
+    )
+    assert created == 1
+    assert count_notifications(user_id, "rappel_evenement") == 1
+
+
+def test_rappel_avance_1h_pas_encore_du(user_id, monkeypatch):
+    """Un événement dans 30 min avec délai 1 h aurait dû notifier il y a 30 min…
+    mais un événement dans 2 h avec délai 1 h n'est PAS encore dû."""
+    monkeypatch.setattr(sender, "webpush", lambda **kwargs: None)
+    debut = datetime.now(timezone.utc) + timedelta(hours=2)
+    admin_exec(
+        "INSERT INTO events (user_id, titre, debut, fin, rappel_avance_minutes) "
+        "VALUES ($1, 'Plus tard', $2::timestamptz, $2::timestamptz + interval '1 hour', 60)",
+        user_id, debut,
+    )
+    created = run_in_loop(
+        lambda: run_event_reminders(settings.event_reminder_interval_minutes)
+    )
+    assert created == 0
+
+
+def test_tache_planifiee_au_moment_meme(user_id, monkeypatch):
+    """Délai 0 : la notification part au moment du créneau."""
+    monkeypatch.setattr(sender, "webpush", lambda **kwargs: None)
+    debut = datetime.now(timezone.utc)
+    admin_val(
+        "INSERT INTO tasks (user_id, titre, statut, planifie_debut, planifie_fin, "
+        "rappel_avance_minutes) VALUES ($1, 'Maintenant', 'a_faire', "
+        "$2::timestamptz, $2::timestamptz + interval '1 hour', 0) RETURNING id::text",
+        user_id, debut,
+    )
+    created = run_in_loop(
+        lambda: run_task_reminders(settings.event_reminder_interval_minutes)
+    )
+    assert created == 1
+    assert count_notifications(user_id, "tache_planifiee") == 1

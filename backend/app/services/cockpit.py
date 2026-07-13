@@ -31,12 +31,14 @@ _NOTES_COLUMNS = (
 )
 _EVENTS_COLUMNS = (
     "e.id::text, e.titre, e.debut, e.fin, e.lieu, e.description, "
-    "e.google_event_id, e.source, e.sync_status, e.created_at, e.updated_at, "
+    "e.google_event_id, e.source, e.sync_status, e.rappel_avance_minutes, "
+    "e.created_at, e.updated_at, "
     "e.categorie_id::text, c.nom AS categorie_nom, c.couleur AS categorie_couleur"
 )
 _TASKS_COLUMNS = (
     "t.id::text, t.titre, t.description, t.priorite, t.echeance, t.statut, "
-    "t.origine, t.mail_id::text, t.recurrence, t.rappel_at, t.completed_at, "
+    "t.origine, t.mail_id::text, t.recurrence, t.rappel_at, t.planifie_debut, "
+    "t.planifie_fin, t.rappel_avance_minutes, t.completed_at, "
     "t.created_at, t.updated_at, t.categorie_id::text, c.nom AS categorie_nom, "
     "c.couleur AS categorie_couleur"
 )

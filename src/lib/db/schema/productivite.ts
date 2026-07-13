@@ -77,6 +77,8 @@ export const tasks = pgTable(
     // ensemble ou aucun. Reste natif MyDay (pas de sync Google).
     planifieDebut: timestamp("planifie_debut", { withTimezone: true }),
     planifieFin: timestamp("planifie_fin", { withTimezone: true }),
+    // Delai de notification avant le creneau planifie : 60, 30, 5 ou 0 minutes.
+    rappelAvanceMinutes: integer("rappel_avance_minutes").notNull().default(30),
     // Cle d'idempotence posee par l'assistant conversationnel (retry-safe)
     assistantActionKey: text("assistant_action_key"),
     mailId: uuid("mail_id").references(() => mails.id, { onDelete: "set null" }),
@@ -105,6 +107,10 @@ export const tasks = pgTable(
     check(
       "tasks_recurrence_check",
       sql`${table.recurrence} IN ('aucune', 'quotidienne', 'hebdomadaire', 'mensuelle')`,
+    ),
+    check(
+      "tasks_rappel_avance_check",
+      sql`${table.rappelAvanceMinutes} IN (0, 5, 30, 60)`,
     ),
     check(
       "tasks_origine_check",
@@ -319,6 +325,9 @@ export const events = pgTable(
     categorieId: uuid("categorie_id").references(() => eventCategories.id, {
       onDelete: "set null",
     }),
+    // Delai de notification avant le debut : 60, 30, 5 ou 0 minutes. Champ
+    // local MyDay (jamais touche par la synchro Google).
+    rappelAvanceMinutes: integer("rappel_avance_minutes").notNull().default(30),
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -339,6 +348,10 @@ export const events = pgTable(
     uniqueIndex("events_user_google_event_id_unique")
       .on(table.userId, table.googleEventId)
       .where(sql`${table.googleEventId} IS NOT NULL`),
+    check(
+      "events_rappel_avance_check",
+      sql`${table.rappelAvanceMinutes} IN (0, 5, 30, 60)`,
+    ),
     check("events_source_check", sql`${table.source} IN ('google', 'myday')`),
     check(
       "events_sync_status_check",

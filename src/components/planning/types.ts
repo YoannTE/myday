@@ -35,6 +35,8 @@ export interface EvenementApi {
   sync_status: EvenementSyncStatus;
   categorie_id: string | null;
   categorie: EventCategoryLite | null;
+  /** Délai de notification avant le début : 60, 30, 5 ou 0 minutes. */
+  rappel_avance_minutes: number;
   created_at: string;
   updated_at: string;
 }

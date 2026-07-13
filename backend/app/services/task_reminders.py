@@ -36,14 +36,16 @@ _DUE_TASKS_SQL = """
       )
 """
 
+# Le délai est PAR tâche (`rappel_avance_minutes` : 60/30/5/0 min avant le
+# créneau, choisi par l'utilisateur). Instant cible = planifie_debut - avance.
 _DUE_PLANNED_SQL = """
     SELECT t.id::text AS task_id, t.user_id, t.titre, t.planifie_debut
     FROM tasks t
     WHERE t.planifie_debut IS NOT NULL
       AND t.statut = 'a_faire'
-      AND t.planifie_debut BETWEEN
-          now() + ($1::int - $2::int) * interval '1 minute'
-          AND now() + ($1::int + $2::int) * interval '1 minute'
+      AND (t.planifie_debut - t.rappel_avance_minutes * interval '1 minute')
+          BETWEEN now() - $1::int * interval '1 minute'
+          AND now() + $1::int * interval '1 minute'
       AND NOT EXISTS (
         SELECT 1 FROM notifications n
         WHERE n.ref_id = t.id AND n.type = 'tache_planifiee'
@@ -88,9 +90,7 @@ async def run_task_reminders(delta_minutes: int) -> int:
         contenu = f"Rappel : {task['titre']}"
         if await _notifier(task["user_id"], "rappel_tache", contenu, task["task_id"]):
             created += 1
-    for task in await _fetch_due(
-        _DUE_PLANNED_SQL, settings.event_reminder_minutes, delta_minutes
-    ):
+    for task in await _fetch_due(_DUE_PLANNED_SQL, delta_minutes):
         contenu = (
             f"Tâche planifiée : {task['titre']} "
             f"à {_format_heure(task['planifie_debut'])}"

@@ -127,6 +127,13 @@
       "when": 1783937089510,
       "tag": "0017_tan_moon_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1783937597348,
+      "tag": "0018_nosy_kid_colt",
+      "breakpoints": true
     }
   ]
 }

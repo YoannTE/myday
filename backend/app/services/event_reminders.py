@@ -20,12 +20,15 @@ from app.config import settings
 from app.db.client import get_admin_pool, scoped_connection
 from app.services.push.sender import dispatch_push
 
+# Le délai est PAR événement (`rappel_avance_minutes` : 60/30/5/0 min avant
+# le début, choisi par l'utilisateur). L'instant cible est `debut - avance`,
+# notifié dans la fenêtre [now - delta, now + delta].
 _DUE_EVENTS_SQL = """
     SELECT e.id::text AS event_id, e.user_id, e.titre, e.debut
     FROM events e
-    WHERE e.debut BETWEEN
-        now() + ($1::int - $2::int) * interval '1 minute'
-        AND now() + ($1::int + $2::int) * interval '1 minute'
+    WHERE (e.debut - e.rappel_avance_minutes * interval '1 minute') BETWEEN
+        now() - $1::int * interval '1 minute'
+        AND now() + $1::int * interval '1 minute'
       AND NOT EXISTS (
         SELECT 1 FROM notifications n
         WHERE n.ref_id = e.id AND n.type = 'rappel_evenement'
@@ -33,9 +36,9 @@ _DUE_EVENTS_SQL = """
 """
 
 
-async def _due_events(window_minutes: int, delta_minutes: int) -> list[dict]:
+async def _due_events(delta_minutes: int) -> list[dict]:
     pool = get_admin_pool()
-    rows = await pool.fetch(_DUE_EVENTS_SQL, window_minutes, delta_minutes)
+    rows = await pool.fetch(_DUE_EVENTS_SQL, delta_minutes)
     return [dict(r) for r in rows]
 
 
@@ -46,7 +49,7 @@ def _format_heure(debut: datetime, timezone_str: str) -> str:
 async def run_event_reminders(delta_minutes: int) -> int:
     """Un cycle : crée le rappel + push pour chaque événement dû. Retourne le
     nombre de rappels effectivement créés (idempotence garantie en BDD)."""
-    events = await _due_events(settings.event_reminder_minutes, delta_minutes)
+    events = await _due_events(delta_minutes)
     created = 0
     for event in events:
         contenu = f"{event['titre']} à {_format_heure(event['debut'], settings.app_timezone)}"

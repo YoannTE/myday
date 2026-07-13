@@ -20,7 +20,7 @@ from app.utils.errors import bad_request, not_found
 _SELECT = """
     SELECT e.id::text, e.titre, e.debut, e.fin, e.lieu, e.description,
            e.google_event_id, e.source, e.sync_status, e.categorie_id::text,
-           e.created_at, e.updated_at,
+           e.rappel_avance_minutes, e.created_at, e.updated_at,
            c.nom AS categorie_nom, c.couleur AS categorie_couleur
     FROM events e
     LEFT JOIN event_categories c ON c.id = e.categorie_id
@@ -47,6 +47,7 @@ def _serialize(row) -> dict:
         "sync_status": row["sync_status"],
         "categorie_id": row["categorie_id"],
         "categorie": categorie,
+        "rappel_avance_minutes": row["rappel_avance_minutes"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
     }
@@ -141,12 +142,14 @@ async def create_event(user_id: str, payload: EventCreate) -> dict:
         event_id = await conn.fetchval(
             """
             INSERT INTO events (user_id, titre, debut, fin, lieu, description,
-                                 source, sync_status, categorie_id)
-            VALUES ($1, $2, $3, $4, $5, $6, 'myday', $7, $8)
+                                 source, sync_status, categorie_id,
+                                 rappel_avance_minutes)
+            VALUES ($1, $2, $3, $4, $5, $6, 'myday', $7, $8, $9)
             RETURNING id::text
             """,
             user_id, payload.titre, payload.debut, payload.fin,
             payload.lieu, payload.description, sync_status, categorie_id,
+            payload.rappel_avance_minutes,
         )
     event = await _fetch_event(user_id, event_id)
 
@@ -193,6 +196,14 @@ async def update_event(user_id: str, event_id: str, payload: EventUpdate) -> dic
             f"RETURNING id::text",
             *values, event_id, user_id,
         )
+        if updated_id is not None and ("debut" in updates or "rappel_avance_minutes" in updates):
+            # Horaire ou délai de notification modifié : on retire le rappel
+            # déjà envoyé pour qu'une nouvelle alerte parte au bon moment.
+            await conn.execute(
+                "DELETE FROM notifications "
+                "WHERE user_id = $1 AND ref_id = $2::uuid AND type = 'rappel_evenement'",
+                user_id, event_id,
+            )
     if updated_id is None:
         raise not_found("Evenement introuvable.")
     event = await _fetch_event(user_id, event_id)

@@ -31,6 +31,7 @@ import {
   EventCategorySelect,
   SANS_CATEGORIE,
 } from "@/components/planning/event-category-select";
+import { RappelAvanceSelect } from "@/components/planning/rappel-avance-select";
 import type { EventCategory, EvenementApi } from "@/components/planning/types";
 
 interface EventFormDialogProps {
@@ -68,6 +69,9 @@ export function EventFormDialog({
   const [categorieId, setCategorieId] = useState(
     evenement?.categorie?.id ?? SANS_CATEGORIE,
   );
+  const [rappelAvance, setRappelAvance] = useState(
+    evenement?.rappel_avance_minutes ?? 30,
+  );
 
   const {
     register,
@@ -83,6 +87,7 @@ export function EventFormDialog({
     if (open) {
       reset(valeursParDefaut(evenement));
       setCategorieId(evenement?.categorie?.id ?? SANS_CATEGORIE);
+      setRappelAvance(evenement?.rappel_avance_minutes ?? 30);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setConfirmationSuppression(false);
       apiCall<{ data: EventCategory[] }>("/api/event-categories")
@@ -102,6 +107,7 @@ export function EventFormDialog({
         lieu: valeurs.lieu || null,
         description: valeurs.description || null,
         categorie_id: categorieId === SANS_CATEGORIE ? null : categorieId,
+        rappel_avance_minutes: rappelAvance,
       };
       if (evenement) {
         await apiCall(`/api/events/${evenement.id}`, {
@@ -224,6 +230,13 @@ export function EventFormDialog({
               onCategoryCreated={(categorie) =>
                 setCategories((actuelles) => [...(actuelles ?? []), categorie])
               }
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Notification</Label>
+            <RappelAvanceSelect
+              value={rappelAvance}
+              onValueChange={setRappelAvance}
             />
           </div>
         </form>

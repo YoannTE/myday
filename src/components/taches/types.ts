@@ -40,6 +40,8 @@ export interface Task {
   rappel_at: string | null;
   planifie_debut: string | null;
   planifie_fin: string | null;
+  /** Délai de notification avant le créneau planifié : 60, 30, 5 ou 0 min. */
+  rappel_avance_minutes: number;
   completed_at: string | null;
   created_at: string;
   updated_at: string;

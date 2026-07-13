@@ -12,6 +12,7 @@ import {
   versDatetimeLocale,
   datetimeLocaleVersIso,
 } from "@/components/taches/task-date-utils";
+import { RappelAvanceSelect } from "@/components/planning/rappel-avance-select";
 import type { Task } from "@/components/taches/types";
 
 interface TaskPlanningSectionProps {
@@ -33,6 +34,7 @@ export function TaskPlanningSection({
 }: TaskPlanningSectionProps) {
   const [debut, setDebut] = useState("");
   const [fin, setFin] = useState("");
+  const [rappelAvance, setRappelAvance] = useState(30);
   const [enCours, setEnCours] = useState(false);
 
   useEffect(() => {
@@ -40,7 +42,8 @@ export function TaskPlanningSection({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDebut(task.planifie_debut ? versDatetimeLocale(task.planifie_debut) : "");
     setFin(task.planifie_fin ? versDatetimeLocale(task.planifie_fin) : "");
-  }, [open, task.planifie_debut, task.planifie_fin]);
+    setRappelAvance(task.rappel_avance_minutes ?? 30);
+  }, [open, task.planifie_debut, task.planifie_fin, task.rappel_avance_minutes]);
 
   const dejaPlanifiee = Boolean(task.planifie_debut && task.planifie_fin);
 
@@ -58,6 +61,7 @@ export function TaskPlanningSection({
           body: {
             debut: datetimeLocaleVersIso(debut),
             fin: datetimeLocaleVersIso(fin),
+            rappel_avance_minutes: rappelAvance,
           },
         },
       );
@@ -122,6 +126,10 @@ export function TaskPlanningSection({
             onChange={(event) => setFin(event.target.value)}
           />
         </div>
+      </div>
+      <div className="space-y-1">
+        <Label className="text-xs text-ink/50">Notification</Label>
+        <RappelAvanceSelect value={rappelAvance} onValueChange={setRappelAvance} />
       </div>
       <div className="flex flex-wrap gap-2">
         <Button type="button" size="sm" onClick={planifier} disabled={enCours}>
