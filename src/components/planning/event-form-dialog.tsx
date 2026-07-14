@@ -40,9 +40,13 @@ import type { EventCategory, EvenementApi } from "@/components/planning/types";
 
 interface EventFormDialogProps {
   evenement?: EvenementApi;
-  trigger: React.ReactElement;
-  children: React.ReactNode;
+  trigger?: React.ReactElement;
+  children?: React.ReactNode;
   onSuccess: () => void;
+  // Mode contrôlé (ouverture depuis une notification, sans déclencheur) :
+  // quand `open`/`onOpenChange` sont fournis, ils pilotent l'ouverture.
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 function valeursParDefaut(evenement?: EvenementApi): EventFormValues {
@@ -67,9 +71,14 @@ export function EventFormDialog({
   trigger,
   children,
   onSuccess,
+  open: openProp,
+  onOpenChange,
 }: EventFormDialogProps) {
   const estPartagee = evenement?.partage_par != null;
-  const [open, setOpen] = useState(false);
+  const [openInterne, setOpenInterne] = useState(false);
+  const estControle = openProp !== undefined;
+  const open = estControle ? openProp : openInterne;
+  const setOpen = estControle ? (onOpenChange ?? (() => {})) : setOpenInterne;
   const [enregistrement, setEnregistrement] = useState(false);
   const [confirmationSuppression, setConfirmationSuppression] = useState(false);
   const [suppression, setSuppression] = useState(false);
@@ -183,7 +192,9 @@ export function EventFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={trigger}>{children}</DialogTrigger>
+      {trigger ? (
+        <DialogTrigger render={trigger}>{children}</DialogTrigger>
+      ) : null}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>

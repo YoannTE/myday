@@ -108,6 +108,38 @@ def test_creation_fin_avant_debut_400(client, auth_user):
     assert resp.status_code == 400
 
 
+# --- GET par id (ouverture depuis une notification) ---
+
+
+def test_get_event_par_id(client, auth_user):
+    """GET /api/events/{id} retourne l'evenement (deep-link notification)."""
+    _, cookie = auth_user
+    cree = client.post(
+        "/api/events", json=_payload(), headers=_cookie(cookie)
+    ).json()["data"]
+    resp = client.get(f"/api/events/{cree['id']}", headers=_cookie(cookie))
+    assert resp.status_code == 200
+    assert resp.json()["data"]["id"] == cree["id"]
+    assert resp.json()["data"]["titre"] == "Reunion"
+
+
+def test_get_event_inexistant_404(client, auth_user):
+    _, cookie = auth_user
+    resp = client.get(f"/api/events/{uuid.uuid4()}", headers=_cookie(cookie))
+    assert resp.status_code == 404
+
+
+def test_get_event_autre_user_404(client, auth_user):
+    """Un evenement d'un autre utilisateur (non partage) reste invisible (404)."""
+    _, cookie = auth_user
+    cree = client.post(
+        "/api/events", json=_payload(), headers=_cookie(cookie)
+    ).json()["data"]
+    _, autre_cookie = _other_user_cookie("evt-get")
+    resp = client.get(f"/api/events/{cree['id']}", headers=_cookie(autre_cookie))
+    assert resp.status_code == 404
+
+
 def test_patch_fin_avant_debut_400(client, auth_user):
     _, cookie = auth_user
     created = client.post("/api/events", json=_payload(), headers=_cookie(cookie)).json()["data"]

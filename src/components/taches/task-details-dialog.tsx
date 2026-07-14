@@ -38,6 +38,11 @@ interface TaskDetailsDialogProps {
   onUpdated: (task: Task) => void;
   onCategoriesChanged?: () => void;
   onDeleted?: (taskId: string) => void;
+  // Mode contrôlé (ouverture depuis une notification, sans l'icône ⚙️) :
+  // quand `open`/`onOpenChange` sont fournis, ils pilotent l'ouverture et le
+  // déclencheur interne n'est pas rendu.
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 function valeursParDefaut(task: Task): TaskDetailsValues {
@@ -61,8 +66,13 @@ export function TaskDetailsDialog({
   onUpdated,
   onCategoriesChanged,
   onDeleted,
+  open: openProp,
+  onOpenChange,
 }: TaskDetailsDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [openInterne, setOpenInterne] = useState(false);
+  const estControle = openProp !== undefined;
+  const open = estControle ? openProp : openInterne;
+  const setOpen = estControle ? (onOpenChange ?? (() => {})) : setOpenInterne;
   const [categories, setCategories] = useState<TaskCategory[] | null>(null);
   const [enregistrement, setEnregistrement] = useState(false);
   const [partageOuvert, setPartageOuvert] = useState(false);
@@ -139,17 +149,19 @@ export function TaskDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={
-          <button
-            type="button"
-            aria-label="Modifier l'échéance et la catégorie"
-            className="flex-shrink-0 rounded-full p-1.5 text-ink/40 hover:bg-soft hover:text-ink"
-          />
-        }
-      >
-        <Settings2 className="h-4 w-4" />
-      </DialogTrigger>
+      {!estControle && (
+        <DialogTrigger
+          render={
+            <button
+              type="button"
+              aria-label="Modifier l'échéance et la catégorie"
+              className="flex-shrink-0 rounded-full p-1.5 text-ink/40 hover:bg-soft hover:text-ink"
+            />
+          }
+        >
+          <Settings2 className="h-4 w-4" />
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <div className="flex items-center justify-between gap-2">

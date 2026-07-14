@@ -13,11 +13,13 @@ from app.models.partages import PartageCreate
 from app.services.push.sender import dispatch_push
 from app.utils.errors import bad_request, not_found
 
-# type d'élément -> (table, url de notification côté destinataire)
+# type d'élément -> (table, paramètre d'URL pour ouvrir l'élément précis côté
+# destinataire). L'URL de notification pointe directement sur l'élément partagé
+# (ex : /planning?event=<id>) pour qu'un clic ouvre le bon événement/tâche/note.
 _ELEMENTS = {
-    "event": ("events", "/planning"),
-    "task": ("tasks", "/taches"),
-    "note": ("notes", "/notes"),
+    "event": ("events", "/planning?event="),
+    "task": ("tasks", "/taches?task="),
+    "note": ("notes", "/notes?note="),
 }
 
 _SELECT = """
@@ -54,7 +56,9 @@ async def list_for_element(
 
 
 async def create_partage(user_id: str, payload: PartageCreate) -> dict:
-    table, url = _ELEMENTS[payload.element_type]
+    table, url_prefixe = _ELEMENTS[payload.element_type]
+    # Lien direct vers l'élément partagé (ex : /planning?event=<id>).
+    url = f"{url_prefixe}{payload.element_id}"
 
     async with scoped_connection(user_id) as conn:
         # 1. Le contact doit exister, être ACCEPTÉ, et impliquer l'utilisateur.

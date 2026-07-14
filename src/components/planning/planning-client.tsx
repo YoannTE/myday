@@ -9,6 +9,7 @@ import { PlanningMois } from "@/components/planning/planning-mois";
 import { PlanningAnnee } from "@/components/planning/planning-annee";
 import { PlanningSkeleton } from "@/components/planning/planning-skeleton";
 import { EventCategoriesDialog } from "@/components/planning/event-categories-dialog";
+import { EventDeepLink } from "@/components/planning/event-deep-link";
 import {
   debutAnnee,
   debutSemaine,
@@ -212,6 +213,7 @@ export function PlanningClient() {
         categories={categories ?? []}
         onChanged={chargerCategories}
       />
+      <EventDeepLink onSuccess={recharger} />
     </div>
   );
 }

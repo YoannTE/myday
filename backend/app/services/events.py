@@ -159,6 +159,17 @@ async def _fetch_event(user_id: str, event_id: str) -> dict | None:
     return _serialize(row, user_id) if row is not None else None
 
 
+async def get_event(user_id: str, event_id: str) -> dict:
+    """Retourne un evenement par id (le sien ou partage avec lui), ou 404.
+
+    Utilise pour ouvrir directement un evenement depuis une notification
+    (rappel ou partage recu) meme s'il n'est pas dans la fenetre affichee."""
+    event = await _fetch_event(user_id, event_id)
+    if event is None:
+        raise not_found("Evenement introuvable.")
+    return event
+
+
 async def create_event(user_id: str, payload: EventCreate) -> dict:
     if payload.fin <= payload.debut:
         raise bad_request("La date de fin doit etre apres la date de debut.")

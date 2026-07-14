@@ -78,7 +78,10 @@ async def _notifier(user_id: str, type_notif: str, contenu: str, ref_id: str) ->
     if not result.endswith(" 1"):
         return False
     try:
-        await dispatch_push(user_id, type_notif, "MyDay", contenu, "/taches")
+        # Lien direct vers la tâche concernée (ouvre son détail au clic).
+        await dispatch_push(
+            user_id, type_notif, "MyDay", contenu, f"/taches?task={ref_id}"
+        )
     except Exception:  # best-effort : ne jamais casser le cycle de rappels
         pass
     return True

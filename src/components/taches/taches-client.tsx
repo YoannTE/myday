@@ -8,6 +8,7 @@ import { TaskItem } from "@/components/taches/task-item";
 import { TaskQuickAdd } from "@/components/taches/task-quick-add";
 import { TachesGroupes } from "@/components/taches/taches-groupes";
 import { TaskCategoriesDialog } from "@/components/taches/task-categories-dialog";
+import { TaskDeepLink } from "@/components/taches/task-deep-link";
 import type { Task, TaskCategory } from "@/components/taches/types";
 
 function TachesSkeleton() {
@@ -140,6 +141,12 @@ export function TachesClient() {
         onOpenChange={setDialogCategoriesOuvert}
         categories={categories}
         onChanged={chargerCategories}
+      />
+      <TaskDeepLink
+        taches={taches}
+        onUpdated={handleUpdated}
+        onDeleted={handleDeleted}
+        onCategoriesChanged={chargerCategories}
       />
     </div>
   );

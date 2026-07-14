@@ -46,6 +46,16 @@ async def get_events_counts(
     return {"data": [EventCountResponse(**c).model_dump() for c in counts]}
 
 
+@router.get("/{event_id}")
+async def get_event(event_id: UUID, user: AuthUser = Depends(get_current_user)):
+    """Retourne un evenement par id (le sien ou partage avec lui), sinon 404.
+
+    Permet d'ouvrir directement un evenement depuis une notification, meme
+    s'il n'est pas dans la fenetre affichee du planning."""
+    event = await events_service.get_event(user["id"], str(event_id))
+    return {"data": EventResponse(**event).model_dump()}
+
+
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_event(
     payload: EventCreate, user: AuthUser = Depends(get_current_user)
