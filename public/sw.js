@@ -91,9 +91,20 @@ self.addEventListener("push", (event) => {
     // Payload non-JSON : on garde les valeurs par défaut ci-dessus.
   }
 
+  // iOS ajoute lui-même une ligne « from MyDay » (provenance, non
+  // supprimable). Pour éviter le double « MyDay », le message devient le
+  // titre (en gras) et on ne met pas de corps quand le titre générique
+  // « MyDay » accompagne un message.
+  let titre = donnees.title;
+  let corps = donnees.body;
+  if (titre === "MyDay" && corps) {
+    titre = corps;
+    corps = "";
+  }
+
   event.waitUntil(
-    self.registration.showNotification(donnees.title, {
-      body: donnees.body,
+    self.registration.showNotification(titre, {
+      body: corps,
       icon: "/icons/icon-192.png",
       badge: "/icons/icon-192.png",
       data: { url: donnees.url || "/" },
