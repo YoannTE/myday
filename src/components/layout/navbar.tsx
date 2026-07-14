@@ -67,7 +67,7 @@ export function Navbar({ user }: NavbarProps) {
         </div>
       </div>
 
-      <nav className="mx-auto flex max-w-4xl gap-5 overflow-x-auto px-4 pb-3 md:px-6">
+      <nav className="mx-auto flex max-w-4xl justify-center gap-5 overflow-x-auto px-4 pb-3 md:px-6">
         {LIENS_NAVIGATION.map((lien) => (
           <Link
             key={lien.href}
