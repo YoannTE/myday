@@ -6,9 +6,9 @@ import type { TaskCategoryLite } from "@/components/taches/types";
  */
 export function CategoryBadge({ categorie }: { categorie: TaskCategoryLite }) {
   return (
-    <span className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full bg-soft px-2.5 py-1 font-mono text-[10px] tracking-[.04em] text-ink/70 uppercase">
+    <span className="inline-flex flex-shrink-0 items-center gap-1 rounded-full bg-soft px-1.5 py-0.5 font-mono text-[8px] tracking-[.04em] text-ink/70 uppercase">
       <span
-        className="h-1.5 w-1.5 rounded-full"
+        className="h-1 w-1 rounded-full"
         style={{ backgroundColor: categorie.couleur }}
         aria-hidden="true"
       />

@@ -69,7 +69,7 @@ async def run_event_reminders(delta_minutes: int) -> int:
         created += 1
         try:
             await dispatch_push(
-                event["user_id"], "rappel_evenement", "Rappel", contenu, "/planning"
+                event["user_id"], "rappel_evenement", "MyDay", contenu, "/planning"
             )
         except Exception:  # best-effort : ne jamais casser le cycle de rappels
             pass

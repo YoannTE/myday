@@ -4,6 +4,7 @@ import { useState, type ReactElement, type ReactNode } from "react";
 import { toast } from "sonner";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
+import { partagerApresCreation } from "@/lib/partage-apres-creation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,7 @@ import {
   NoteCategorySelect,
   SANS_CATEGORIE,
 } from "@/components/notes/note-category-select";
+import { PartageContactsPicker } from "@/components/partage/partage-contacts-picker";
 import type { NoteApi, NoteCategory } from "@/components/notes/types";
 
 interface NoteQuickAddDialogProps {
@@ -58,6 +60,9 @@ export function NoteQuickAddDialog({
   const [categorieId, setCategorieId] = useState(SANS_CATEGORIE);
   const [erreurTitre, setErreurTitre] = useState<string | null>(null);
   const [enregistrement, setEnregistrement] = useState(false);
+  const [contactsSelectionnes, setContactsSelectionnes] = useState<string[]>(
+    [],
+  );
 
   const afficherCategorie = categories !== undefined;
 
@@ -66,6 +71,7 @@ export function NoteQuickAddDialog({
     setContenu("");
     setCategorieId(SANS_CATEGORIE);
     setErreurTitre(null);
+    setContactsSelectionnes([]);
   }
 
   async function onSubmit(evenement: React.FormEvent<HTMLFormElement>) {
@@ -92,6 +98,11 @@ export function NoteQuickAddDialog({
       toast.success("Note créée.");
       onCreated(reponse.data);
       setOpen(false);
+      await partagerApresCreation(
+        "note",
+        reponse.data.id,
+        contactsSelectionnes,
+      );
       reinitialiser();
     } catch (erreur) {
       toast.error(messageErreurApi(erreur, "Impossible de créer la note."));
@@ -154,6 +165,10 @@ export function NoteQuickAddDialog({
               />
             </div>
           )}
+          <PartageContactsPicker
+            selection={contactsSelectionnes}
+            onSelectionChange={setContactsSelectionnes}
+          />
         </form>
         <DialogFooter>
           <Button type="submit" form="form-note-rapide" disabled={enregistrement}>

@@ -6,7 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Share2 } from "lucide-react";
 import { apiCall } from "@/lib/api";
+import { partagerApresCreation } from "@/lib/partage-apres-creation";
 import { PartageDialog } from "@/components/partage/partage-dialog";
+import { PartageContactsPicker } from "@/components/partage/partage-contacts-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -79,6 +81,9 @@ export function EventFormDialog({
   const [rappelAvance, setRappelAvance] = useState(
     evenement?.rappel_avance_minutes ?? 30,
   );
+  const [contactsSelectionnes, setContactsSelectionnes] = useState<string[]>(
+    [],
+  );
 
   const {
     register,
@@ -97,6 +102,8 @@ export function EventFormDialog({
       setRappelAvance(evenement?.rappel_avance_minutes ?? 30);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setConfirmationSuppression(false);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setContactsSelectionnes([]);
       apiCall<{ data: EventCategory[] }>("/api/event-categories")
         .then((reponse) => setCategories(reponse.data))
         .catch(() => setCategories((actuelles) => actuelles ?? []));
@@ -131,8 +138,16 @@ export function EventFormDialog({
         });
         toast.success("Événement modifié.");
       } else {
-        await apiCall("/api/events", { method: "POST", body: payload });
+        const reponse = await apiCall<{ data: EvenementApi }>("/api/events", {
+          method: "POST",
+          body: payload,
+        });
         toast.success("Événement créé.");
+        await partagerApresCreation(
+          "event",
+          reponse.data.id,
+          contactsSelectionnes,
+        );
       }
       setOpen(false);
       onSuccess();
@@ -280,6 +295,12 @@ export function EventFormDialog({
                 onValueChange={setRappelAvance}
               />
             </div>
+          )}
+          {!evenement && (
+            <PartageContactsPicker
+              selection={contactsSelectionnes}
+              onSelectionChange={setContactsSelectionnes}
+            />
           )}
         </form>
         <DialogFooter className="items-center sm:justify-between">

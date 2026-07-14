@@ -1,5 +1,6 @@
 "use client";
 
+import { Pin } from "lucide-react";
 import { formaterFraicheur } from "@/lib/freshness";
 import { NoteCategoryBadge } from "@/components/notes/note-category-badge";
 import { PartageBadge } from "@/components/partage/partage-badge";
@@ -38,7 +39,7 @@ export function NoteItem({ note, selectionnee, onSelect }: NoteItemProps) {
             <PartageBadge nom={note.partage_par} />
           )}
           {note.items.length > 0 && (
-            <span className="font-mono text-[9px] tracking-[.04em] text-ink/40 uppercase">
+            <span className="font-mono text-[8px] tracking-[.04em] text-ink/40 uppercase">
               ☑ {nombreCoches}/{note.items.length}
             </span>
           )}
@@ -46,15 +47,16 @@ export function NoteItem({ note, selectionnee, onSelect }: NoteItemProps) {
       </div>
       <div className="flex flex-shrink-0 flex-col items-end gap-1">
         {note.archivee ? (
-          <span className="font-mono text-[9px] tracking-[.04em] text-ink/30 uppercase">
+          <span className="font-mono text-[8px] tracking-[.04em] text-ink/30 uppercase">
             Archivée
           </span>
         ) : note.epinglee ? (
-          <span className="rounded-full bg-soft px-1.5 py-0.5 font-mono text-[9px] tracking-[.04em] text-accent uppercase">
-            Épinglée
-          </span>
+          <Pin
+            className="h-3 w-3 flex-shrink-0 text-accent"
+            aria-label="Épinglée"
+          />
         ) : (
-          <span className="font-mono text-[9px] tracking-[.04em] text-ink/30 uppercase">
+          <span className="font-mono text-[8px] tracking-[.04em] text-ink/30 uppercase">
             {formaterFraicheur(note.updated_at)}
           </span>
         )}

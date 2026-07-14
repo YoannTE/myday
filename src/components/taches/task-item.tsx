@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Bell, Repeat } from "lucide-react";
+import { Bell, Repeat, TriangleAlert } from "lucide-react";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
 import { cn } from "@/lib/utils";
@@ -155,13 +155,13 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps
       )}
       {!estFaite && task.recurrence !== "aucune" && (
         <Repeat
-          className="h-3.5 w-3.5 flex-shrink-0 text-ink/40"
+          className="h-3 w-3 flex-shrink-0 text-ink/40"
           aria-label="Tâche qui se répète"
         />
       )}
       {!estFaite && task.rappel_at && (
         <Bell
-          className="h-3.5 w-3.5 flex-shrink-0 text-accent/70"
+          className="h-3 w-3 flex-shrink-0 text-accent/70"
           aria-label="Rappel programmé"
         />
       )}
@@ -172,12 +172,13 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps
         <PartageBadge nom={task.partage_par as string} />
       )}
       {!estFaite && task.priorite === "haute" && (
-        <span className="flex-shrink-0 rounded-full bg-soft px-2.5 py-1 font-mono text-[10px] tracking-[.04em] text-accent uppercase">
-          Priorité
-        </span>
+        <TriangleAlert
+          className="h-3.5 w-3.5 flex-shrink-0 text-destructive"
+          aria-label="Priorité haute"
+        />
       )}
       {!estFaite && task.priorite !== "haute" && task.echeance && (
-        <span className="flex-shrink-0 font-mono text-[11px] tracking-[.04em] text-ink/40 uppercase">
+        <span className="flex-shrink-0 font-mono text-[9px] tracking-[.04em] text-ink/40 uppercase">
           {formaterEcheance(task.echeance)}
         </span>
       )}

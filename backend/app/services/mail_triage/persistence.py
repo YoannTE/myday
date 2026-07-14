@@ -137,7 +137,7 @@ async def queue_notifications(
     for item in to_push:
         try:
             await dispatch_push(
-                user_id, "mail_important", "Mail important", item["contenu"], "/mails"
+                user_id, "mail_important", "MyDay", item["contenu"], "/mails"
             )
         except Exception:  # best-effort : ne jamais casser le tri des mails
             pass

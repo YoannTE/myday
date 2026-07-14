@@ -76,7 +76,7 @@ async def persist_brief(
     if notify:
         try:
             await dispatch_push(
-                user_id, "brief_pret", "Brief prêt", content["headline"], "/"
+                user_id, "brief_pret", "MyDay", content["headline"], "/"
             )
         except Exception:  # best-effort : ne jamais casser la génération du brief
             pass

@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Mic } from "lucide-react";
 import { deposerMessageAssistant } from "@/lib/assistant-handoff";
+import { useSpeechDictee } from "@/lib/speech";
+import { cn } from "@/lib/utils";
 
 /**
  * Barre "Dis-moi quoi faire..." de la navbar (transposition de
@@ -16,6 +19,9 @@ export function NavbarAssistantBar() {
   const [valeur, setValeur] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { supported: dicteeSupportee, ecoute, basculer } = useSpeechDictee(
+    (texte) => setValeur(texte),
+  );
 
   useEffect(() => {
     function surRaccourci(evenement: KeyboardEvent) {
@@ -53,6 +59,19 @@ export function NavbarAssistantBar() {
         placeholder="Dis-moi quoi faire — une note, un rendez-vous, un mail..."
         className="min-w-0 flex-1 bg-transparent font-body text-sm text-ink placeholder:text-ink/40 focus:outline-none"
       />
+      {dicteeSupportee && (
+        <button
+          type="button"
+          onClick={basculer}
+          aria-label={ecoute ? "Arrêter la dictée" : "Dicter au micro"}
+          className={cn(
+            "flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-ink/40 transition-colors hover:text-accent",
+            ecoute && "pulse-now text-accent",
+          )}
+        >
+          <Mic className="h-4 w-4" />
+        </button>
+      )}
       <span className="hidden rounded-full bg-soft px-2 py-0.5 font-mono text-[10px] tracking-[.04em] text-ink/30 uppercase sm:inline">
         ⌘K
       </span>

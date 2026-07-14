@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Share2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { formaterFraicheur } from "@/lib/freshness";
 import { PartageBadge } from "@/components/partage/partage-badge";
 import type { NoteApi } from "@/components/notes/types";
 
@@ -81,9 +80,6 @@ export function NoteOuverteHeader({
           via l&apos;assistant
         </span>
       )}
-      <span className="rounded-full bg-soft px-2 py-0.5 font-mono text-[9px] tracking-[.04em] text-ink/40 uppercase">
-        Modifiée {formaterFraicheur(note.updated_at)}
-      </span>
       {estPartagee ? (
         <PartageBadge nom={note.partage_par as string} />
       ) : (
