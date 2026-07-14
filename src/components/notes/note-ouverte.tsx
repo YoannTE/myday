@@ -19,6 +19,7 @@ import type { NoteApi, NoteCategory } from "@/components/notes/types";
 interface NoteOuverteProps {
   note: NoteApi;
   onChange: (note: NoteApi) => void;
+  onDeleted: (noteId: string) => void;
   categories: NoteCategory[] | null;
   onCategoryCreated: (categorie: NoteCategory) => void;
 }
@@ -31,6 +32,7 @@ interface NoteOuverteProps {
 export function NoteOuverte({
   note,
   onChange,
+  onDeleted,
   categories,
   onCategoryCreated,
 }: NoteOuverteProps) {
@@ -100,6 +102,18 @@ export function NoteOuverte({
           : "Impossible de mettre à jour la note.",
       );
     } finally {
+      setEnCours(false);
+    }
+  }
+
+  async function supprimer() {
+    setEnCours(true);
+    try {
+      await apiCall(`/api/notes/${note.id}`, { method: "DELETE" });
+      toast.success("Note supprimée.");
+      onDeleted(note.id);
+    } catch (erreur) {
+      toast.error(messageErreurApi(erreur, "Impossible de supprimer la note."));
       setEnCours(false);
     }
   }
@@ -187,6 +201,7 @@ export function NoteOuverte({
           enCours={enCours}
           onSauvegarder={sauvegarderContenu}
           onBasculerArchivee={basculerArchivee}
+          onSupprimer={supprimer}
         />
       </div>
     </div>

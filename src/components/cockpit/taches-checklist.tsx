@@ -14,9 +14,11 @@ import type { Task } from "@/components/taches/types";
 export function TachesChecklist({
   taches,
   onUpdated,
+  onDeleted,
 }: {
   taches: Task[];
   onUpdated: (task: Task) => void;
+  onDeleted?: (taskId: string) => void;
 }) {
   return (
     <section>
@@ -38,7 +40,12 @@ export function TachesChecklist({
           </p>
         ) : (
           taches.map((tache) => (
-            <TaskItem key={tache.id} task={tache} onUpdated={onUpdated} />
+            <TaskItem
+              key={tache.id}
+              task={tache}
+              onUpdated={onUpdated}
+              onDeleted={onDeleted}
+            />
           ))
         )}
       </div>

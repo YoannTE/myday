@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
 import { partagerApresCreation } from "@/lib/partage-apres-creation";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PartageContactsPicker } from "@/components/partage/partage-contacts-picker";
 import type { Task } from "@/components/taches/types";
@@ -60,8 +61,13 @@ export function TaskQuickAdd({
           onChange={(evenement) => setTitre(evenement.target.value)}
           placeholder="Nouvelle tâche..."
           disabled={enCours}
-          className="h-auto flex-1 border-none bg-transparent p-0 font-body text-sm text-ink placeholder:text-ink/40 focus-visible:ring-0"
+          className="h-auto min-w-0 flex-1 border-none bg-transparent p-0 font-body text-sm text-ink placeholder:text-ink/40 focus-visible:ring-0"
         />
+        {titre.trim() && (
+          <Button type="submit" size="sm" disabled={enCours}>
+            {enCours ? "Ajout..." : "Ajouter"}
+          </Button>
+        )}
       </div>
       <PartageContactsPicker
         selection={contactsSelectionnes}

@@ -9,6 +9,7 @@ interface TachesGroupesProps {
   taches: Task[];
   categoriesExistent: boolean;
   onUpdated: (task: Task) => void;
+  onDeleted?: (taskId: string) => void;
   onCategoriesChanged: () => void;
   onCreerCategorie: () => void;
 }
@@ -53,6 +54,7 @@ export function TachesGroupes({
   taches,
   categoriesExistent,
   onUpdated,
+  onDeleted,
   onCategoriesChanged,
   onCreerCategorie,
 }: TachesGroupesProps) {
@@ -75,6 +77,7 @@ export function TachesGroupes({
               key={tache.id}
               task={tache}
               onUpdated={onUpdated}
+                onDeleted={onDeleted}
               onCategoriesChanged={onCategoriesChanged}
             />
           ))}
@@ -114,6 +117,7 @@ export function TachesGroupes({
                 key={tache.id}
                 task={tache}
                 onUpdated={onUpdated}
+                onDeleted={onDeleted}
                 onCategoriesChanged={onCategoriesChanged}
               />
             ))}

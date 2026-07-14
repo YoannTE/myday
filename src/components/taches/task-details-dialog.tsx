@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Settings2, Share2 } from "lucide-react";
+import { Settings2, Share2, Trash2 } from "lucide-react";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
 import { PartageDialog } from "@/components/partage/partage-dialog";
@@ -37,6 +37,7 @@ interface TaskDetailsDialogProps {
   task: Task;
   onUpdated: (task: Task) => void;
   onCategoriesChanged?: () => void;
+  onDeleted?: (taskId: string) => void;
 }
 
 function valeursParDefaut(task: Task): TaskDetailsValues {
@@ -59,11 +60,28 @@ export function TaskDetailsDialog({
   task,
   onUpdated,
   onCategoriesChanged,
+  onDeleted,
 }: TaskDetailsDialogProps) {
   const [open, setOpen] = useState(false);
   const [categories, setCategories] = useState<TaskCategory[] | null>(null);
   const [enregistrement, setEnregistrement] = useState(false);
   const [partageOuvert, setPartageOuvert] = useState(false);
+  const [confirmationSuppression, setConfirmationSuppression] = useState(false);
+  const [suppression, setSuppression] = useState(false);
+
+  async function supprimer() {
+    setSuppression(true);
+    try {
+      await apiCall(`/api/tasks/${task.id}`, { method: "DELETE" });
+      toast.success("Tâche supprimée.");
+      setOpen(false);
+      onDeleted?.(task.id);
+    } catch (erreur) {
+      toast.error(messageErreurApi(erreur, "Impossible de supprimer la tâche."));
+    } finally {
+      setSuppression(false);
+    }
+  }
 
   const { control, register, handleSubmit, reset, setValue } =
     useForm<TaskDetailsValues>({
@@ -176,7 +194,40 @@ export function TaskDetailsDialog({
           />
         </form>
         <TaskPlanningSection task={task} open={open} onUpdated={onUpdated} />
-        <DialogFooter>
+        <DialogFooter className="items-center sm:justify-between">
+          {confirmationSuppression ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-ink/50">Confirmer ?</span>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                disabled={suppression}
+                onClick={supprimer}
+              >
+                {suppression ? "Suppression..." : "Oui, supprimer"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setConfirmationSuppression(false)}
+              >
+                Annuler
+              </Button>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              variant="ghost"
+              className="text-destructive"
+              aria-label="Supprimer la tâche"
+              onClick={() => setConfirmationSuppression(true)}
+            >
+              <Trash2 className="h-4 w-4" />
+              Supprimer
+            </Button>
+          )}
           <Button
             type="submit"
             form="form-details-tache"

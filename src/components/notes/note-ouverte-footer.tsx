@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { NoteApi } from "@/components/notes/types";
 
@@ -9,6 +13,7 @@ interface NoteOuverteFooterProps {
   enCours: boolean;
   onSauvegarder: () => void;
   onBasculerArchivee: () => void;
+  onSupprimer: () => void;
 }
 
 /**
@@ -25,9 +30,12 @@ export function NoteOuverteFooter({
   enCours,
   onSauvegarder,
   onBasculerArchivee,
+  onSupprimer,
 }: NoteOuverteFooterProps) {
+  const [confirmationSuppression, setConfirmationSuppression] = useState(false);
+
   return (
-    <div className="ml-auto flex items-center gap-3">
+    <div className="ml-auto flex flex-wrap items-center gap-3">
       {modifie && (
         <Button
           type="button"
@@ -48,6 +56,39 @@ export function NoteOuverteFooter({
           {note.archivee ? "Désarchiver" : "Archiver"}
         </button>
       )}
+      {!estPartagee &&
+        (confirmationSuppression ? (
+          <span className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="destructive"
+              size="xs"
+              disabled={enCours}
+              onClick={onSupprimer}
+            >
+              Oui, supprimer
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              onClick={() => setConfirmationSuppression(false)}
+            >
+              Annuler
+            </Button>
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirmationSuppression(true)}
+            disabled={enCours}
+            aria-label="Supprimer la note"
+            title="Supprimer la note"
+            className="text-destructive/70 hover:text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        ))}
     </div>
   );
 }

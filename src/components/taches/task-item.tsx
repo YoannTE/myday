@@ -37,6 +37,7 @@ interface TaskItemProps {
   task: Task;
   onUpdated: (task: Task) => void;
   onCategoriesChanged?: () => void;
+  onDeleted?: (taskId: string) => void;
 }
 
 /**
@@ -47,7 +48,7 @@ interface TaskItemProps {
  * réglage détaillé (⚙️ `TaskDetailsDialog` : échéance, catégorie, rappel,
  * planification) reste réservé au propriétaire.
  */
-export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps) {
+export function TaskItem({ task, onUpdated, onCategoriesChanged, onDeleted }: TaskItemProps) {
   const [enEdition, setEnEdition] = useState(false);
   const [titreEdition, setTitreEdition] = useState(task.titre);
   const [enCours, setEnCours] = useState(false);
@@ -187,6 +188,7 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps
           task={task}
           onUpdated={onUpdated}
           onCategoriesChanged={onCategoriesChanged}
+          onDeleted={onDeleted}
         />
       )}
     </div>

@@ -70,6 +70,10 @@ export function TachesClient() {
     );
   }
 
+  function handleDeleted(taskId: string) {
+    setTaches((actuelles) => (actuelles ?? []).filter((t) => t.id !== taskId));
+  }
+
   function handleCreated(tache: Task) {
     setTaches((actuelles) => [tache, ...(actuelles ?? [])]);
   }
@@ -109,6 +113,7 @@ export function TachesClient() {
         taches={aFaire}
         categoriesExistent={categories.length > 0}
         onUpdated={handleUpdated}
+        onDeleted={handleDeleted}
         onCategoriesChanged={chargerCategories}
         onCreerCategorie={() => setDialogCategoriesOuvert(true)}
       />
@@ -123,6 +128,7 @@ export function TachesClient() {
                 key={tache.id}
                 task={tache}
                 onUpdated={handleUpdated}
+                onDeleted={handleDeleted}
                 onCategoriesChanged={chargerCategories}
               />
             ))}

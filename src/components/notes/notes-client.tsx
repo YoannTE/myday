@@ -90,6 +90,13 @@ export function NotesClient() {
     );
   }
 
+  function onNoteDeleted(noteId: string) {
+    setNotes((actuelles) =>
+      actuelles ? actuelles.filter((note) => note.id !== noteId) : actuelles,
+    );
+    setNoteSelectionneeId(null); // l'effet resélectionne la première note
+  }
+
   function onCategoryCreated(categorie: NoteCategory) {
     setCategories((actuelles) => [...(actuelles ?? []), categorie]);
   }
@@ -124,6 +131,7 @@ export function NotesClient() {
             <NoteOuverte
               note={noteSelectionnee}
               onChange={onNoteChange}
+              onDeleted={onNoteDeleted}
               categories={categories}
               onCategoryCreated={onCategoryCreated}
             />

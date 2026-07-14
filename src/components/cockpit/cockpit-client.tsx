@@ -116,6 +116,14 @@ export function CockpitClient() {
     });
   }, []);
 
+  function handleTacheSupprimee(taskId: string) {
+    setDonnees((actuelles) =>
+      actuelles
+        ? { ...actuelles, taches: actuelles.taches.filter((t) => t.id !== taskId) }
+        : actuelles,
+    );
+  }
+
   function handleTacheMiseAJour(tache: Task) {
     setDonnees((actuelles) => {
       if (!actuelles) return actuelles;
@@ -166,7 +174,11 @@ export function CockpitClient() {
       <MeteoWidget />
       <OnboardingResumeBanner />
       <JourneeTimeline evenements={donnees.prochains} onSuccess={charger} />
-      <TachesChecklist taches={donnees.taches} onUpdated={handleTacheMiseAJour} />
+      <TachesChecklist
+        taches={donnees.taches}
+        onUpdated={handleTacheMiseAJour}
+        onDeleted={handleTacheSupprimee}
+      />
       <NotesEpinglees notes={donnees.notes_epinglees} />
       {gmailConnecte && (
         <MailsImportants

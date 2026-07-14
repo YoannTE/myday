@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Share2 } from "lucide-react";
+import { Share2, Trash2 } from "lucide-react";
 import { apiCall } from "@/lib/api";
 import { partagerApresCreation } from "@/lib/partage-apres-creation";
 import { PartageDialog } from "@/components/partage/partage-dialog";
@@ -329,8 +329,10 @@ export function EventFormDialog({
                 type="button"
                 variant="ghost"
                 className="text-destructive"
+                aria-label="Supprimer l'événement"
                 onClick={() => setConfirmationSuppression(true)}
               >
+                <Trash2 className="h-4 w-4" />
                 Supprimer
               </Button>
             )
