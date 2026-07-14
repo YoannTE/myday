@@ -19,9 +19,9 @@ interface NoteOuverteHeaderProps {
 /**
  * En-tête de la note ouverte (titre + badges + actions rapides) - extrait de
  * `NoteOuverte` pour garder le parent sous ~150 lignes. Le titre s'édite en
- * ligne (clic -> input -> Entrée/perte de focus), comme celui des tâches.
- * Épingler et « Partager » sont masqués pour une note partagée reçue
- * (lecture seule) ; `PartageBadge` prend leur place.
+ * ligne (clic -> input -> Entrée/perte de focus), comme celui des tâches,
+ * y compris pour une note partagée reçue. Épingler et « Partager » restent
+ * réservés au propriétaire de la note ; `PartageBadge` prend leur place.
  */
 export function NoteOuverteHeader({
   note,
@@ -67,14 +67,11 @@ export function NoteOuverteHeader({
       ) : (
         <h2
           onClick={() => {
-            if (estPartagee) return;
             setTitreEdition(note.titre);
             setEnEdition(true);
           }}
-          title={estPartagee ? undefined : "Cliquer pour renommer"}
-          className={`min-w-0 flex-1 font-display text-lg font-extrabold tracking-[-0.02em] break-words text-ink ${
-            estPartagee ? "" : "cursor-text"
-          }`}
+          title="Cliquer pour renommer"
+          className="min-w-0 flex-1 cursor-text font-display text-lg font-extrabold tracking-[-0.02em] break-words text-ink"
         >
           {note.titre}
         </h2>

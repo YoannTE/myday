@@ -25,7 +25,9 @@ interface NoteOuverteProps {
 
 // Panneau de la note ouverte : édition du contenu, épingler/désépingler,
 // archiver/désarchiver, catégorie (Round 015). Badge « via l'assistant »
-// autorisé (correction #7).
+// autorisé (correction #7). Une note partagée reçue reste modifiable
+// (titre, contenu, liste à cocher) mais catégorie/épingler/archiver/partager
+// restent réservés au propriétaire.
 export function NoteOuverte({
   note,
   onChange,
@@ -162,13 +164,11 @@ export function NoteOuverte({
         onItemsChange={(nouveauxItems) =>
           onChange({ ...note, items: nouveauxItems })
         }
-        lectureSeule={estPartagee}
       />
       <Textarea
         value={contenu}
         onChange={(evenement) => setContenu(evenement.target.value)}
         placeholder="Écris ici..."
-        disabled={estPartagee}
         className="min-h-40 w-full max-w-full resize-none border-none bg-transparent p-0 text-sm leading-relaxed break-words whitespace-pre-wrap text-ink/80 shadow-none focus-visible:ring-0 disabled:opacity-100"
       />
       <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-ink/5 pt-4">
@@ -179,16 +179,15 @@ export function NoteOuverte({
             month: "long",
           })}
         </span>
-        {!estPartagee && (
-          <NoteOuverteFooter
-            note={note}
-            modifie={modifie}
-            enregistrement={enregistrement}
-            enCours={enCours}
-            onSauvegarder={sauvegarderContenu}
-            onBasculerArchivee={basculerArchivee}
-          />
-        )}
+        <NoteOuverteFooter
+          note={note}
+          estPartagee={estPartagee}
+          modifie={modifie}
+          enregistrement={enregistrement}
+          enCours={enCours}
+          onSauvegarder={sauvegarderContenu}
+          onBasculerArchivee={basculerArchivee}
+        />
       </div>
     </div>
   );

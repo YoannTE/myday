@@ -43,6 +43,9 @@ interface TaskItemProps {
  * Ligne de tâche réutilisée par le cockpit (checklist) et la page `/taches` :
  * case à cocher optimiste (rollback + toast si le PATCH échoue) et édition
  * inline du titre (clic sur le texte -> input -> Entrée/perte de focus).
+ * Case et titre restent actifs pour une tâche partagée reçue ; seul le
+ * réglage détaillé (⚙️ `TaskDetailsDialog` : échéance, catégorie, rappel,
+ * planification) reste réservé au propriétaire.
  */
 export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps) {
   const [enEdition, setEnEdition] = useState(false);
@@ -113,7 +116,7 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps
     <div className="flex items-center gap-4 px-5 py-4">
       <Checkbox
         checked={estFaite}
-        disabled={enCours || estPartagee}
+        disabled={enCours}
         onCheckedChange={basculerStatut}
         aria-label={estFaite ? "Marquer à faire" : "Marquer comme faite"}
         className={cn(
@@ -140,11 +143,11 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged }: TaskItemProps
         />
       ) : (
         <span
-          onClick={() => !estFaite && !estPartagee && setEnEdition(true)}
+          onClick={() => !estFaite && setEnEdition(true)}
           className={cn(
             "min-w-0 flex-1 font-body text-sm break-words text-ink",
             estFaite && "text-ink/50 line-through",
-            !estFaite && !estPartagee && "cursor-text",
+            !estFaite && "cursor-text",
           )}
         >
           {task.titre}

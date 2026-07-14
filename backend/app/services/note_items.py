@@ -52,14 +52,19 @@ async def list_for_note(conn: asyncpg.Connection, note_id: str) -> list[dict]:
     return [_serialize(r) for r in rows]
 
 
-async def _assert_note_appartient(conn: asyncpg.Connection, note_id: str) -> None:
-    """Exige la PROPRIÉTÉ de la note (filtre user_id explicite) : depuis le
-    partage (Round 016), la RLS rend aussi visibles en lecture les notes
-    partagées avec nous — le destinataire ne doit pas pouvoir y ajouter
-    d'éléments."""
+async def _assert_note_modifiable(conn: asyncpg.Connection, note_id: str) -> None:
+    """Exige que la note soit MODIFIABLE par l'utilisateur courant : la
+    sienne, OU partagée avec lui (partage collaboratif, Round 016 v2)."""
     existe = await conn.fetchval(
-        "SELECT 1 FROM notes WHERE id = $1 "
-        "AND user_id = current_setting('app.current_user_id', true)",
+        """
+        SELECT 1 FROM notes
+        WHERE id = $1 AND (
+            user_id = current_setting('app.current_user_id', true)
+            OR EXISTS (SELECT 1 FROM partages pa
+                       WHERE pa.element_type = 'note' AND pa.element_id = notes.id
+                       AND pa.cible_id = current_setting('app.current_user_id', true))
+        )
+        """,
         note_id,
     )
     if existe is None:
@@ -68,7 +73,7 @@ async def _assert_note_appartient(conn: asyncpg.Connection, note_id: str) -> Non
 
 async def create_item(user_id: str, note_id: str, payload: NoteItemCreate) -> dict:
     async with scoped_connection(user_id) as conn:
-        await _assert_note_appartient(conn, note_id)
+        await _assert_note_modifiable(conn, note_id)
         position = await conn.fetchval(
             "SELECT COALESCE(max(position), -1) + 1 FROM note_items WHERE note_id = $1",
             note_id,
@@ -91,7 +96,17 @@ async def update_item(user_id: str, item_id: str, payload: NoteItemUpdate) -> di
     fields = payload.model_dump(exclude_unset=True)
     async with scoped_connection(user_id) as conn:
         current = await conn.fetchrow(
-            f"SELECT {_COLUMNS} FROM note_items WHERE id = $1 AND user_id = $2",
+            f"""
+            SELECT {_COLUMNS} FROM note_items
+            WHERE id = $1 AND EXISTS (
+                SELECT 1 FROM notes n WHERE n.id = note_items.note_id AND (
+                    n.user_id = $2
+                    OR EXISTS (SELECT 1 FROM partages pa
+                               WHERE pa.element_type = 'note' AND pa.element_id = n.id
+                               AND pa.cible_id = $2)
+                )
+            )
+            """,
             item_id,
             user_id,
         )
@@ -106,7 +121,14 @@ async def update_item(user_id: str, item_id: str, payload: NoteItemUpdate) -> di
             f"""
             UPDATE note_items
             SET contenu = $3, coche = $4, updated_at = now()
-            WHERE id = $1 AND user_id = $2
+            WHERE id = $1 AND EXISTS (
+                SELECT 1 FROM notes n WHERE n.id = note_items.note_id AND (
+                    n.user_id = $2
+                    OR EXISTS (SELECT 1 FROM partages pa
+                               WHERE pa.element_type = 'note' AND pa.element_id = n.id
+                               AND pa.cible_id = $2)
+                )
+            )
             RETURNING {_COLUMNS}
             """,
             item_id,
@@ -120,7 +142,18 @@ async def update_item(user_id: str, item_id: str, payload: NoteItemUpdate) -> di
 async def delete_item(user_id: str, item_id: str) -> None:
     async with scoped_connection(user_id) as conn:
         deleted = await conn.fetchval(
-            "DELETE FROM note_items WHERE id = $1 AND user_id = $2 RETURNING id",
+            """
+            DELETE FROM note_items
+            WHERE id = $1 AND EXISTS (
+                SELECT 1 FROM notes n WHERE n.id = note_items.note_id AND (
+                    n.user_id = $2
+                    OR EXISTS (SELECT 1 FROM partages pa
+                               WHERE pa.element_type = 'note' AND pa.element_id = n.id
+                               AND pa.cible_id = $2)
+                )
+            )
+            RETURNING id
+            """,
             item_id,
             user_id,
         )

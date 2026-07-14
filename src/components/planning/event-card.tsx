@@ -27,8 +27,10 @@ interface EventCardProps {
 }
 
 // Carte d'un événement dans la grille semaine. Cliquer ouvre le dialog de
-// modification. Badge « Non synchronisé » uniquement (jamais « via
-// l'assistant » : la table events n'a pas de colonne origine).
+// modification, y compris pour un événement partagé reçu (titre, horaires,
+// lieu et description restent modifiables à deux). Badge « Non synchronisé »
+// uniquement (jamais « via l'assistant » : la table events n'a pas de
+// colonne origine).
 export function EventCard({ evenement, onSuccess }: EventCardProps) {
   const enCours = estEnCours(evenement);
   const plageHoraire = formaterPlageHoraire(evenement.debut, evenement.fin);
@@ -66,12 +68,6 @@ export function EventCard({ evenement, onSuccess }: EventCardProps) {
   const classeCarte = `mb-1.5 w-full rounded-inner px-1.5 py-1.5 text-left transition-colors md:mb-2 md:px-3 md:py-2.5 ${
     enCours ? "border-2 border-accent/40 bg-card" : "bg-soft hover:bg-soft/70"
   }`;
-
-  // Un événement partagé (reçu d'un autre compte) est en lecture seule :
-  // pas de dialog d'édition, simple carte non cliquable.
-  if (partage) {
-    return <div className={classeCarte.replace("hover:bg-soft/70", "")}>{contenu}</div>;
-  }
 
   return (
     <EventFormDialog

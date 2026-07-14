@@ -3,6 +3,7 @@ import type { NoteApi } from "@/components/notes/types";
 
 interface NoteOuverteFooterProps {
   note: NoteApi;
+  estPartagee: boolean;
   modifie: boolean;
   enregistrement: boolean;
   enCours: boolean;
@@ -12,12 +13,13 @@ interface NoteOuverteFooterProps {
 
 /**
  * Pied de la note ouverte (date de création + Enregistrer/Archiver) -
- * extrait de `NoteOuverte` pour garder le parent sous ~150 lignes. Masqué
- * pour une note partagée reçue (lecture seule) : géré par le parent qui
- * n'affiche ce composant que si la note n'est pas partagée.
+ * extrait de `NoteOuverte` pour garder le parent sous ~150 lignes.
+ * « Enregistrer » reste actif pour une note partagée reçue (le contenu est
+ * modifiable) ; « Archiver » reste réservé au propriétaire de la note.
  */
 export function NoteOuverteFooter({
   note,
+  estPartagee,
   modifie,
   enregistrement,
   enCours,
@@ -36,14 +38,16 @@ export function NoteOuverteFooter({
           {enregistrement ? "Enregistrement..." : "Enregistrer"}
         </Button>
       )}
-      <button
-        type="button"
-        onClick={onBasculerArchivee}
-        disabled={enCours}
-        className="font-body text-xs text-ink/40 hover:text-accent"
-      >
-        {note.archivee ? "Désarchiver" : "Archiver"}
-      </button>
+      {!estPartagee && (
+        <button
+          type="button"
+          onClick={onBasculerArchivee}
+          disabled={enCours}
+          className="font-body text-xs text-ink/40 hover:text-accent"
+        >
+          {note.archivee ? "Désarchiver" : "Archiver"}
+        </button>
+      )}
     </div>
   );
 }

@@ -89,10 +89,27 @@ def _serialize(row: asyncpg.Record, user_id: str) -> dict:
         "partage_par": row["proprietaire_nom"]
         if row["proprietaire_id"] != user_id
         else None,
+        "proprietaire_id": row["proprietaire_id"],
         "completed_at": row["completed_at"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
     }
+
+
+# Prédicat « je peux modifier » (Round 016 v2, partage collaboratif) : je
+# suis proprietaire OU la tache est partagee avec moi. La suppression reste
+# filtree proprietaire uniquement.
+_PEUT_MODIFIER = (
+    "(tasks.user_id = {p} OR EXISTS (SELECT 1 FROM partages pa "
+    "WHERE pa.element_type = 'task' AND pa.element_id = tasks.id "
+    "AND pa.cible_id = {p}))"
+)
+
+# Champs qu'un NON-proprietaire peut modifier sur une tache partagee (la
+# categorie et le rappel restent des reglages personnels du proprietaire).
+_CHAMPS_PARTAGE_TASK = {
+    "titre", "description", "priorite", "echeance", "statut", "recurrence",
+}
 
 
 async def _assert_categorie_valide(user_id: str, categorie_id: str | None) -> None:
@@ -106,9 +123,9 @@ async def _assert_categorie_valide(user_id: str, categorie_id: str | None) -> No
 
 
 async def _reload(conn: asyncpg.Connection, task_id: str, user_id: str) -> asyncpg.Record:
-    return await conn.fetchrow(
-        f"{_SELECT} WHERE t.id = $1 AND t.user_id = $2", task_id, user_id
-    )
+    """Relit la tache si elle est visible (la sienne OU partagee — RLS)."""
+    del user_id  # visibilite entierement portee par la RLS
+    return await conn.fetchrow(f"{_SELECT} WHERE t.id = $1", task_id)
 
 
 async def list_tasks(user_id: str, statut: str | None) -> list[dict]:
@@ -163,6 +180,18 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
         if not fields and statut_cible is None:
             return _serialize(current, user_id)
 
+        if current["proprietaire_id"] != user_id:
+            # Partage collaboratif : cocher/renommer/replanifier oui, mais pas
+            # les reglages personnels du proprietaire (categorie, rappel).
+            demandes = set(fields) | ({"statut"} if statut_cible is not None else set())
+            interdits = demandes - _CHAMPS_PARTAGE_TASK
+            if interdits:
+                raise bad_request(
+                    "Sur une tâche partagée, tu peux modifier le titre, la "
+                    "description, la priorité, l'échéance, la répétition et "
+                    "le statut uniquement."
+                )
+
         titre = fields.get("titre", current["titre"])
         description = fields["description"] if "description" in fields else current["description"]
         priorite = fields.get("priorite", current["priorite"])
@@ -202,7 +231,10 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
                 SET titre = $3, description = $4, priorite = $5, echeance = $6,
                     categorie_id = $7, recurrence = $8, rappel_at = $9,
                     statut = 'a_faire', completed_at = NULL, updated_at = now()
-                WHERE id = $1 AND user_id = $2 AND statut <> 'faite'
+                WHERE id = $1 AND statut <> 'faite'
+                  AND (user_id = $2 OR EXISTS (SELECT 1 FROM partages pa
+                       WHERE pa.element_type = 'task' AND pa.element_id = tasks.id
+                       AND pa.cible_id = $2))
                 RETURNING id
                 """,
                 task_id,
@@ -228,7 +260,10 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
                 SET titre = $3, description = $4, priorite = $5, echeance = $6,
                     categorie_id = $7, recurrence = $8, rappel_at = $9,
                     statut = 'faite', completed_at = now(), updated_at = now()
-                WHERE id = $1 AND user_id = $2 AND statut <> 'faite'
+                WHERE id = $1 AND statut <> 'faite'
+                  AND (user_id = $2 OR EXISTS (SELECT 1 FROM partages pa
+                       WHERE pa.element_type = 'task' AND pa.element_id = tasks.id
+                       AND pa.cible_id = $2))
                 RETURNING id
                 """,
                 task_id,
@@ -257,7 +292,10 @@ async def update_task(user_id: str, task_id: str, payload: TaskUpdate) -> dict:
                 SET titre = $3, description = $4, priorite = $5, echeance = $6,
                     categorie_id = $7, recurrence = $8, rappel_at = $9,
                     statut = $10, completed_at = $11, updated_at = now()
-                WHERE id = $1 AND user_id = $2
+                WHERE id = $1
+                  AND (user_id = $2 OR EXISTS (SELECT 1 FROM partages pa
+                       WHERE pa.element_type = 'task' AND pa.element_id = tasks.id
+                       AND pa.cible_id = $2))
                 """,
                 task_id,
                 user_id,

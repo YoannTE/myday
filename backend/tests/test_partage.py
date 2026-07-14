@@ -1,11 +1,12 @@
-"""Tests du partage (Round 016) : contacts (demande/acceptation/rupture) et
-partages d'éléments en LECTURE SEULE (événements, tâches, notes).
+"""Tests du partage (Round 016 v2, collaboratif) : contacts et partages
+d'éléments MODIFIABLES À DEUX (événements, tâches, notes).
 
 Points de sécurité couverts :
 - pas de partage sans contact ACCEPTÉ ;
 - impossible de partager l'élément d'un autre ;
-- le destinataire VOIT l'élément partagé (listes) mais ne peut NI le
-  modifier NI le supprimer NI ajouter d'éléments à une note partagée ;
+- le destinataire peut MODIFIER le contenu (titre, horaires, cocher, items…)
+  mais PAS les réglages personnels du propriétaire (catégorie, rappels,
+  épingler/archiver) ni SUPPRIMER l'élément ;
 - retirer le partage / rompre le contact retire la visibilité ;
 - la suppression de l'élément retire le partage.
 """
@@ -169,7 +170,7 @@ def test_partage_element_d_un_autre_404(client, yoann, manon):
     assert resp.status_code == 404
 
 
-def test_evenement_partage_visible_et_lecture_seule(client, yoann, manon):
+def test_evenement_partage_visible_et_modifiable(client, yoann, manon):
     _, _, h_yoann = yoann
     _, email_manon, h_manon = manon
     contact_id = _lier(client, h_yoann, h_manon, email_manon)
@@ -193,13 +194,29 @@ def test_evenement_partage_visible_et_lecture_seule(client, yoann, manon):
     a_moi = next(e for e in _fenetre(client, h_yoann) if e["id"] == event["id"])
     assert a_moi["partage_par"] is None
 
-    # LECTURE SEULE : Manon ne peut ni modifier ni supprimer.
+    # COLLABORATIF : Manon peut modifier le contenu…
     patch = client.patch(
-        f"/api/events/{event['id']}", json={"titre": "Piraté"}, headers=h_manon
+        f"/api/events/{event['id']}",
+        json={"titre": "Anniversaire Eden (grande salle)", "lieu": "Salle des fêtes"},
+        headers=h_manon,
     )
-    assert patch.status_code == 404
-    delete = client.delete(f"/api/events/{event['id']}", headers=h_manon)
-    assert delete.status_code == 404
+    assert patch.status_code == 200
+    assert patch.json()["data"]["titre"] == "Anniversaire Eden (grande salle)"
+    # … et Yoann voit la modification.
+    chez_yoann = next(e for e in _fenetre(client, h_yoann) if e["id"] == event["id"])
+    assert chez_yoann["titre"] == "Anniversaire Eden (grande salle)"
+
+    # Mais PAS les réglages personnels du propriétaire…
+    assert (
+        client.patch(
+            f"/api/events/{event['id']}",
+            json={"rappel_avance_minutes": 5},
+            headers=h_manon,
+        ).status_code
+        == 400
+    )
+    # … ni supprimer.
+    assert client.delete(f"/api/events/{event['id']}", headers=h_manon).status_code == 404
 
 
 def test_retirer_partage_retire_la_visibilite(client, yoann, manon):
@@ -254,7 +271,7 @@ def test_suppression_element_retire_le_partage(client, yoann, manon):
 # --- Tâches et notes partagées ------------------------------------------------
 
 
-def test_tache_partagee_visible_et_non_cochable(client, yoann, manon):
+def test_tache_partagee_visible_et_cochable(client, yoann, manon):
     _, _, h_yoann = yoann
     _, email_manon, h_manon = manon
     contact_id = _lier(client, h_yoann, h_manon, email_manon)
@@ -271,14 +288,29 @@ def test_tache_partagee_visible_et_non_cochable(client, yoann, manon):
     partagee = next(t for t in taches_manon if t["id"] == task["id"])
     assert partagee["partage_par"] is not None
 
-    # Manon ne peut pas la cocher ni la modifier.
+    # COLLABORATIF : Manon peut cocher et renommer…
     patch = client.patch(
         f"/api/tasks/{task['id']}", json={"statut": "faite"}, headers=h_manon
     )
-    assert patch.status_code == 404
+    assert patch.status_code == 200
+    assert patch.json()["data"]["statut"] == "faite"
+    # … mais pas toucher aux réglages personnels du propriétaire…
+    categorie = client.post(
+        "/api/task-categories", json={"nom": "Intruse"}, headers=h_manon
+    ).json()["data"]
+    assert (
+        client.patch(
+            f"/api/tasks/{task['id']}",
+            json={"categorie_id": categorie["id"]},
+            headers=h_manon,
+        ).status_code
+        == 400
+    )
+    # … ni la supprimer.
+    assert client.delete(f"/api/tasks/{task['id']}", headers=h_manon).status_code == 404
 
 
-def test_note_partagee_visible_items_inclus_et_lecture_seule(client, yoann, manon):
+def test_note_partagee_collaborative(client, yoann, manon):
     _, _, h_yoann = yoann
     _, email_manon, h_manon = manon
     contact_id = _lier(client, h_yoann, h_manon, email_manon)
@@ -299,24 +331,36 @@ def test_note_partagee_visible_items_inclus_et_lecture_seule(client, yoann, mano
     assert partagee["partage_par"] is not None
     assert [i["contenu"] for i in partagee["items"]] == ["Oeufs"]
 
-    # Lecture seule : ni éditer la note, ni cocher/ajouter des éléments.
+    # COLLABORATIF : Manon édite le contenu, coche et ajoute des éléments.
     assert (
         client.patch(
-            f"/api/notes/{note['id']}", json={"contenu": "Piraté"}, headers=h_manon
+            f"/api/notes/{note['id']}", json={"contenu": "Pour samedi"}, headers=h_manon
         ).status_code
-        == 404
+        == 200
     )
     assert (
         client.patch(
             f"/api/note-items/{item['id']}", json={"coche": True}, headers=h_manon
         ).status_code
-        == 404
+        == 200
     )
+    ajout = client.post(
+        f"/api/notes/{note['id']}/items", json={"contenu": "Lait"}, headers=h_manon
+    )
+    assert ajout.status_code == 201
+
+    # Yoann (propriétaire) voit l'élément ajouté par Manon et peut le gérer.
+    notes_yoann = client.get("/api/notes", headers=h_yoann).json()["data"]
+    chez_yoann = next(n for n in notes_yoann if n["id"] == note["id"])
+    contenus = [i["contenu"] for i in chez_yoann["items"]]
+    assert "Lait" in contenus
+    assert chez_yoann["contenu"] == "Pour samedi"
+
+    # Mais Manon ne peut ni épingler/archiver ni supprimer la note.
     assert (
-        client.post(
-            f"/api/notes/{note['id']}/items",
-            json={"contenu": "Intrusion"},
-            headers=h_manon,
+        client.patch(
+            f"/api/notes/{note['id']}", json={"epinglee": True}, headers=h_manon
         ).status_code
-        == 404
+        == 400
     )
+    assert client.delete(f"/api/notes/{note['id']}", headers=h_manon).status_code == 404

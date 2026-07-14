@@ -55,9 +55,27 @@ def _serialize(row, user_id: str) -> dict:
         "partage_par": row["proprietaire_nom"]
         if row["proprietaire_id"] != user_id
         else None,
+        # Usage interne (push Google via la connexion du proprietaire) —
+        # ignore par EventResponse (extra='ignore' par defaut en Pydantic v2).
+        "proprietaire_id": row["proprietaire_id"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
     }
+
+
+# Prédicat « je peux modifier » : je suis proprietaire OU l'element est
+# partage avec moi (partage collaboratif, Round 016 v2). La suppression,
+# elle, reste filtree proprietaire uniquement.
+_PEUT_MODIFIER = (
+    "(e.user_id = {p} OR EXISTS (SELECT 1 FROM partages pa "
+    "WHERE pa.element_type = 'event' AND pa.element_id = e.id "
+    "AND pa.cible_id = {p}))"
+)
+
+# Champs qu'un NON-proprietaire peut modifier sur un evenement partage. Les
+# reglages personnels (categorie du proprietaire, delai de notification)
+# restent au proprietaire.
+_CHAMPS_PARTAGE_EVENT = {"titre", "debut", "fin", "lieu", "description"}
 
 
 async def _assert_categorie_valide(user_id: str, categorie_id: str | None) -> None:
@@ -131,10 +149,12 @@ async def get_event_counts(
 
 
 async def _fetch_event(user_id: str, event_id: str) -> dict | None:
+    """Retourne l'evenement s'il est visible pour l'utilisateur (le sien OU
+    partage avec lui — la RLS fait foi)."""
     async with scoped_connection(user_id) as conn:
         row = await conn.fetchrow(
-            f"{_SELECT} WHERE e.id = $1::uuid AND e.user_id = $2",
-            event_id, user_id,
+            f"{_SELECT} WHERE e.id = $1::uuid",
+            event_id,
         )
     return _serialize(row, user_id) if row is not None else None
 
@@ -183,6 +203,18 @@ async def update_event(user_id: str, event_id: str, payload: EventUpdate) -> dic
     if not updates:
         return current
 
+    proprietaire_id = current["proprietaire_id"]
+    est_proprietaire = proprietaire_id == user_id
+    if not est_proprietaire:
+        # Partage collaboratif : le destinataire modifie le contenu, mais pas
+        # les reglages personnels du proprietaire (categorie, notification).
+        interdits = set(updates) - _CHAMPS_PARTAGE_EVENT
+        if interdits:
+            raise bad_request(
+                "Sur un événement partagé, tu peux modifier le titre, les "
+                "horaires, le lieu et la description uniquement."
+            )
+
     new_debut = updates.get("debut", current["debut"])
     new_fin = updates.get("fin", current["fin"])
     if ("debut" in updates or "fin" in updates) and new_fin <= new_debut:
@@ -197,31 +229,37 @@ async def update_event(user_id: str, event_id: str, payload: EventUpdate) -> dic
     for key, value in updates.items():
         values.append(value)
         set_clauses.append(f"{key} = ${len(values)}")
-    idx_id = len(values) + 1
-    idx_user = len(values) + 2
+    values.append(event_id)
+    idx_id = len(values)
+    values.append(user_id)
+    idx_user = len(values)
 
+    peut_modifier = _PEUT_MODIFIER.format(p=f"${idx_user}")
     async with scoped_connection(user_id) as conn:
         updated_id = await conn.fetchval(
-            f"UPDATE events SET {', '.join(set_clauses)}, updated_at = now() "
-            f"WHERE id = ${idx_id}::uuid AND user_id = ${idx_user} "
-            f"RETURNING id::text",
-            *values, event_id, user_id,
+            f"UPDATE events e SET {', '.join(set_clauses)}, updated_at = now() "
+            f"WHERE e.id = ${idx_id}::uuid AND {peut_modifier} "
+            f"RETURNING e.id::text",
+            *values,
         )
-        if updated_id is not None and ("debut" in updates or "rappel_avance_minutes" in updates):
-            # Horaire ou délai de notification modifié : on retire le rappel
-            # déjà envoyé pour qu'une nouvelle alerte parte au bon moment.
+    if updated_id is None:
+        raise not_found("Evenement introuvable.")
+    if "debut" in updates or "rappel_avance_minutes" in updates:
+        # Horaire ou délai modifié : on retire le rappel déjà envoyé (il
+        # appartient au PROPRIETAIRE) pour qu'une nouvelle alerte parte.
+        async with scoped_connection(proprietaire_id) as conn:
             await conn.execute(
                 "DELETE FROM notifications "
                 "WHERE user_id = $1 AND ref_id = $2::uuid AND type = 'rappel_evenement'",
-                user_id, event_id,
+                proprietaire_id, event_id,
             )
-    if updated_id is None:
-        raise not_found("Evenement introuvable.")
     event = await _fetch_event(user_id, event_id)
 
     if event["google_event_id"]:
-        # Le push insert-only ne propage pas une modif : update_event best-effort.
-        await events_google.push_update(user_id, event)
+        # Push via la connexion Google du PROPRIETAIRE : un evenement partage
+        # modifie par le destinataire doit se propager sur l'agenda du
+        # proprietaire (le sien ne connait pas cet evenement).
+        await events_google.push_update(proprietaire_id, event)
         refreshed = await _fetch_event(user_id, event_id)
         if refreshed is not None:
             event = refreshed

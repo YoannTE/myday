@@ -20,8 +20,9 @@ function estEnCours(evenement: CockpitEvent): boolean {
 /**
  * Ligne d'un événement dans le bloc « Planning » du cockpit
  * (`JourneeTimeline`) - extrait pour garder le parent sous ~150 lignes. Un
- * événement partagé (reçu d'un autre compte) est en lecture seule : pas de
- * dialog d'édition, simple bloc non cliquable + `PartageBadge`.
+ * événement partagé (reçu d'un autre compte) reste cliquable et ouvre le
+ * dialog d'édition (titre, horaires, lieu, description modifiables à deux) ;
+ * `PartageBadge` signale l'origine.
  */
 export function JourneeTimelineItem({
   evenement,
@@ -80,14 +81,6 @@ export function JourneeTimelineItem({
       </div>
     </>
   );
-
-  if (partage) {
-    return (
-      <div className="flex w-full items-center gap-4 rounded-inner text-left">
-        {contenu}
-      </div>
-    );
-  }
 
   return (
     <EventFormDialog

@@ -52,9 +52,15 @@ def _serialize(row: asyncpg.Record, user_id: str, items: list[dict] | None = Non
         "partage_par": row["proprietaire_nom"]
         if row["proprietaire_id"] != user_id
         else None,
+        "proprietaire_id": row["proprietaire_id"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
     }
+
+
+# Champs qu'un NON-proprietaire peut modifier sur une note partagee
+# (epingler/archiver/categorie restent des reglages du proprietaire).
+_CHAMPS_PARTAGE_NOTE = {"titre", "contenu"}
 
 
 async def _assert_categorie_valide(user_id: str, categorie_id: str | None) -> None:
@@ -117,14 +123,23 @@ async def create_note(user_id: str, payload: NoteCreate) -> dict:
 async def update_note(user_id: str, note_id: str, payload: NoteUpdate) -> dict:
     fields = payload.model_dump(exclude_unset=True)
     async with scoped_connection(user_id) as conn:
+        # Visibilite RLS : la sienne OU partagee avec lui (Round 016 v2).
         current = await conn.fetchrow(
-            f"{_SELECT} WHERE n.id = $1 AND n.user_id = $2", note_id, user_id
+            f"{_SELECT} WHERE n.id = $1", note_id
         )
         if current is None:
             raise not_found("Note introuvable.")
         items = await note_items_service.list_for_note(conn, note_id)
         if not fields:
             return _serialize(current, user_id, items)
+
+        if current["proprietaire_id"] != user_id:
+            interdits = set(fields) - _CHAMPS_PARTAGE_NOTE
+            if interdits:
+                raise bad_request(
+                    "Sur une note partagée, tu peux modifier le titre et le "
+                    "contenu uniquement."
+                )
 
         titre = fields.get("titre", current["titre"])
         contenu = fields["contenu"] if "contenu" in fields else current["contenu"]
@@ -144,7 +159,10 @@ async def update_note(user_id: str, note_id: str, payload: NoteUpdate) -> dict:
             UPDATE notes
             SET titre = $3, contenu = $4, epinglee = $5, archivee = $6,
                 categorie_id = $7, updated_at = now()
-            WHERE id = $1 AND user_id = $2
+            WHERE id = $1
+              AND (user_id = $2 OR EXISTS (SELECT 1 FROM partages pa
+                   WHERE pa.element_type = 'note' AND pa.element_id = notes.id
+                   AND pa.cible_id = $2))
             """,
             note_id,
             user_id,
@@ -154,9 +172,7 @@ async def update_note(user_id: str, note_id: str, payload: NoteUpdate) -> dict:
             archivee,
             categorie_id,
         )
-        row = await conn.fetchrow(
-            f"{_SELECT} WHERE n.id = $1 AND n.user_id = $2", note_id, user_id
-        )
+        row = await conn.fetchrow(f"{_SELECT} WHERE n.id = $1", note_id)
     return _serialize(row, user_id, items)
 
 

@@ -56,13 +56,17 @@ function valeursParDefaut(evenement?: EvenementApi): EventFormValues {
 // Dialog unique pour créer OU modifier un événement (le mode dépend de la
 // présence de `evenement`). Validation zod stricte `fin > debut` côté client
 // uniquement (correction #7 - pas de contrainte BDD). Pas de badge « via
-// l'assistant » ici : la table events n'a pas de colonne origine.
+// l'assistant » ici : la table events n'a pas de colonne origine. Pour un
+// événement partagé reçu (`partage_par` non nul), seuls titre/début/fin/lieu/
+// description sont modifiables ; catégorie, notification, suppression et
+// partage restent réservés au propriétaire.
 export function EventFormDialog({
   evenement,
   trigger,
   children,
   onSuccess,
 }: EventFormDialogProps) {
+  const estPartagee = evenement?.partage_par != null;
   const [open, setOpen] = useState(false);
   const [enregistrement, setEnregistrement] = useState(false);
   const [confirmationSuppression, setConfirmationSuppression] = useState(false);
@@ -103,15 +107,23 @@ export function EventFormDialog({
   async function onSubmit(valeurs: EventFormValues) {
     setEnregistrement(true);
     try {
-      const payload = {
-        titre: valeurs.titre,
-        debut: versIso(valeurs.debut),
-        fin: versIso(valeurs.fin),
-        lieu: valeurs.lieu || null,
-        description: valeurs.description || null,
-        categorie_id: categorieId === SANS_CATEGORIE ? null : categorieId,
-        rappel_avance_minutes: rappelAvance,
-      };
+      const payload = estPartagee
+        ? {
+            titre: valeurs.titre,
+            debut: versIso(valeurs.debut),
+            fin: versIso(valeurs.fin),
+            lieu: valeurs.lieu || null,
+            description: valeurs.description || null,
+          }
+        : {
+            titre: valeurs.titre,
+            debut: versIso(valeurs.debut),
+            fin: versIso(valeurs.fin),
+            lieu: valeurs.lieu || null,
+            description: valeurs.description || null,
+            categorie_id: categorieId === SANS_CATEGORIE ? null : categorieId,
+            rappel_avance_minutes: rappelAvance,
+          };
       if (evenement) {
         await apiCall(`/api/events/${evenement.id}`, {
           method: "PATCH",
@@ -163,9 +175,11 @@ export function EventFormDialog({
             {evenement ? "Modifier l'événement" : "Nouvel événement"}
           </DialogTitle>
           <DialogDescription>
-            {evenement
-              ? "Les modifications sont répercutées sur Google Agenda si ton compte est connecté."
-              : "L'événement est ajouté à ton planning et synchronisé avec Google Agenda si ton compte est connecté."}
+            {estPartagee
+              ? `Événement partagé par ${evenement?.partage_par} — vous pouvez le modifier à deux.`
+              : evenement
+                ? "Les modifications sont répercutées sur Google Agenda si ton compte est connecté."
+                : "L'événement est ajouté à ton planning et synchronisé avec Google Agenda si ton compte est connecté."}
           </DialogDescription>
         </DialogHeader>
         {evenement && (
@@ -173,7 +187,7 @@ export function EventFormDialog({
             <p className="font-mono text-xs tracking-[.04em] text-accent uppercase">
               {formaterPlageHoraire(evenement.debut, evenement.fin)}
             </p>
-            {evenement.partage_par == null && (
+            {!estPartagee && (
               <button
                 type="button"
                 onClick={() => setPartageOuvert(true)}
@@ -244,28 +258,32 @@ export function EventFormDialog({
               {...register("description")}
             />
           </div>
-          <div className="space-y-1.5">
-            <Label>Catégorie</Label>
-            <EventCategorySelect
-              categories={categories ?? []}
-              disabled={categories === null}
-              value={categorieId}
-              onValueChange={setCategorieId}
-              onCategoryCreated={(categorie) =>
-                setCategories((actuelles) => [...(actuelles ?? []), categorie])
-              }
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Notification</Label>
-            <RappelAvanceSelect
-              value={rappelAvance}
-              onValueChange={setRappelAvance}
-            />
-          </div>
+          {!estPartagee && (
+            <div className="space-y-1.5">
+              <Label>Catégorie</Label>
+              <EventCategorySelect
+                categories={categories ?? []}
+                disabled={categories === null}
+                value={categorieId}
+                onValueChange={setCategorieId}
+                onCategoryCreated={(categorie) =>
+                  setCategories((actuelles) => [...(actuelles ?? []), categorie])
+                }
+              />
+            </div>
+          )}
+          {!estPartagee && (
+            <div className="space-y-1.5">
+              <Label>Notification</Label>
+              <RappelAvanceSelect
+                value={rappelAvance}
+                onValueChange={setRappelAvance}
+              />
+            </div>
+          )}
         </form>
         <DialogFooter className="items-center sm:justify-between">
-          {evenement ? (
+          {evenement && !estPartagee ? (
             confirmationSuppression ? (
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs text-ink/50">Confirmer ?</span>
