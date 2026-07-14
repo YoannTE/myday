@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mic } from "lucide-react";
+import { Mic, SendHorizontal } from "lucide-react";
 import { deposerMessageAssistant } from "@/lib/assistant-handoff";
 import { useSpeechDictee } from "@/lib/speech";
 import { cn } from "@/lib/utils";
@@ -72,9 +72,20 @@ export function NavbarAssistantBar() {
           <Mic className="h-4 w-4" />
         </button>
       )}
-      <span className="hidden rounded-full bg-soft px-2 py-0.5 font-mono text-[10px] tracking-[.04em] text-ink/30 uppercase sm:inline">
-        ⌘K
-      </span>
+      {valeur.trim() ? (
+        <button
+          type="button"
+          onClick={envoyer}
+          aria-label="Envoyer à l'assistant"
+          className="cta-gradient flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-white"
+        >
+          <SendHorizontal className="h-3.5 w-3.5" />
+        </button>
+      ) : (
+        <span className="hidden rounded-full bg-soft px-2 py-0.5 font-mono text-[10px] tracking-[.04em] text-ink/30 uppercase sm:inline">
+          ⌘K
+        </span>
+      )}
     </div>
   );
 }
