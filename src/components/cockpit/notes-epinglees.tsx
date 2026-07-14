@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Pin, Plus } from "lucide-react";
 import { SectionAddButton } from "@/components/cockpit/section-add-button";
 import { NoteQuickAddDialog } from "@/components/notes/note-quick-add-dialog";
 import { NoteCategoryBadge } from "@/components/notes/note-category-badge";
@@ -61,9 +61,10 @@ export function NotesEpinglees({ notes }: { notes: Note[] }) {
               {note.partage_par != null && (
                 <PartageBadge nom={note.partage_par} className="bg-card" />
               )}
-              <span className="font-mono text-[10px] tracking-[.04em] text-accent uppercase">
-                Épinglée
-              </span>
+              <Pin
+                className="h-3 w-3 flex-shrink-0 text-accent"
+                aria-label="Épinglée"
+              />
             </Link>
           ))
         )}
