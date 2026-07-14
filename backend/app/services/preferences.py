@@ -9,11 +9,16 @@ garantit l'idempotence même en cas de create-or-default concurrent.
 import asyncpg
 
 from app.db.client import scoped_connection
-from app.models.preferences import BRIEF_HOUR_RE, BRIEF_TONE_VALUES, PreferencesUpdate
+from app.models.preferences import (
+    BRIEF_HOUR_RE,
+    BRIEF_TONE_VALUES,
+    THEME_VALUES,
+    PreferencesUpdate,
+)
 from app.utils.errors import bad_request
 
 _COLUMNS = (
-    "brief_hour, brief_tone, timezone, meteo_ville, notif_important_mail, "
+    "brief_hour, brief_tone, timezone, theme, meteo_ville, notif_important_mail, "
     "notif_event_reminder, notif_brief_ready, onboarding_completed, "
     "onboarding_step, created_at, updated_at"
 )
@@ -41,6 +46,10 @@ def _valider_champs(fields: dict) -> None:
     if brief_tone is not None and brief_tone not in BRIEF_TONE_VALUES:
         raise bad_request("Le ton du brief doit être neutre, motivant ou direct.")
 
+    theme = fields.get("theme")
+    if theme is not None and theme not in THEME_VALUES:
+        raise bad_request("Le thème doit être clair ou sombre.")
+
     meteo_ville = fields.get("meteo_ville")
     if meteo_ville is not None:
         ville = meteo_ville.strip()
@@ -59,6 +68,7 @@ def _serialize(row: asyncpg.Record) -> dict:
         "brief_hour": row["brief_hour"],
         "brief_tone": row["brief_tone"],
         "timezone": row["timezone"],
+        "theme": row["theme"],
         "meteo_ville": row["meteo_ville"],
         "notif_important_mail": row["notif_important_mail"],
         "notif_event_reminder": row["notif_event_reminder"],
@@ -99,10 +109,10 @@ async def update_preferences(user_id: str, payload: PreferencesUpdate) -> dict:
         row = await conn.fetchrow(
             f"""
             UPDATE user_preferences
-            SET brief_hour = $2, brief_tone = $3, timezone = $4,
-                meteo_ville = $5, notif_important_mail = $6,
-                notif_event_reminder = $7, notif_brief_ready = $8,
-                onboarding_completed = $9, onboarding_step = $10,
+            SET brief_hour = $2, brief_tone = $3, timezone = $4, theme = $5,
+                meteo_ville = $6, notif_important_mail = $7,
+                notif_event_reminder = $8, notif_brief_ready = $9,
+                onboarding_completed = $10, onboarding_step = $11,
                 updated_at = now()
             WHERE user_id = $1
             RETURNING {_COLUMNS}
@@ -111,6 +121,7 @@ async def update_preferences(user_id: str, payload: PreferencesUpdate) -> dict:
             fields.get("brief_hour", current["brief_hour"]),
             fields.get("brief_tone", current["brief_tone"]),
             fields.get("timezone", current["timezone"]),
+            fields.get("theme", current["theme"]),
             fields.get("meteo_ville", current["meteo_ville"]),
             fields.get("notif_important_mail", current["notif_important_mail"]),
             fields.get("notif_event_reminder", current["notif_event_reminder"]),

@@ -32,6 +32,9 @@ export const userPreferences = pgTable(
     briefHour: text("brief_hour").notNull().default("07:00"),
     briefTone: text("brief_tone").notNull().default("neutre"),
     timezone: text("timezone").notNull().default("Europe/Paris"),
+    // Thème par défaut de l'application (Round 016+). Mémorisé sur le profil
+    // pour être réappliqué à chaque ouverture, sur tous les appareils.
+    theme: text("theme").notNull().default("clair"),
     // Ville affichée par le widget météo du cockpit (Round 015). Ville par
     // défaut : Paris. Modifiable par l'utilisateur, mémorisée sur son profil.
     meteoVille: text("meteo_ville").notNull().default("Paris"),
@@ -62,6 +65,10 @@ export const userPreferences = pgTable(
     check(
       "user_preferences_brief_tone_check",
       sql`${table.briefTone} IN ('neutre', 'motivant', 'direct')`,
+    ),
+    check(
+      "user_preferences_theme_check",
+      sql`${table.theme} IN ('clair', 'sombre')`,
     ),
   ],
 );

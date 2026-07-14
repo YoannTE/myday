@@ -4,6 +4,7 @@ import { LogoMyDay } from "@/components/layout/logo-myday";
 import { NavbarAssistantBar } from "@/components/layout/navbar-assistant-bar";
 import { NavbarUserMenu } from "@/components/layout/navbar-user-menu";
 import { NotificationsBell } from "@/components/layout/notifications-bell";
+import { ThemeSync } from "@/components/layout/theme-sync";
 import { SearchModal } from "@/components/search/search-modal";
 import { initialeAvatar } from "@/lib/avatar";
 
@@ -45,6 +46,7 @@ export function Navbar({ user }: NavbarProps) {
 
   return (
     <header className="fade-in border-b border-ink/5">
+      <ThemeSync />
       <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 md:px-6 md:py-4">
         <div className="flex items-center gap-2">
           <LogoMyDay className="h-8 w-8" />

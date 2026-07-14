@@ -1,0 +1,2 @@
+ALTER TABLE "user_preferences" ADD COLUMN "theme" text DEFAULT 'clair' NOT NULL;--> statement-breakpoint
+ALTER TABLE "user_preferences" ADD CONSTRAINT "user_preferences_theme_check" CHECK ("user_preferences"."theme" IN ('clair', 'sombre'));

@@ -75,6 +75,8 @@ def test_get_preferences_create_or_default(client, auth_user):
     assert data["onboarding_step"] == 0
     # Round 015 : ville meteo par defaut = Paris.
     assert data["meteo_ville"] == "Paris"
+    # Theme par defaut = clair.
+    assert data["theme"] == "clair"
     assert _count_preferences(uid) == 1
 
     # Un deuxieme GET ne recree pas de ligne.
@@ -134,6 +136,27 @@ def test_patch_preferences_meteo_ville(client, auth_user):
     # La valeur est bien persistee (relecture).
     relu = client.get("/api/preferences", headers=headers)
     assert relu.json()["data"]["meteo_ville"] == "Lyon"
+
+
+def test_patch_preferences_theme(client, auth_user):
+    """Le theme est modifiable (clair/sombre) et memorise sur le profil."""
+    _, headers = auth_user
+    resp = client.patch(
+        "/api/preferences", json={"theme": "sombre"}, headers=headers
+    )
+    assert resp.status_code == 200
+    assert resp.json()["data"]["theme"] == "sombre"
+
+    relu = client.get("/api/preferences", headers=headers)
+    assert relu.json()["data"]["theme"] == "sombre"
+
+
+def test_patch_preferences_theme_invalide_400(client, auth_user):
+    _, headers = auth_user
+    resp = client.patch(
+        "/api/preferences", json={"theme": "arc-en-ciel"}, headers=headers
+    )
+    assert resp.status_code == 400
 
 
 def test_patch_preferences_meteo_ville_vide_400(client, auth_user):

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/navbar";
 import { Freshness } from "@/components/layout/freshness";
 import { ProfilCard } from "@/components/reglages/profil-card";
+import { ApparenceCard } from "@/components/reglages/apparence-card";
 import { PartageCard } from "@/components/reglages/partage-card";
 import { BriefNotificationsForm } from "@/components/reglages/brief-notifications-form";
 import { NotificationsPush } from "@/components/reglages/notifications-push";
@@ -40,6 +41,7 @@ export default async function ReglagesPage() {
           monCompte={
             <>
               <ProfilCard name={user.name} email={user.email} role={role} />
+              <ApparenceCard />
               <PartageCard />
               <DangerZone />
             </>
