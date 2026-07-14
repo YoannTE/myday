@@ -7,7 +7,7 @@ import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePwaInstall } from "@/components/pwa/pwa-install-provider";
-import { urlBase64VersUint8Array } from "@/lib/push/url-base64";
+import { abonnerPush } from "@/lib/push/subscribe";
 
 type EtatPush =
   | "chargement"
@@ -77,25 +77,7 @@ export function NotificationsPush() {
         toast.error("Autorise les notifications pour les activer.");
         return;
       }
-      const { data } = await apiCall<{ data: { public_key: string } }>(
-        "/api/push/vapid-public-key",
-      );
-      const registration = await navigator.serviceWorker.ready;
-      const abonnement = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64VersUint8Array(data.public_key),
-      });
-      const cles = abonnement.toJSON().keys;
-      if (!cles?.p256dh || !cles?.auth) {
-        throw new Error("Abonnement incomplet, réessaie.");
-      }
-      await apiCall("/api/push/subscribe", {
-        method: "POST",
-        body: {
-          endpoint: abonnement.endpoint,
-          keys: { p256dh: cles.p256dh, auth: cles.auth },
-        },
-      });
+      await abonnerPush();
       setEtat("actif");
       toast.success("Notifications activées sur cet appareil");
     } catch (erreur) {
