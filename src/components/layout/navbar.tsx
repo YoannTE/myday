@@ -72,7 +72,7 @@ export function Navbar({ user }: NavbarProps) {
           <Link
             key={lien.href}
             href={lien.href}
-            className="font-mono text-[11px] tracking-[.04em] text-ink/50 uppercase whitespace-nowrap hover:text-accent"
+            className="font-mono text-[11px] font-bold tracking-[.04em] text-ink/50 uppercase whitespace-nowrap hover:text-accent"
           >
             {lien.label}
           </Link>
