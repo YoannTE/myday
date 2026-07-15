@@ -22,6 +22,7 @@ const LIENS_NAVIGATION = [
   { href: "/notes", label: "Notes" },
   { href: "/taches", label: "Tâches" },
   { href: "/mails", label: "Mails" },
+  { href: "/aide", label: "Aide" },
 ];
 
 function formaterDateDuJour(date: Date): string {
