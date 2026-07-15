@@ -25,9 +25,20 @@ export function GoogleCardDeconnecte() {
         </a>
       </div>
       <p className="mt-3 font-body text-xs text-ink/50">
-        Agenda (lecture + écriture) · Gmail (lecture + réponses validées) —
+        Agenda (lecture + écriture) · Gmail (lecture + réponses validées),
         MyDay ne supprime jamais rien dans Gmail.
       </p>
+      <div className="mt-3 rounded-inner bg-soft px-3 py-2.5">
+        <p className="mb-1 font-mono text-[10px] tracking-[.04em] text-accent uppercase">
+          Un écran « Accès bloqué » de Google ?
+        </p>
+        <p className="font-body text-xs text-ink/60">
+          C&apos;est normal pour l&apos;instant : ton compte doit d&apos;abord
+          être autorisé. Demande à la personne qui t&apos;a invité·e sur MyDay
+          de t&apos;ajouter, puis réessaie. Le reste de MyDay fonctionne sans
+          connecter Google.
+        </p>
+      </div>
     </div>
   );
 }
