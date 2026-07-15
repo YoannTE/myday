@@ -22,8 +22,10 @@ const LIENS_NAVIGATION = [
   { href: "/notes", label: "Notes" },
   { href: "/taches", label: "Tâches" },
   { href: "/mails", label: "Mails" },
-  { href: "/aide", label: "Aide" },
 ];
+
+const CLASSE_LIEN_NAV =
+  "font-mono text-[11px] font-bold tracking-[.04em] text-ink/50 uppercase whitespace-nowrap hover:text-accent";
 
 function formaterDateDuJour(date: Date): string {
   const brut = new Intl.DateTimeFormat("fr-FR", {
@@ -70,16 +72,22 @@ export function Navbar({ user }: NavbarProps) {
         </div>
       </div>
 
-      <nav className="mx-auto flex max-w-4xl justify-center gap-5 overflow-x-auto px-4 pb-3 md:px-6">
-        {LIENS_NAVIGATION.map((lien) => (
-          <Link
-            key={lien.href}
-            href={lien.href}
-            className="font-mono text-[11px] font-bold tracking-[.04em] text-ink/50 uppercase whitespace-nowrap hover:text-accent"
-          >
-            {lien.label}
-          </Link>
-        ))}
+      <nav className="mx-auto flex max-w-4xl items-center overflow-x-auto px-4 pb-3 md:px-6">
+        {/* Liens principaux centrés (les marges auto centrent ce groupe et
+            poussent « Aide » à l'extrémité droite, sous l'avatar). */}
+        <div className="mx-auto flex gap-5">
+          {LIENS_NAVIGATION.map((lien) => (
+            <Link key={lien.href} href={lien.href} className={CLASSE_LIEN_NAV}>
+              {lien.label}
+            </Link>
+          ))}
+        </div>
+        <Link
+          href="/aide"
+          className={`${CLASSE_LIEN_NAV} flex-shrink-0 pl-5`}
+        >
+          Aide
+        </Link>
       </nav>
     </header>
   );
