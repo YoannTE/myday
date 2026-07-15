@@ -40,8 +40,8 @@ export function InvitationBanner({
       </span>
       <div>
         <p className="font-body text-sm text-ink">
-          <strong className="font-semibold">{inviterFirstName}</strong> t&apos;a
-          invité·e sur MyDay
+          <strong className="font-semibold">{inviterFirstName}</strong>{" "}
+          t&apos;a invité·e sur MyDay
         </p>
         <p className="mt-0.5 font-mono text-[10px] tracking-[.04em] text-ink/40 uppercase">
           Invitation valide{mentionExpiration ? ` · ${mentionExpiration}` : ""}
