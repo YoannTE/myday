@@ -70,9 +70,9 @@ export function InstallerGuide() {
           {
             texte: (
               <>
-                Ouvre <b className="font-semibold">Safari</b> (la boussole
-                bleue). Sur iPhone, l&apos;installation ne marche qu&apos;avec
-                Safari.
+                Ouvre <b className="font-semibold">Safari</b>{" "}
+                (la boussole bleue). Sur iPhone, l&apos;installation ne marche
+                qu&apos;avec Safari.
               </>
             ),
           },
@@ -132,8 +132,8 @@ export function InstallerGuide() {
           {
             texte: (
               <>
-                Ouvre <b className="font-semibold">Google Chrome</b> (l&apos;icône
-                ronde colorée).
+                Ouvre <b className="font-semibold">Google Chrome</b>{" "}
+                (l&apos;icône ronde colorée).
               </>
             ),
           },
@@ -180,8 +180,8 @@ export function InstallerGuide() {
         notif={
           <>
             À la première ouverture, appuie sur{" "}
-            <b className="font-semibold text-ink">« Autoriser »</b> quand
-            MyDay demande les notifications. Avec le navigateur Samsung
+            <b className="font-semibold text-ink">« Autoriser »</b>{" "}
+            quand MyDay demande les notifications. Avec le navigateur Samsung
             « Internet », l&apos;option est dans le menu, puis « Ajouter la page
             à » et « Écran d&apos;accueil ».
           </>

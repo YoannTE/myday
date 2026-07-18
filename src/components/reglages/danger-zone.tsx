@@ -76,8 +76,8 @@ export function DangerZone() {
             <DialogTitle>Confirmer la suppression</DialogTitle>
             <DialogDescription>
               Cette action est définitive. Écris{" "}
-              <strong>{MOT_DE_CONFIRMATION}</strong> ci-dessous pour
-              confirmer.
+              <strong>{MOT_DE_CONFIRMATION}</strong>{" "}
+              ci-dessous pour confirmer.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-1.5">
