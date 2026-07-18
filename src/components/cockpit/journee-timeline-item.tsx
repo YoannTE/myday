@@ -58,14 +58,14 @@ export function JourneeTimelineItem({
       </span>
       <div
         className={cn(
-          "min-w-0 flex-1 rounded-inner px-4 py-3 transition-colors",
+          "min-w-0 flex-1 rounded-inner px-3 py-2 transition-colors md:px-4 md:py-2.5",
           enCours
             ? "border-2 border-accent/30 group-hover:bg-soft/40"
             : "bg-soft group-hover:bg-soft/70",
         )}
       >
         <div className="flex flex-wrap items-center gap-2">
-          <p className="min-w-0 flex-1 font-body break-words text-ink">
+          <p className="min-w-0 flex-1 font-body text-sm break-words text-ink">
             {evenement.titre}
           </p>
           {evenement.categorie && (
