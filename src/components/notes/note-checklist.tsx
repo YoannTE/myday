@@ -92,7 +92,7 @@ export function NoteChecklist({
           }}
           placeholder="Ajouter un élément..."
           disabled={ajoutEnCours}
-          className="h-auto min-w-0 flex-1 rounded-full border-none bg-ink/5 px-4 py-2 font-body text-sm text-ink focus-visible:ring-0"
+          className="h-auto min-w-0 flex-1 rounded-full border-none bg-ink/5 px-4 py-2 font-body text-xs text-ink focus-visible:ring-0 md:text-sm"
         />
         <Button
           type="button"

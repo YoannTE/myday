@@ -27,11 +27,7 @@ export function NotesHeader({
 }: NotesHeaderProps) {
   return (
     <div>
-      <CockpitSectionActions>
-        <SectionSettingsButton
-          onClick={onGererCategories}
-          libelle="Gérer les catégories de notes"
-        />
+      <CockpitSectionActions emplacement="titre">
         <NoteQuickAddDialog
           onCreated={onCreated}
           categories={categories}
@@ -41,8 +37,15 @@ export function NotesHeader({
           <Plus className="h-4 w-4" strokeWidth={2.5} />
         </NoteQuickAddDialog>
       </CockpitSectionActions>
-      <div className="fade-in mb-6 flex flex-wrap items-center gap-3">
-        <div className="ml-auto max-w-xs flex-1">
+      <CockpitSectionActions>
+        <SectionSettingsButton
+          onClick={onGererCategories}
+          libelle="Gérer les catégories de notes"
+        />
+      </CockpitSectionActions>
+      {/* Centrée sur mobile, alignée à droite sur desktop. */}
+      <div className="fade-in mb-6 flex justify-center md:justify-end">
+        <div className="w-full max-w-xs">
           <Input
             value={recherche}
             onChange={(evenement) => onRechercheChange(evenement.target.value)}

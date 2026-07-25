@@ -31,7 +31,7 @@ export function SectionSettingsButton({
       }}
       aria-label={libelle}
       title={libelle}
-      className="flex h-7 w-7 items-center justify-center rounded-full text-ink/50 transition-colors hover:bg-ink/10 hover:text-ink"
+      className="flex h-7 w-7 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/20 hover:text-white"
     >
       <Settings className="h-4 w-4" />
     </button>

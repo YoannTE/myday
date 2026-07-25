@@ -8,7 +8,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CockpitSectionActions } from "@/components/cockpit/section-actions";
 import { SectionSettingsButton } from "@/components/cockpit/section-settings-button";
 import { TaskItem } from "@/components/taches/task-item";
-import { TaskQuickAdd } from "@/components/taches/task-quick-add";
 import { TaskQuickAddDialog } from "@/components/taches/task-quick-add-dialog";
 import { TachesGroupes } from "@/components/taches/taches-groupes";
 import { TaskCategoriesDialog } from "@/components/taches/task-categories-dialog";
@@ -112,19 +111,17 @@ export function TachesClient() {
 
   return (
     <div className="flex flex-col gap-8">
+      <CockpitSectionActions emplacement="titre">
+        <TaskQuickAddDialog onCreated={handleCreated} />
+      </CockpitSectionActions>
       <CockpitSectionActions>
         <SectionSettingsButton
           onClick={() => setDialogCategoriesOuvert(true)}
           libelle="Gérer les catégories de tâches"
         />
-        <TaskQuickAddDialog onCreated={handleCreated} />
       </CockpitSectionActions>
-      <div className="divide-y divide-ink/5 rounded-card bg-card shadow-card">
-        <TaskQuickAdd onCreated={handleCreated} />
-      </div>
       <TachesGroupes
         taches={aFaire}
-        categories={categories}
         categoriesExistent={categories.length > 0}
         onUpdated={handleUpdated}
         onDeleted={handleDeleted}

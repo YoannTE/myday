@@ -91,11 +91,11 @@ export function NoteItem({
         </div>
         <div className="flex flex-shrink-0 flex-col items-end gap-1">
           {note.archivee ? (
-            <span className="font-mono text-[10px] tracking-[.04em] text-ink/30 uppercase">
+            <span className="font-mono text-xs tracking-[.04em] text-ink/30 uppercase md:text-sm">
               Archivée
             </span>
           ) : (
-            <span className="font-mono text-[10px] tracking-[.04em] text-ink/30 uppercase">
+            <span className="font-mono text-xs tracking-[.04em] text-ink/30 uppercase md:text-sm">
               {formaterFraicheur(note.updated_at)}
             </span>
           )}

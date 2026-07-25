@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { apiCall, ApiError } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { Brief } from "@/components/cockpit/types";
 
@@ -152,7 +153,15 @@ export function BriefHero({ brief, onRegenerated, onMasquer }: BriefHeroProps) {
         </div>
       )}
 
-      <div className="mb-4 grid gap-2 md:mb-8 md:grid-cols-3 md:gap-4">
+      {/* Le nombre de synthèses varie (les notes ne sont pas toujours
+          présentes) : la grille suit ce nombre pour que les cartes remplissent
+          toujours toute la largeur. */}
+      <div
+        className={cn(
+          "mb-4 grid gap-2 md:mb-8 md:gap-4",
+          syntheses.length >= 3 ? "md:grid-cols-3" : "md:grid-cols-2",
+        )}
+      >
         {syntheses.map((synthese) => (
           <div
             key={synthese.libelle}
