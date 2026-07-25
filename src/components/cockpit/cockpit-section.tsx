@@ -27,7 +27,7 @@ export function CockpitSection({
   return (
     <section>
       <div className="mb-2 flex items-center justify-between">
-        <p className="font-mono text-xs font-bold tracking-[.04em] text-ink/60 uppercase">
+        <p className="font-display font-bold tracking-[.04em] text-ink/60 uppercase">
           {titre}
         </p>
         <div className="flex items-center gap-1">
