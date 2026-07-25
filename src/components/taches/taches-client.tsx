@@ -88,6 +88,10 @@ export function TachesClient() {
     setTaches(nouvellesTaches);
   }
 
+  function handleCategoriesReordonnees(nouvellesCategories: TaskCategory[]) {
+    setCategories(nouvellesCategories);
+  }
+
   if (erreur) {
     return (
       <div className="rounded-card bg-card p-6 text-center shadow-card">
@@ -121,6 +125,7 @@ export function TachesClient() {
       </div>
       <TachesGroupes
         taches={aFaire}
+        categories={categories}
         categoriesExistent={categories.length > 0}
         onUpdated={handleUpdated}
         onDeleted={handleDeleted}
@@ -162,6 +167,7 @@ export function TachesClient() {
         onOpenChange={setDialogCategoriesOuvert}
         categories={categories}
         onChanged={chargerCategories}
+        onReordonnee={handleCategoriesReordonnees}
       />
       <TaskDeepLink
         taches={taches}

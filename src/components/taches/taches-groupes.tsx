@@ -1,12 +1,13 @@
 "use client";
 
 import { TaskItem } from "@/components/taches/task-item";
-import type { Task } from "@/components/taches/types";
+import type { Task, TaskCategory } from "@/components/taches/types";
 
 const CLE_SANS_CATEGORIE = "__sans__";
 
 interface TachesGroupesProps {
   taches: Task[];
+  categories: TaskCategory[];
   categoriesExistent: boolean;
   onUpdated: (task: Task) => void;
   onDeleted?: (taskId: string) => void;
@@ -29,8 +30,13 @@ interface Groupe {
   taches: Task[];
 }
 
-/** Regroupe les tâches par catégorie ; « Sans catégorie » est toujours en dernier. */
-function grouperParCategorie(taches: Task[]): Groupe[] {
+/**
+ * Regroupe les tâches par catégorie ; « Sans catégorie » est toujours en
+ * dernier. Round 017 : les groupes suivent l'ordre manuel de `categories`
+ * (reçu de l'API, `POST /api/task-categories/{id}/deplacer`), plus de tri
+ * alphabétique local.
+ */
+function grouperParCategorie(taches: Task[], categories: TaskCategory[]): Groupe[] {
   const groupes = new Map<string, Groupe>();
   for (const tache of taches) {
     const cle = tache.categorie?.id ?? CLE_SANS_CATEGORIE;
@@ -44,10 +50,11 @@ function grouperParCategorie(taches: Task[]): Groupe[] {
     }
     groupes.get(cle)?.taches.push(tache);
   }
+  const ordre = categories.map((categorie) => categorie.id);
   return [...groupes.values()].sort((a, b) => {
     if (a.cle === CLE_SANS_CATEGORIE) return 1;
     if (b.cle === CLE_SANS_CATEGORIE) return -1;
-    return a.nom.localeCompare(b.nom, "fr");
+    return ordre.indexOf(a.cle) - ordre.indexOf(b.cle);
   });
 }
 
@@ -60,6 +67,7 @@ function grouperParCategorie(taches: Task[]): Groupe[] {
  */
 export function TachesGroupes({
   taches,
+  categories,
   categoriesExistent,
   onUpdated,
   onDeleted,
@@ -109,7 +117,7 @@ export function TachesGroupes({
     );
   }
 
-  const groupes = grouperParCategorie(taches);
+  const groupes = grouperParCategorie(taches, categories);
 
   return (
     <div className="flex flex-col gap-6">

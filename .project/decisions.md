@@ -69,3 +69,11 @@ devient disponible — l'architecture en « steps » purs facilite cette migrati
 - **Tâches terminées** : repliées par défaut derrière un en-tête « Terminées (N) » cliquable avec chevron.
 - **Onboarding** : 3 étapes (préférences, PWA, finale), étape Google retirée du parcours.
 - **Lisibilité mobile** : minimum ~10px pour les badges (note-item, task-item), titres de listes denses en `text-xs md:text-sm`.
+
+## Lot d'ajustements Cockpit unique (2026-07-25, après-midi)
+
+- **Notes** : ordre manuel par flèches (colonne `position` sur `notes`, migration `0025_friendly_blizzard`, endpoint `POST /api/notes/{id}/deplacer`, tri `position ASC NULLS LAST, updated_at DESC`). Flèches masquées quand une recherche filtre la liste. Fonctionnalité ÉPINGLE retirée de toute l'UI (colonne `epinglee` conservée en BDD pour réversibilité, plus de tri par épinglée).
+- **Catégories de tâches** : ordre manuel par flèches (colonne `position` sur `task_categories`, endpoint `POST /api/task-categories/{id}/deplacer`). Fini le tri alphabétique : l'ordre par défaut est l'ordre de création (position assignée à la création, normalisation des positions NULL existantes au passage). Les groupes de tâches suivent l'ordre des catégories renvoyé par l'API.
+- **Vue semaine du planning** : sur mobile (< md), liste verticale des 7 jours (jour courant en accent, jours vides compacts) ; sur desktop, grille 7 colonnes inchangée. Fusion événements + tâches planifiées factorisée dans `src/components/planning/element-jour.ts`.
+- **Brief quotidien** : basé sur planning + tâches + notes récentes (5 notes non archivées max, extrait ≤ 200 caractères). JSON du brief : `notes_summary` (toujours présent), `mails_summary` optionnel et ABSENT quand les mails sont désactivés (cas par défaut). Aucune mention de mails dans les prompts quand `include_mails` est faux.
+- **UI** : titres de sections du Cockpit en gras (`font-mono text-xs font-bold uppercase`) ; doublons « ← Cockpit » et `<h1>` Planning/Notes supprimés des en-têtes embarquées ; lien « ← Retour au Cockpit » en haut de /aide ; polices des zones de recherche en `text-xs md:text-sm`.

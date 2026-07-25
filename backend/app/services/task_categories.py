@@ -3,7 +3,8 @@
 Toutes les requêtes passent par `scoped_connection(user_id)` (RLS). La couleur
 est obligatoire en base : si l'utilisateur n'en fournit pas à la création, on
 en assigne une automatiquement en tournant sur `PALETTE` selon le nombre de
-catégories déjà existantes pour ce user.
+catégories déjà existantes pour ce user. Le tri est un ordre manuel
+(`position`), plus alphabétique en repli (Refonte Cockpit unique).
 """
 
 import asyncpg
@@ -23,7 +24,8 @@ PALETTE = (
     "#64748B",
 )
 
-_COLUMNS = "id, nom, couleur, created_at, updated_at"
+_COLUMNS = "id, nom, couleur, position, created_at, updated_at"
+_ORDER_BY = "ORDER BY position ASC NULLS LAST, nom ASC"
 
 
 def _serialize(row: asyncpg.Record) -> dict:
@@ -31,6 +33,7 @@ def _serialize(row: asyncpg.Record) -> dict:
         "id": str(row["id"]),
         "nom": row["nom"],
         "couleur": row["couleur"],
+        "position": row["position"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
     }
@@ -39,34 +42,52 @@ def _serialize(row: asyncpg.Record) -> dict:
 async def list_categories(user_id: str) -> list[dict]:
     async with scoped_connection(user_id) as conn:
         rows = await conn.fetch(
-            f"SELECT {_COLUMNS} FROM task_categories ORDER BY nom ASC"
+            f"SELECT {_COLUMNS} FROM task_categories {_ORDER_BY}"
         )
     return [_serialize(r) for r in rows]
 
 
 async def create_category(user_id: str, payload: TaskCategoryCreate) -> dict:
     async with scoped_connection(user_id) as conn:
-        couleur = payload.couleur
-        if couleur is None:
-            count = await conn.fetchval(
-                "SELECT count(*) FROM task_categories"
-            )
-            couleur = PALETTE[count % len(PALETTE)]
-        try:
-            row = await conn.fetchrow(
-                f"""
-                INSERT INTO task_categories (user_id, nom, couleur)
-                VALUES ($1, $2, $3)
-                RETURNING {_COLUMNS}
-                """,
+        async with conn.transaction():
+            couleur = payload.couleur
+            if couleur is None:
+                count = await conn.fetchval(
+                    "SELECT count(*) FROM task_categories"
+                )
+                couleur = PALETTE[count % len(PALETTE)]
+            # L'ordre par défaut est l'ordre de création (plus de tri
+            # alphabétique) : on fige d'abord l'ordre affiché des catégories
+            # jamais positionnées, puis la nouvelle prend la suite.
+            group = await conn.fetch(
+                f"SELECT id, position FROM task_categories "
+                f"WHERE user_id = $1 {_ORDER_BY}",
                 user_id,
-                payload.nom,
-                couleur,
             )
-        except asyncpg.UniqueViolationError as err:
-            raise conflict(
-                "Une catégorie porte déjà ce nom."
-            ) from err
+            for position, existante in enumerate(group):
+                if existante["position"] != position:
+                    await conn.execute(
+                        "UPDATE task_categories SET position = $2, "
+                        "updated_at = now() WHERE id = $1",
+                        existante["id"],
+                        position,
+                    )
+            try:
+                row = await conn.fetchrow(
+                    f"""
+                    INSERT INTO task_categories (user_id, nom, couleur, position)
+                    VALUES ($1, $2, $3, $4)
+                    RETURNING {_COLUMNS}
+                    """,
+                    user_id,
+                    payload.nom,
+                    couleur,
+                    len(group),
+                )
+            except asyncpg.UniqueViolationError as err:
+                raise conflict(
+                    "Une catégorie porte déjà ce nom."
+                ) from err
     return _serialize(row)
 
 
@@ -107,6 +128,49 @@ async def update_category(
                 "Une catégorie porte déjà ce nom."
             ) from err
     return _serialize(row)
+
+
+async def deplacer_task_category(user_id: str, category_id: str, direction: str) -> list[dict]:
+    """Déplace une catégorie vers le haut/bas dans l'ordre manuel de
+    l'utilisateur (Refonte Cockpit unique). No-op si elle est déjà en
+    première/dernière position ; renvoie dans tous les cas la liste complète
+    des catégories re-triée."""
+    async with scoped_connection(user_id) as conn:
+        async with conn.transaction():
+            category = await conn.fetchrow(
+                "SELECT id FROM task_categories WHERE id = $1 AND user_id = $2",
+                category_id,
+                user_id,
+            )
+            if category is None:
+                raise not_found("Catégorie introuvable.")
+
+            group = await conn.fetch(
+                f"SELECT id::text AS id, position FROM task_categories "
+                f"WHERE user_id = $1 {_ORDER_BY}",
+                user_id,
+            )
+            ordered_ids = [r["id"] for r in group]
+            positions_avant = {r["id"]: r["position"] for r in group}
+
+            index = ordered_ids.index(category_id)
+            voisin_index = index - 1 if direction == "haut" else index + 1
+            if 0 <= voisin_index < len(ordered_ids):
+                ordered_ids[index], ordered_ids[voisin_index] = (
+                    ordered_ids[voisin_index],
+                    ordered_ids[index],
+                )
+
+            for position, cid in enumerate(ordered_ids):
+                if positions_avant[cid] != position:
+                    await conn.execute(
+                        "UPDATE task_categories SET position = $2, updated_at = now() "
+                        "WHERE id = $1",
+                        cid,
+                        position,
+                    )
+
+    return await list_categories(user_id)
 
 
 async def delete_category(user_id: str, category_id: str) -> None:

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
 import { InstallerGuide } from "@/components/aide/installer-guide";
@@ -18,6 +19,12 @@ export default async function AidePage() {
     <div className="min-h-screen bg-bg">
       <Navbar user={user} />
       <main className="mx-auto max-w-4xl px-4 py-6 md:px-6 md:py-10">
+        <Link
+          href="/"
+          className="mb-4 inline-flex items-center gap-2 font-body text-sm text-ink/50 transition-colors hover:text-accent"
+        >
+          ← Retour au Cockpit
+        </Link>
         <div className="mb-6">
           <p className="font-mono text-[11px] tracking-[.04em] text-accent uppercase">
             Aide

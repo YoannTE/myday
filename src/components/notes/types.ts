@@ -42,6 +42,8 @@ export interface NoteApi {
   categorie_id: string | null;
   categorie: NoteCategoryLite | null;
   items: NoteItemApi[];
+  /** Rang manuel parmi toutes les notes (tri Round 017 : position ASC NULLS LAST, updated_at DESC). */
+  position: number | null;
   /** Nom du propriétaire si la note est partagée avec l'utilisateur courant, sinon `null`. */
   partage_par: string | null;
   created_at: string;

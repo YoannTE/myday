@@ -124,8 +124,7 @@ export function NoteQuickAddDialog({
         <DialogHeader>
           <DialogTitle>Note rapide</DialogTitle>
           <DialogDescription>
-            Écris ce que tu veux garder, tu pourras l&apos;épingler ou
-            l&apos;archiver plus tard.
+            Écris ce que tu veux garder, tu pourras l&apos;archiver plus tard.
           </DialogDescription>
         </DialogHeader>
         <form id="form-note-rapide" onSubmit={onSubmit} className="space-y-3">

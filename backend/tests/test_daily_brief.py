@@ -91,6 +91,14 @@ def insert_task(user_id, titre, echeance, priorite="haute") -> str:
     )
 
 
+def insert_note(user_id, titre, contenu) -> str:
+    return admin_val(
+        "INSERT INTO notes (user_id, titre, contenu) VALUES ($1, $2, $3) "
+        "RETURNING id::text",
+        user_id, titre, contenu,
+    )
+
+
 def insert_triaged_mail(user_id, gmail_id, expediteur, sujet, score, date_reception) -> str:
     return admin_val(
         "INSERT INTO mails (user_id, gmail_id, expediteur, sujet, extrait, statut, "
@@ -154,9 +162,13 @@ def user_id():
 
 
 def test_brief_degrade_nominal_contexte_riche(user_id):
+    """Chemin nominal : mails désactivés par défaut (retrait temporaire de
+    Google) - le brief se base sur le planning, les tâches et les notes,
+    et `mails_summary` est absent du contenu."""
     now = datetime.now(_TZ)
     insert_event(user_id, "Réunion équipe", now + timedelta(hours=1), now + timedelta(hours=2))
     insert_task(user_id, "Payer la facture", now + timedelta(hours=3))
+    insert_note(user_id, "Idée cadeau", "Penser à réserver le restaurant pour l'anniversaire.")
     insert_triaged_mail(
         user_id, "g1", "boss@corp.com", "Contrat à signer", 80, now - timedelta(hours=1)
     )
@@ -171,7 +183,8 @@ def test_brief_degrade_nominal_contexte_riche(user_id):
     assert any("Payer la facture" in p for p in contenu["priorities"])
     assert contenu["schedule_summary"]
     assert contenu["tasks_summary"]
-    assert contenu["mails_summary"]
+    assert "Idée cadeau" in contenu["notes_summary"]
+    assert "mails_summary" not in contenu
 
 
 def test_brief_journee_calme_zero_donnee(user_id):
@@ -183,7 +196,31 @@ def test_brief_journee_calme_zero_donnee(user_id):
     assert len(contenu["priorities"]) == 1
     assert contenu["schedule_summary"] == "Aucun rendez-vous aujourd'hui."
     assert contenu["tasks_summary"] == "Rien d'urgent aujourd'hui."
-    assert contenu["mails_summary"] == "Aucun mail important n'attend de réponse."
+    assert contenu["notes_summary"] == "Aucune note récente."
+    assert "mails_summary" not in contenu
+
+
+def test_brief_sans_mails_notes_summary_et_aucune_mention_mails(user_id):
+    """Contrat du round « refonte cockpit unique » : quand `include_mails`
+    est faux, le prompt envoyé au LLM ne mentionne AUCUN mail et le brief
+    expose `notes_summary`."""
+    from app.services.daily_brief.compose import _build_system_prompt, _build_user_prompt
+
+    context = {
+        "events": [],
+        "tomorrow_morning": [],
+        "tasks_today": [],
+        "notes_recentes": [{"title": "Idée cadeau", "excerpt": "Réserver le restaurant."}],
+        "important_mails": [],
+        "include_mails": False,
+    }
+    system = _build_system_prompt("neutre", 3, include_mails=False)
+    user_prompt = _build_user_prompt(today_str(), context, [])
+
+    assert "mail" not in system.lower()
+    assert "mail" not in user_prompt.lower()
+    assert "notes_summary" in system
+    assert "Idée cadeau" in user_prompt
 
 
 # --- Ordre des blocs et blocs vides (Round 014, F5) --------------------------
@@ -191,8 +228,10 @@ def test_brief_journee_calme_zero_donnee(user_id):
 
 def test_brief_ordre_des_blocs_source_unique():
     """`BriefContentModel` (chemin IA) et `build_degraded_brief` (chemin
-    dégradé) doivent produire les 3 blocs dans le MÊME ordre - rendez-vous,
-    tâches, mails - défini une seule fois par `degraded.BRIEF_BLOCK_ORDER`."""
+    dégradé) doivent produire les blocs dans le MÊME ordre - rendez-vous,
+    tâches, notes, mails - défini une seule fois par
+    `degraded.BRIEF_BLOCK_ORDER`. Avec mails désactivés, `mails_summary` est
+    absent des deux côtés (mais reste déclaré dans l'ordre du modèle)."""
     from app.services.daily_brief.compose import BriefContentModel
     from app.services.daily_brief.degraded import BRIEF_BLOCK_ORDER, build_degraded_brief
 
@@ -201,10 +240,21 @@ def test_brief_ordre_des_blocs_source_unique():
     )
     assert champs_modele == BRIEF_BLOCK_ORDER
 
-    contexte_vide = {"events": [], "tasks_today": [], "important_mails": []}
+    contexte_vide = {
+        "events": [],
+        "tasks_today": [],
+        "notes_recentes": [],
+        "important_mails": [],
+        "include_mails": False,
+    }
     contenu = build_degraded_brief(contexte_vide, [], 3)
     ordre_effectif = tuple(c for c in contenu if c in BRIEF_BLOCK_ORDER)
-    assert ordre_effectif == BRIEF_BLOCK_ORDER
+    assert ordre_effectif == ("schedule_summary", "tasks_summary", "notes_summary")
+
+    contexte_vide_avec_mails = {**contexte_vide, "include_mails": True}
+    contenu_avec_mails = build_degraded_brief(contexte_vide_avec_mails, [], 3)
+    ordre_avec_mails = tuple(c for c in contenu_avec_mails if c in BRIEF_BLOCK_ORDER)
+    assert ordre_avec_mails == BRIEF_BLOCK_ORDER
 
 
 def test_brief_ordre_des_blocs_contexte_riche(user_id, monkeypatch):
@@ -287,12 +337,14 @@ def test_brief_mails_top_3_parmi_plus_de_trois(user_id, monkeypatch):
     assert contenu["mails_summary"] == "3 mail(s) important(s) attend(ent) une réponse."
 
 
-def test_brief_mails_ignore_ceux_recus_il_y_a_plus_de_cinq_jours(user_id):
+def test_brief_mails_ignore_ceux_recus_il_y_a_plus_de_cinq_jours(user_id, monkeypatch):
+    monkeypatch.setattr(settings, "google_scheduler_enabled", True)
     now = datetime.now(_TZ)
     insert_triaged_mail(
         user_id, "g-trop-vieux", "vieux@corp.com", "Trop ancien", 90,
         now - timedelta(days=6),
     )
+    upsert_google_sync(user_id, now, now)
 
     result = run_in_loop(lambda: run_daily_brief(user_id, "manual", today_str()))
     contenu = get_brief_contenu(result["brief_id"])

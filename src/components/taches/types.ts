@@ -22,6 +22,8 @@ export interface TaskCategory {
   id: string;
   nom: string;
   couleur: string;
+  /** Rang manuel parmi toutes les catégories (tri Round 017 : position ASC NULLS LAST, nom ASC). */
+  position: number | null;
   created_at: string;
   updated_at: string;
 }

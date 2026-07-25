@@ -176,6 +176,13 @@
       "when": 1784971271334,
       "tag": "0024_melted_bishop",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1784981422131,
+      "tag": "0025_friendly_blizzard",
+      "breakpoints": true
     }
   ]
 }

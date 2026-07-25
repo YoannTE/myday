@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { NoteQuickAddDialog } from "@/components/notes/note-quick-add-dialog";
 import type { NoteApi, NoteCategory } from "@/components/notes/types";
@@ -24,13 +23,7 @@ export function NotesHeader({
 }: NotesHeaderProps) {
   return (
     <div>
-      <Link
-        href="/"
-        className="mb-4 inline-flex items-center gap-2 font-body text-sm text-ink/50 transition-colors hover:text-accent"
-      >
-        ← Cockpit
-      </Link>
-      <div className="fade-in mb-2 flex justify-end">
+      <div className="fade-in mb-6 flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={onGererCategories}
@@ -38,17 +31,12 @@ export function NotesHeader({
         >
           Gérer les catégories
         </button>
-      </div>
-      <div className="fade-in mb-6 flex flex-wrap items-center gap-3">
-        <h1 className="font-display text-xl font-extrabold tracking-[-0.02em] text-ink md:text-2xl">
-          Notes
-        </h1>
         <div className="ml-auto max-w-xs flex-1">
           <Input
             value={recherche}
             onChange={(evenement) => onRechercheChange(evenement.target.value)}
             placeholder="Rechercher dans les notes..."
-            className="h-auto rounded-full border-none bg-card px-4 py-2 shadow-card"
+            className="h-auto rounded-full border-none bg-card px-4 py-2 text-xs shadow-card md:text-sm"
           />
         </div>
         <NoteQuickAddDialog

@@ -2,7 +2,9 @@
 
 Toutes les requêtes passent par `scoped_connection(user_id)` (RLS). La liste
 filtre `archivee` (défaut False), recherche `q` en `ILIKE` sur titre+contenu,
-et trie les notes épinglées en premier puis par `updated_at` décroissant.
+et trie par ordre manuel (`position`) puis par `updated_at` décroissant
+(la fonctionnalité épingle a été retirée du produit, cf. `decisions.md`
+« Refonte Cockpit unique »).
 
 `categorie_id` est une FK nullable vers `note_categories`. La contrainte FK
 Postgres ne vérifie que l'existence de la ligne, PAS son isolation par
@@ -21,13 +23,15 @@ from app.utils.errors import bad_request, not_found
 
 _SELECT = """
     SELECT n.id, n.titre, n.contenu, n.epinglee, n.archivee, n.origine,
-           n.categorie_id, n.created_at, n.updated_at,
+           n.categorie_id, n.position, n.created_at, n.updated_at,
            n.user_id AS proprietaire_id, prop.name AS proprietaire_nom,
            c.nom AS categorie_nom, c.couleur AS categorie_couleur
     FROM notes n
     LEFT JOIN "user" prop ON prop.id = n.user_id
     LEFT JOIN note_categories c ON c.id = n.categorie_id
 """
+
+_ORDER_BY = "ORDER BY n.position ASC NULLS LAST, n.updated_at DESC"
 
 
 def _serialize(row: asyncpg.Record, user_id: str, items: list[dict] | None = None) -> dict:
@@ -47,6 +51,7 @@ def _serialize(row: asyncpg.Record, user_id: str, items: list[dict] | None = Non
         "origine": row["origine"],
         "categorie_id": str(row["categorie_id"]) if row["categorie_id"] else None,
         "categorie": categorie,
+        "position": row["position"],
         "items": items or [],
         # Round 016 : nom du proprietaire si la note est partagee avec nous.
         "partage_par": row["proprietaire_nom"]
@@ -81,7 +86,7 @@ async def list_notes(user_id: str, archivee: bool, q: str | None) -> list[dict]:
                 f"""
                 {_SELECT}
                 WHERE n.archivee = $1 AND (n.titre ILIKE $2 OR n.contenu ILIKE $2)
-                ORDER BY n.epinglee DESC, n.updated_at DESC
+                {_ORDER_BY}
                 """,
                 archivee,
                 pattern,
@@ -91,7 +96,7 @@ async def list_notes(user_id: str, archivee: bool, q: str | None) -> list[dict]:
                 f"""
                 {_SELECT}
                 WHERE n.archivee = $1
-                ORDER BY n.epinglee DESC, n.updated_at DESC
+                {_ORDER_BY}
                 """,
                 archivee,
             )
@@ -174,6 +179,49 @@ async def update_note(user_id: str, note_id: str, payload: NoteUpdate) -> dict:
         )
         row = await conn.fetchrow(f"{_SELECT} WHERE n.id = $1", note_id)
     return _serialize(row, user_id, items)
+
+
+async def deplacer_note(user_id: str, note_id: str, direction: str) -> list[dict]:
+    """Déplace une note vers le haut/bas dans l'ordre manuel de l'utilisateur
+    (Refonte Cockpit unique). Périmètre du déplacement : toutes les notes non
+    archivées de l'utilisateur, même ordre que la liste par défaut. No-op si
+    la note est déjà en première/dernière position ; renvoie dans tous les cas
+    la liste complète des notes (même forme que `GET /api/notes` sans filtre)."""
+    async with scoped_connection(user_id) as conn:
+        async with conn.transaction():
+            note = await conn.fetchrow(
+                "SELECT id FROM notes WHERE id = $1 AND user_id = $2",
+                note_id,
+                user_id,
+            )
+            if note is None:
+                raise not_found("Note introuvable.")
+
+            group = await conn.fetch(
+                f"SELECT id::text AS id, position FROM notes n "
+                f"WHERE n.user_id = $1 AND n.archivee = false {_ORDER_BY}",
+                user_id,
+            )
+            ordered_ids = [r["id"] for r in group]
+            positions_avant = {r["id"]: r["position"] for r in group}
+
+            index = ordered_ids.index(note_id)
+            voisin_index = index - 1 if direction == "haut" else index + 1
+            if 0 <= voisin_index < len(ordered_ids):
+                ordered_ids[index], ordered_ids[voisin_index] = (
+                    ordered_ids[voisin_index],
+                    ordered_ids[index],
+                )
+
+            for position, nid in enumerate(ordered_ids):
+                if positions_avant[nid] != position:
+                    await conn.execute(
+                        "UPDATE notes SET position = $2, updated_at = now() WHERE id = $1",
+                        nid,
+                        position,
+                    )
+
+    return await list_notes(user_id, False, None)
 
 
 async def delete_note(user_id: str, note_id: str) -> None:

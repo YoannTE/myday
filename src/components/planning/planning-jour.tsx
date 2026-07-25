@@ -2,11 +2,8 @@
 
 import { EventCard } from "@/components/planning/event-card";
 import { PlanningTacheBloc } from "@/components/planning/planning-tache-bloc";
-import {
-  estAujourdHui,
-  formaterJourComplet,
-  memeJour,
-} from "@/components/planning/date-utils";
+import { estAujourdHui, formaterJourComplet } from "@/components/planning/date-utils";
+import { elementsDuJour } from "@/components/planning/element-jour";
 import type { EvenementApi } from "@/components/planning/types";
 import type { Task } from "@/components/taches/types";
 
@@ -16,10 +13,6 @@ interface PlanningJourProps {
   tachesPlanifiees?: Task[];
   onSuccess: () => void;
 }
-
-type ElementJour =
-  | { type: "evenement"; debut: string; evenement: EvenementApi }
-  | { type: "tache"; debut: string; tache: Task };
 
 /**
  * Vue jour : liste verticale des événements du jour sélectionné, fusionnée
@@ -37,25 +30,7 @@ export function PlanningJour({
   tachesPlanifiees = [],
   onSuccess,
 }: PlanningJourProps) {
-  const elementsDuJour: ElementJour[] = [
-    ...evenements
-      .filter((evenement) => memeJour(new Date(evenement.debut), jour))
-      .map((evenement): ElementJour => ({
-        type: "evenement",
-        debut: evenement.debut,
-        evenement,
-      })),
-    ...tachesPlanifiees
-      .filter(
-        (tache) =>
-          tache.planifie_debut && memeJour(new Date(tache.planifie_debut), jour),
-      )
-      .map((tache): ElementJour => ({
-        type: "tache",
-        debut: tache.planifie_debut as string,
-        tache,
-      })),
-  ].sort((a, b) => new Date(a.debut).getTime() - new Date(b.debut).getTime());
+  const elements = elementsDuJour(evenements, tachesPlanifiees, jour);
 
   return (
     <div className="fade-in delay-1 rounded-card bg-card p-4 shadow-card md:p-6">
@@ -63,13 +38,13 @@ export function PlanningJour({
         {formaterJourComplet(jour)}
         {estAujourdHui(jour) && " · Aujourd'hui"}
       </p>
-      {elementsDuJour.length === 0 ? (
+      {elements.length === 0 ? (
         <p className="py-6 text-center text-sm text-ink/50">
           Aucun événement ce jour-là.
         </p>
       ) : (
         <div className="flex flex-col gap-2 md:mx-auto md:max-w-md">
-          {elementsDuJour.map((element) =>
+          {elements.map((element) =>
             element.type === "evenement" ? (
               <EventCard
                 key={element.evenement.id}

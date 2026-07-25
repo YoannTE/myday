@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, Response, status
 
 from app.auth.session import AuthUser, get_current_user
-from app.models.notes import NoteCreate, NoteResponse, NoteUpdate
+from app.models.notes import NoteCreate, NoteDeplacer, NoteResponse, NoteUpdate
 from app.services import notes as notes_service
 
 router = APIRouter(prefix="/notes", tags=["notes"])
@@ -26,6 +26,19 @@ async def list_notes(
 async def create_note(payload: NoteCreate, user: AuthUser = Depends(get_current_user)):
     note = await notes_service.create_note(user["id"], payload)
     return {"data": NoteResponse(**note).model_dump()}
+
+
+@router.post("/{note_id}/deplacer")
+async def deplacer_note(
+    note_id: UUID,
+    payload: NoteDeplacer,
+    user: AuthUser = Depends(get_current_user),
+):
+    """Déplace une note vers le haut/bas dans l'ordre manuel. Renvoie la
+    liste complète des notes de l'utilisateur (même forme que la liste par
+    défaut)."""
+    notes = await notes_service.deplacer_note(user["id"], str(note_id), payload.direction)
+    return {"data": [NoteResponse(**n).model_dump() for n in notes]}
 
 
 @router.patch("/{note_id}")

@@ -1,6 +1,7 @@
 """Schémas Pydantic du domaine Catégories de tâches (Round 012)."""
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
@@ -61,6 +62,9 @@ class TaskCategoryResponse(BaseModel):
     couleur: str
     created_at: datetime
     updated_at: datetime
+    # Ordre manuel des catégories (haut/bas) : nul tant que la catégorie n'a
+    # jamais été déplacée, le tri retombe alors sur le nom alphabétique.
+    position: int | None = None
 
 
 class TaskCategoryLite(BaseModel):
@@ -69,3 +73,10 @@ class TaskCategoryLite(BaseModel):
     id: str
     nom: str
     couleur: str
+
+
+class TaskCategoryDeplacer(BaseModel):
+    """Déplacement manuel (haut/bas) d'une catégorie de tâches (Refonte
+    Cockpit unique)."""
+
+    direction: Literal["haut", "bas"]

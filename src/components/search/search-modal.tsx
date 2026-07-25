@@ -130,7 +130,7 @@ export function SearchModal() {
               value={requete}
               onChange={(e) => setRequete(e.target.value)}
               placeholder="Rechercher une note, une tâche, un événement..."
-              className="h-auto border-none bg-transparent p-0 font-body text-sm shadow-none focus-visible:ring-0"
+              className="h-auto border-none bg-transparent p-0 font-body text-xs shadow-none focus-visible:ring-0 md:text-sm"
             />
             <span className="hidden flex-shrink-0 rounded-full bg-soft px-2 py-0.5 font-mono text-[10px] tracking-[.04em] text-ink/30 uppercase sm:inline">
               ⌘/

@@ -7,13 +7,20 @@ applique le garde-fou anti-hallucination UNIQUEMENT sur ce chemin (correction
 d'échec (clé absente, JSON invalide, schéma invalide) — brief dégradé =
 CHEMIN NOMINAL ce round (aucune clé `ANTHROPIC_API_KEY` configurée).
 
-Round 014 (F5) : le brief suit désormais l'ordre de lecture naturel (a)
-rendez-vous du jour, (b) tâches du jour, (c) mails importants - défini UNE
-SEULE fois par `degraded.BRIEF_BLOCK_ORDER` (source unique, cf. docstring de
-`degraded.py`). Pour forcer le mode dégradé en test (sans clé IA réelle), il
-suffit de laisser `settings.anthropic_api_key` vide/absent - c'est déjà ce
-que fait la fixture autouse `_neutraliser_cle_llm` de `backend/tests/conftest.py`,
-qui neutralise systématiquement la clé pour tous les tests (chemin nominal).
+Round 014 (F5), notes ajoutées Refonte Cockpit unique : le brief suit
+désormais l'ordre de lecture naturel (a) rendez-vous du jour, (b) tâches du
+jour, (c) notes récentes, (d) mails importants - défini UNE SEULE fois par
+`degraded.BRIEF_BLOCK_ORDER` (source unique, cf. docstring de `degraded.py`).
+Pour forcer le mode dégradé en test (sans clé IA réelle), il suffit de
+laisser `settings.anthropic_api_key` vide/absent - c'est déjà ce que fait la
+fixture autouse `_neutraliser_cle_llm` de `backend/tests/conftest.py`, qui
+neutralise systématiquement la clé pour tous les tests (chemin nominal).
+
+Mails désactivés par défaut (retrait temporaire de Google) : `context`
+expose `include_mails` (valeur effective calculée par `context.py`). Quand
+il est faux, le prompt LLM ne mentionne AUCUN mail et `mails_summary` est
+absent de la sortie ; le brief se base uniquement sur le planning, les
+tâches et les notes récentes.
 """
 
 from __future__ import annotations
@@ -27,6 +34,7 @@ from app.services.daily_brief.degraded import (
     BRIEF_BLOCK_ORDER,
     build_degraded_brief,
     deterministic_priorities,
+    mails_summary_fallback,
 )
 from app.services.mail_triage.llm import complete_json
 
@@ -42,11 +50,14 @@ _TONE_INSTRUCTIONS = {
 class BriefContentModel(BaseModel):
     headline: str = Field(max_length=140)
     priorities: list[str] = Field(min_length=1, max_length=5)
-    # L'ordre de déclaration de ces 3 champs DOIT rester celui de
+    # L'ordre de déclaration de ces champs DOIT rester celui de
     # `BRIEF_BLOCK_ORDER` (garde-fou vérifié juste après la classe).
     schedule_summary: str = Field(max_length=400)
     tasks_summary: str = Field(max_length=280)
-    mails_summary: str = Field(max_length=280)
+    notes_summary: str = Field(max_length=280)
+    # Absent (pas `null`) quand les mails sont désactivés - `model_dump` est
+    # appelé avec `exclude_none=True` dans `compose_brief`.
+    mails_summary: str | None = Field(default=None, max_length=280)
     alerts: list[str] = Field(max_length=3)
 
 
@@ -63,33 +74,46 @@ assert _champs_ordonnes == BRIEF_BLOCK_ORDER, (
 )
 
 
-def _build_system_prompt(tone: str, max_priorities: int) -> str:
+def _build_system_prompt(tone: str, max_priorities: int, include_mails: bool) -> str:
     tone_line = _TONE_INSTRUCTIONS.get(tone, _TONE_INSTRUCTIONS["neutre"])
+    ordre = "rendez-vous, puis tâches, puis notes"
+    croisement = "les tâches, les notes et le planning"
+    mails_instruction = ""
+    if include_mails:
+        ordre += ", puis mails"
+        croisement = "les mails, les tâches, les notes et le planning"
+        mails_instruction = (
+            '- "mails_summary" : parmi les 3 mails les plus importants reçus '
+            "ces 5 derniers jours, ceux qui attendent une action, en 1 à 2 "
+            "phrases ; si la liste est vide, dis que rien n'attend de réponse.\n"
+        )
+    absent = ", une note ou un mail" if include_mails else " ou une note"
     return (
         "Tu rédiges le brief quotidien de MyDay, le cockpit personnel de "
         "l'utilisateur. Tu écris en français, à la deuxième personne (« tu »), "
         "au présent.\n\n"
         f"{tone_line}\n\n"
-        "Règles (les 3 champs suivants doivent suivre l'ordre de lecture "
-        "naturel de la journée - rendez-vous, puis tâches, puis mails) :\n"
+        f"Règles (les champs suivants doivent suivre l'ordre de lecture "
+        f"naturel de la journée - {ordre}) :\n"
         '- "headline" : 1 phrase d\'accroche (140 caractères max).\n'
         f'- "priorities" : les {max_priorities} actions les plus importantes '
         "MAINTENANT, formulées comme des actions concrètes, la plus urgente "
-        "en premier. Croise les mails, les tâches et le planning.\n"
+        f"en premier. Croise {croisement}.\n"
         '- "schedule_summary" : les rendez-vous d\'aujourd\'hui en 1 à 3 '
         "phrases ; si la liste est vide, dis exactement « Aucun rendez-vous "
         "aujourd'hui. ».\n"
         '- "tasks_summary" : l\'état des tâches dont l\'échéance tombe '
         "aujourd'hui en 1 à 2 phrases, signale les retards ; si la liste est "
         "vide, dis exactement « Rien d'urgent aujourd'hui. ».\n"
-        '- "mails_summary" : parmi les 3 mails les plus importants reçus '
-        "ces 5 derniers jours, ceux qui attendent une action, en 1 à 2 "
-        "phrases ; si la liste est vide, dis que rien n'attend de réponse.\n"
+        '- "notes_summary" : à partir des notes récentes fournies, résume en '
+        "1 à 2 phrases ce qui semble important à garder en tête aujourd'hui ; "
+        "si la liste est vide, dis exactement « Aucune note récente. ».\n"
+        f"{mails_instruction}"
         '- "alerts" : recopie les alertes fournies, reformulées naturellement, '
         "sans en inventer.\n"
         "- Si toutes les listes sont vides, produis un brief « journée "
         "calme » qui le dit simplement.\n"
-        "- N'invente JAMAIS un événement, une tâche ou un mail absent des "
+        f"- N'invente JAMAIS un événement, une tâche{absent} absent(e) des "
         "données.\n\n"
         "Réponds UNIQUEMENT avec le JSON demandé, sans texte autour."
     )
@@ -100,9 +124,11 @@ def _build_user_prompt(brief_date: str, context: dict, alerts: list[str]) -> str
         "events": context["events"],
         "tomorrow_morning": context.get("tomorrow_morning", []),
         "tasks_today": context["tasks_today"],
-        "important_mails": context["important_mails"],
+        "notes_recentes": context.get("notes_recentes", []),
         "alerts": alerts,
     }
+    if context.get("include_mails"):
+        payload["important_mails"] = context["important_mails"]
     return (
         f"Brief du {brief_date} à générer. Données du cockpit au format JSON :\n\n"
         f"{json.dumps(payload, ensure_ascii=False)}"
@@ -113,7 +139,9 @@ def _known_titles(context: dict) -> set[str]:
     titles = {e["title"] for e in context["events"]}
     titles |= {e["title"] for e in context.get("tomorrow_morning", [])}
     titles |= {t["title"] for t in context["tasks_today"]}
-    titles |= {m["subject"] for m in context["important_mails"] if m.get("subject")}
+    titles |= {n["title"] for n in context.get("notes_recentes", [])}
+    if context.get("include_mails"):
+        titles |= {m["subject"] for m in context["important_mails"] if m.get("subject")}
     return titles
 
 
@@ -168,17 +196,27 @@ async def compose_brief(
 ) -> tuple[dict, bool]:
     """Retourne `(content, degraded)`. Ne re-tente JAMAIS ici : `complete_json`
     fait déjà 1 re-tentative interne (correction #1)."""
+    include_mails = bool(context.get("include_mails"))
     try:
         raw = await complete_json(
             user_id=user_id,
             agent="daily_brief",
             model=model,
-            system=_build_system_prompt(tone, max_priorities),
+            system=_build_system_prompt(tone, max_priorities, include_mails),
             user_prompt=_build_user_prompt(brief_date, context, alerts),
         )
         parsed = BriefContentModel(**raw)
         parsed = _apply_anti_hallucination_guard(parsed, context, max_priorities)
-        return parsed.model_dump(), False
+        if not include_mails:
+            # Mails désactivés : on rejette proprement un mails_summary que
+            # le LLM aurait renvoyé quand même (même garde-fou que les autres
+            # capacités mails de l'assistant, cf. decisions.md).
+            parsed.mails_summary = None
+        elif parsed.mails_summary is None:
+            # Mails activés mais le LLM a omis le champ : repli déterministe
+            # plutôt qu'un champ absent (contrat du chemin `include_mails=True`).
+            parsed.mails_summary = mails_summary_fallback(context)
+        return parsed.model_dump(exclude_none=True), False
     except Exception as exc:
         # Filet de sécurité systématique : TOUTE défaillance du chemin LLM
         # (clé absente, JSON/schéma invalide, ET erreurs Anthropic réseau/API/

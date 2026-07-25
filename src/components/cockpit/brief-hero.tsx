@@ -92,7 +92,9 @@ export function BriefHero({ brief, onRegenerated, onMasquer }: BriefHeroProps) {
   const syntheses = [
     { libelle: "Planning", valeur: contenu.schedule_summary },
     { libelle: "Tâches", valeur: contenu.tasks_summary },
-    { libelle: "Mails", valeur: contenu.mails_summary },
+    ...(contenu.notes_summary
+      ? [{ libelle: "Notes", valeur: contenu.notes_summary }]
+      : []),
   ];
 
   return (

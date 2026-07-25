@@ -29,6 +29,9 @@ export const taskCategories = pgTable(
 
     nom: text("nom").notNull(),
     couleur: text("couleur").notNull(),
+    // Ordre manuel des categories choisi par l'utilisateur (null = jamais
+    // ordonnee).
+    position: integer("position"),
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -178,6 +181,9 @@ export const notes = pgTable(
     categorieId: uuid("categorie_id").references(() => noteCategories.id, {
       onDelete: "set null",
     }),
+    // Ordre manuel des notes dans la liste (null = jamais ordonnee
+    // manuellement).
+    position: integer("position"),
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

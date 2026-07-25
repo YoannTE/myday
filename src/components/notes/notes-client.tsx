@@ -101,6 +101,10 @@ export function NotesClient() {
     setCategories((actuelles) => [...(actuelles ?? []), categorie]);
   }
 
+  function onNotesReordonnees(nouvellesNotes: NoteApi[]) {
+    setNotes(nouvellesNotes);
+  }
+
   const noteSelectionnee =
     notes?.find((note) => note.id === noteSelectionneeId) ?? null;
 
@@ -126,6 +130,8 @@ export function NotesClient() {
             notes={notes}
             noteSelectionneeId={noteSelectionneeId}
             onSelect={setNoteSelectionneeId}
+            rechercheActive={recherche.trim().length > 0}
+            onReordonnee={onNotesReordonnees}
           />
           {noteSelectionnee ? (
             <NoteOuverte

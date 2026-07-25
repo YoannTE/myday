@@ -22,19 +22,23 @@ interface TaskCategoriesDialogProps {
   onOpenChange: (open: boolean) => void;
   categories: TaskCategory[];
   onChanged: () => void;
+  /** Remplace la liste complète après un déplacement (`POST /api/task-categories/{id}/deplacer`). */
+  onReordonnee: (categories: TaskCategory[]) => void;
 }
 
 /**
  * Gestion des catégories de tâche (Round 012, F2) : créer, renommer,
  * supprimer. Ouvert depuis la page `/taches` (« Gérer les catégories »).
  * Contrôlé entièrement par `open`/`onOpenChange`, pas de `DialogTrigger`
- * (déclenché ailleurs sur la page).
+ * (déclenché ailleurs sur la page). Round 017 : flèches de réordonnancement
+ * manuel sur chaque ligne.
  */
 export function TaskCategoriesDialog({
   open,
   onOpenChange,
   categories,
   onChanged,
+  onReordonnee,
 }: TaskCategoriesDialogProps) {
   const [nouveauNom, setNouveauNom] = useState("");
   const [creation, setCreation] = useState(false);
@@ -81,11 +85,14 @@ export function TaskCategoriesDialog({
               Aucune catégorie pour l&apos;instant.
             </p>
           )}
-          {categories.map((categorie) => (
+          {categories.map((categorie, index) => (
             <TaskCategoryRow
               key={categorie.id}
               categorie={categorie}
               onChanged={onChanged}
+              onReordonnee={onReordonnee}
+              peutMonter={index > 0}
+              peutDescendre={index < categories.length - 1}
             />
           ))}
         </div>

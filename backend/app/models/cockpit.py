@@ -58,9 +58,10 @@ class TaskSummary(BaseModel):
 
 class BriefSummary(BaseModel):
     # `contenu` = structure BriefContent (headline/priorities/schedule_summary/
-    # tasks_summary/mails_summary/alerts) - type `dict` souple (pas de
-    # sous-modele) : deja valide par BriefContentModel au moment de la
-    # generation (compose.py), pas besoin de re-valider ici.
+    # tasks_summary/notes_summary/mails_summary?/alerts) - type `dict` souple
+    # (pas de sous-modele) : deja valide par BriefContentModel au moment de la
+    # generation (compose.py), pas besoin de re-valider ici. `mails_summary`
+    # est absent quand les mails sont desactives (retrait temporaire Google).
     contenu: dict
     degraded: bool
     generated_at: datetime

@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, Response, status
 from app.auth.session import AuthUser, get_current_user
 from app.models.task_categories import (
     TaskCategoryCreate,
+    TaskCategoryDeplacer,
     TaskCategoryResponse,
     TaskCategoryUpdate,
 )
@@ -33,6 +34,20 @@ async def create_task_category(
 ):
     category = await task_categories_service.create_category(user["id"], payload)
     return {"data": TaskCategoryResponse(**category).model_dump()}
+
+
+@router.post("/{category_id}/deplacer")
+async def deplacer_task_category(
+    category_id: UUID,
+    payload: TaskCategoryDeplacer,
+    user: AuthUser = Depends(get_current_user),
+):
+    """Déplace une catégorie vers le haut/bas dans l'ordre manuel. Renvoie la
+    liste complète des catégories de l'utilisateur re-triée."""
+    categories = await task_categories_service.deplacer_task_category(
+        user["id"], str(category_id), payload.direction
+    )
+    return {"data": [TaskCategoryResponse(**c).model_dump() for c in categories]}
 
 
 @router.patch("/{category_id}")

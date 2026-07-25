@@ -56,7 +56,10 @@ export interface BriefContent {
   priorities: string[];
   schedule_summary: string;
   tasks_summary: string;
-  mails_summary: string;
+  /** Round 017 : remplace `mails_summary` (Gmail désactivé) - absent/vide si rien à signaler. */
+  notes_summary?: string | null;
+  /** Conservé pour compatibilité de type, plus renvoyé par le backend (Gmail désactivé). */
+  mails_summary?: string | null;
   alerts: string[];
 }
 

@@ -1,6 +1,7 @@
 """Schémas Pydantic du domaine Notes."""
 
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -57,3 +58,13 @@ class NoteResponse(BaseModel):
     partage_par: str | None = None
     created_at: datetime
     updated_at: datetime
+    # Ordre manuel des notes (haut/bas) : nul tant que la note n'a jamais été
+    # déplacée, le tri retombe alors sur `updated_at`.
+    position: int | None = None
+
+
+class NoteDeplacer(BaseModel):
+    """Déplacement manuel (haut/bas) d'une note dans l'ordre de l'utilisateur
+    (Refonte Cockpit unique)."""
+
+    direction: Literal["haut", "bas"]

@@ -89,14 +89,17 @@ def test_create_category_nom_vide_rejete(client, auth_user):
 # --- Liste triée ---
 
 
-def test_list_categories_triees_par_nom(client, auth_user):
+def test_list_categories_triees_par_ordre_de_creation(client, auth_user):
+    """L'ordre par défaut est l'ordre de création (position assignée à la
+    création), plus de tri alphabétique (Refonte Cockpit unique)."""
     _, headers = auth_user
     client.post("/api/task-categories", json={"nom": "Zeta"}, headers=headers)
     client.post("/api/task-categories", json={"nom": "Alpha"}, headers=headers)
     resp = client.get("/api/task-categories", headers=headers)
     noms = [c["nom"] for c in resp.json()["data"]]
-    assert noms == sorted(noms)
-    assert "Alpha" in noms and "Zeta" in noms
+    assert noms == ["Zeta", "Alpha"]
+    positions = [c["position"] for c in resp.json()["data"]]
+    assert positions == [0, 1]
 
 
 # --- Mise à jour ---

@@ -24,11 +24,10 @@ interface NoteOuverteProps {
   onCategoryCreated: (categorie: NoteCategory) => void;
 }
 
-// Panneau de la note ouverte : édition du contenu, épingler/désépingler,
-// archiver/désarchiver, catégorie (Round 015). Badge « via l'assistant »
-// autorisé (correction #7). Une note partagée reçue reste modifiable
-// (titre, contenu, liste à cocher) mais catégorie/épingler/archiver/partager
-// restent réservés au propriétaire.
+// Panneau de la note ouverte : édition du contenu, archiver/désarchiver,
+// catégorie (Round 015). Badge « via l'assistant » autorisé (correction #7).
+// Une note partagée reçue reste modifiable (titre, contenu, liste à cocher)
+// mais catégorie/archiver/partager restent réservés au propriétaire.
 export function NoteOuverte({
   note,
   onChange,
@@ -72,21 +71,6 @@ export function NoteOuverte({
       );
     } finally {
       setEnregistrement(false);
-    }
-  }
-
-  async function basculerEpinglee() {
-    setEnCours(true);
-    try {
-      await appliquerPatch({ epinglee: !note.epinglee });
-    } catch (erreur) {
-      toast.error(
-        erreur instanceof Error
-          ? erreur.message
-          : "Impossible de mettre à jour la note.",
-      );
-    } finally {
-      setEnCours(false);
     }
   }
 
@@ -148,8 +132,6 @@ export function NoteOuverte({
       <NoteOuverteHeader
         note={note}
         estPartagee={estPartagee}
-        enCours={enCours}
-        onBasculerEpinglee={basculerEpinglee}
         onOuvrirPartage={() => setPartageOuvert(true)}
         onRenommer={renommer}
       />

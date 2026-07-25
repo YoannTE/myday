@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
 import { Button } from "@/components/ui/button";
@@ -11,19 +12,52 @@ import type { TaskCategory } from "@/components/taches/types";
 interface TaskCategoryRowProps {
   categorie: TaskCategory;
   onChanged: () => void;
+  /** Remplace la liste complète après un déplacement (`POST /api/task-categories/{id}/deplacer`). */
+  onReordonnee?: (categories: TaskCategory[]) => void;
+  /** Fausse quand la catégorie est déjà première de la liste. */
+  peutMonter?: boolean;
+  /** Fausse quand la catégorie est déjà dernière de la liste. */
+  peutDescendre?: boolean;
 }
 
 /**
  * Ligne d'une catégorie dans le dialog de gestion (Round 012, F2) : renommer
  * (clic sur le nom) et supprimer (avec confirmation inline). La suppression
  * ne touche jamais les tâches associées (`categorie_id` repasse à NULL côté
- * backend, `ON DELETE SET NULL`).
+ * backend, `ON DELETE SET NULL`). Round 017 : flèches de réordonnancement
+ * manuel, même pattern que les tâches (`TaskItem`).
  */
-export function TaskCategoryRow({ categorie, onChanged }: TaskCategoryRowProps) {
+export function TaskCategoryRow({
+  categorie,
+  onChanged,
+  onReordonnee,
+  peutMonter,
+  peutDescendre,
+}: TaskCategoryRowProps) {
   const [enEdition, setEnEdition] = useState(false);
   const [nom, setNom] = useState(categorie.nom);
   const [confirmationSuppression, setConfirmationSuppression] = useState(false);
   const [enCours, setEnCours] = useState(false);
+  const [enCoursDeplacement, setEnCoursDeplacement] = useState(false);
+  const afficherFleches = Boolean(onReordonnee);
+
+  async function deplacer(direction: "haut" | "bas") {
+    if (enCoursDeplacement || !onReordonnee) return;
+    setEnCoursDeplacement(true);
+    try {
+      const reponse = await apiCall<{ data: TaskCategory[] }>(
+        `/api/task-categories/${categorie.id}/deplacer`,
+        { method: "POST", body: { direction } },
+      );
+      onReordonnee(reponse.data);
+    } catch (erreur) {
+      toast.error(
+        messageErreurApi(erreur, "Impossible de déplacer la catégorie."),
+      );
+    } finally {
+      setEnCoursDeplacement(false);
+    }
+  }
 
   async function renommer() {
     setEnEdition(false);
@@ -66,6 +100,28 @@ export function TaskCategoryRow({ categorie, onChanged }: TaskCategoryRowProps) 
 
   return (
     <div className="flex items-center gap-2 rounded-inner bg-soft px-3 py-2">
+      {afficherFleches && (
+        <div className="flex flex-shrink-0 flex-col">
+          <button
+            type="button"
+            aria-label="Monter la catégorie"
+            disabled={enCoursDeplacement || !peutMonter}
+            onClick={() => deplacer("haut")}
+            className="flex h-4 w-4 items-center justify-center text-ink/30 transition-colors hover:text-accent disabled:opacity-30"
+          >
+            <ChevronUp className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Descendre la catégorie"
+            disabled={enCoursDeplacement || !peutDescendre}
+            onClick={() => deplacer("bas")}
+            className="flex h-4 w-4 items-center justify-center text-ink/30 transition-colors hover:text-accent disabled:opacity-30"
+          >
+            <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
       <span
         className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
         style={{ backgroundColor: categorie.couleur }}
