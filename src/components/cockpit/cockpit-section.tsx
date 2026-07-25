@@ -12,9 +12,10 @@ interface CockpitSectionProps {
 }
 
 /**
- * Section réordonnable du cockpit unique (Round 016) : en-tête discrète
- * (libellé + flèches haut/bas) au-dessus du contenu réutilisé tel quel
- * (`MeteoWidget`, `PlanningClient`, `TachesClient`, `NotesClient`).
+ * Section réordonnable du cockpit unique (Round 016) : bandeau plein
+ * (libellé + flèches haut/bas sur fond `soft`) qui sépare visuellement les
+ * sections, au-dessus du contenu réutilisé tel quel (`MeteoWidget`,
+ * `PlanningClient`, `TachesClient`, `NotesClient`).
  */
 export function CockpitSection({
   titre,
@@ -26,8 +27,8 @@ export function CockpitSection({
 }: CockpitSectionProps) {
   return (
     <section>
-      <div className="mb-2 flex items-center justify-between">
-        <p className="font-display font-bold tracking-[.04em] text-ink/60 uppercase">
+      <div className="mb-3 flex items-center justify-between rounded-inner bg-soft px-3 py-2">
+        <p className="font-display font-bold tracking-[.04em] text-ink uppercase">
           {titre}
         </p>
         <div className="flex items-center gap-1">
@@ -37,7 +38,7 @@ export function CockpitSection({
             disabled={!peutMonter}
             onClick={onMonter}
             className={cn(
-              "flex h-6 w-6 items-center justify-center rounded-full text-ink/40 transition-colors hover:bg-soft hover:text-ink",
+              "flex h-6 w-6 items-center justify-center rounded-full text-ink/50 transition-colors hover:bg-ink/10 hover:text-ink",
               !peutMonter && "opacity-30",
             )}
           >
@@ -49,7 +50,7 @@ export function CockpitSection({
             disabled={!peutDescendre}
             onClick={onDescendre}
             className={cn(
-              "flex h-6 w-6 items-center justify-center rounded-full text-ink/40 transition-colors hover:bg-soft hover:text-ink",
+              "flex h-6 w-6 items-center justify-center rounded-full text-ink/50 transition-colors hover:bg-ink/10 hover:text-ink",
               !peutDescendre && "opacity-30",
             )}
           >
