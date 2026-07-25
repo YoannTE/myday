@@ -108,7 +108,15 @@ export function TachesGroupes({
         </div>
         <button
           type="button"
-          onClick={onCreerCategorie}
+          // `stopPropagation` indispensable : sans lui, le clic remonte
+          // jusqu'au document après l'ouverture et `TaskCategoriesDialog`
+          // (Dialog Base UI contrôlé, sans `DialogTrigger`) le prend pour un
+          // clic à l'extérieur et se referme aussitôt. Même correctif que
+          // `SectionSettingsButton`.
+          onClick={(evenement) => {
+            evenement.stopPropagation();
+            onCreerCategorie();
+          }}
           className="self-start font-body text-sm text-accent"
         >
           + Créer une catégorie

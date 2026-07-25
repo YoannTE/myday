@@ -1,6 +1,10 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CockpitSectionActions } from "@/components/cockpit/section-actions";
+import { SectionAddButton } from "@/components/cockpit/section-add-button";
+import { SectionSettingsButton } from "@/components/cockpit/section-settings-button";
 import { EventFormDialog } from "@/components/planning/event-form-dialog";
 import type { VuePlanning } from "@/components/planning/date-utils";
 
@@ -34,26 +38,18 @@ export function PlanningHeader({
 }: PlanningHeaderProps) {
   return (
     <div>
-      <div className="fade-in mb-4 flex flex-wrap items-center justify-end gap-3">
-        <button
-          type="button"
+      <CockpitSectionActions>
+        <SectionSettingsButton
           onClick={onGererCategories}
-          className="font-body text-sm text-accent"
-        >
-          Gérer les catégories
-        </button>
+          libelle="Gérer les catégories d'événements"
+        />
         <EventFormDialog
           onSuccess={onSuccess}
-          trigger={
-            <button
-              type="button"
-              className="cta-gradient rounded-inner px-4 py-2 font-display text-sm font-semibold text-white"
-            />
-          }
+          trigger={<SectionAddButton aria-label="Ajouter un événement" />}
         >
-          + Événement
+          <Plus className="h-4 w-4" strokeWidth={2.5} />
         </EventFormDialog>
-      </div>
+      </CockpitSectionActions>
       <div className="fade-in mb-6 flex flex-wrap items-center gap-3">
         <Tabs
           value={vue}

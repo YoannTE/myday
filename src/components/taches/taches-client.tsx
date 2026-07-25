@@ -5,8 +5,11 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CockpitSectionActions } from "@/components/cockpit/section-actions";
+import { SectionSettingsButton } from "@/components/cockpit/section-settings-button";
 import { TaskItem } from "@/components/taches/task-item";
 import { TaskQuickAdd } from "@/components/taches/task-quick-add";
+import { TaskQuickAddDialog } from "@/components/taches/task-quick-add-dialog";
 import { TachesGroupes } from "@/components/taches/taches-groupes";
 import { TaskCategoriesDialog } from "@/components/taches/task-categories-dialog";
 import { TaskDeepLink } from "@/components/taches/task-deep-link";
@@ -109,19 +112,15 @@ export function TachesClient() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={() => setDialogCategoriesOuvert(true)}
-            className="font-body text-sm text-accent"
-          >
-            Gérer les catégories
-          </button>
-        </div>
-        <div className="divide-y divide-ink/5 rounded-card bg-card shadow-card">
-          <TaskQuickAdd onCreated={handleCreated} />
-        </div>
+      <CockpitSectionActions>
+        <SectionSettingsButton
+          onClick={() => setDialogCategoriesOuvert(true)}
+          libelle="Gérer les catégories de tâches"
+        />
+        <TaskQuickAddDialog onCreated={handleCreated} />
+      </CockpitSectionActions>
+      <div className="divide-y divide-ink/5 rounded-card bg-card shadow-card">
+        <TaskQuickAdd onCreated={handleCreated} />
       </div>
       <TachesGroupes
         taches={aFaire}

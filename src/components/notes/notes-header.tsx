@@ -1,6 +1,10 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { CockpitSectionActions } from "@/components/cockpit/section-actions";
+import { SectionAddButton } from "@/components/cockpit/section-add-button";
+import { SectionSettingsButton } from "@/components/cockpit/section-settings-button";
 import { NoteQuickAddDialog } from "@/components/notes/note-quick-add-dialog";
 import type { NoteApi, NoteCategory } from "@/components/notes/types";
 
@@ -23,14 +27,21 @@ export function NotesHeader({
 }: NotesHeaderProps) {
   return (
     <div>
-      <div className="fade-in mb-6 flex flex-wrap items-center gap-3">
-        <button
-          type="button"
+      <CockpitSectionActions>
+        <SectionSettingsButton
           onClick={onGererCategories}
-          className="font-body text-sm text-accent"
+          libelle="Gérer les catégories de notes"
+        />
+        <NoteQuickAddDialog
+          onCreated={onCreated}
+          categories={categories}
+          onCategoryCreated={onCategoryCreated}
+          trigger={<SectionAddButton aria-label="Ajouter une note" />}
         >
-          Gérer les catégories
-        </button>
+          <Plus className="h-4 w-4" strokeWidth={2.5} />
+        </NoteQuickAddDialog>
+      </CockpitSectionActions>
+      <div className="fade-in mb-6 flex flex-wrap items-center gap-3">
         <div className="ml-auto max-w-xs flex-1">
           <Input
             value={recherche}
@@ -39,11 +50,6 @@ export function NotesHeader({
             className="h-auto rounded-full border-none bg-card px-4 py-2 text-xs shadow-card md:text-sm"
           />
         </div>
-        <NoteQuickAddDialog
-          onCreated={onCreated}
-          categories={categories}
-          onCategoryCreated={onCategoryCreated}
-        />
       </div>
     </div>
   );

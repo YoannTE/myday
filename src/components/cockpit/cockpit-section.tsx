@@ -1,5 +1,8 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useState, type ReactNode } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { ZoneActionsProvider } from "@/components/cockpit/section-actions";
 import { cn } from "@/lib/utils";
 
 interface CockpitSectionProps {
@@ -16,6 +19,9 @@ interface CockpitSectionProps {
  * (libellé + flèches haut/bas sur fond `soft`) qui sépare visuellement les
  * sections, au-dessus du contenu réutilisé tel quel (`MeteoWidget`,
  * `PlanningClient`, `TachesClient`, `NotesClient`).
+ * La zone `zoneActions` accueille les boutons propres à chaque section
+ * (roue crantée des catégories, bouton rond « + »), projetés depuis le
+ * contenu via `CockpitSectionActions` pour éviter de remonter leur état.
  */
 export function CockpitSection({
   titre,
@@ -25,13 +31,16 @@ export function CockpitSection({
   onDescendre,
   children,
 }: CockpitSectionProps) {
+  const [zoneActions, setZoneActions] = useState<HTMLDivElement | null>(null);
+
   return (
     <section>
-      <div className="mb-3 flex items-center justify-between rounded-inner bg-soft px-3 py-2">
+      <div className="mb-3 flex items-center justify-between gap-2 rounded-inner bg-soft px-3 py-2">
         <p className="font-display font-bold tracking-[.04em] text-ink uppercase">
           {titre}
         </p>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
+          <div ref={setZoneActions} className="flex items-center gap-1.5" />
           <button
             type="button"
             aria-label={`Monter la section ${titre}`}
@@ -58,7 +67,7 @@ export function CockpitSection({
           </button>
         </div>
       </div>
-      {children}
+      <ZoneActionsProvider value={zoneActions}>{children}</ZoneActionsProvider>
     </section>
   );
 }

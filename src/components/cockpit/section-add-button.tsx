@@ -16,7 +16,7 @@ export function SectionAddButton({ className, ...props }: SectionAddButtonProps)
     <button
       type="button"
       className={cn(
-        "cta-gradient flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-white shadow-cta transition-transform hover:scale-105",
+        "cta-gradient flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-white shadow-cta transition-transform hover:scale-105",
         className,
       )}
       {...props}
