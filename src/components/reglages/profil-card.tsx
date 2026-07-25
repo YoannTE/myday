@@ -1,10 +1,9 @@
 import { initialeAvatar } from "@/lib/avatar";
 import { ModifierProfilDialog } from "@/components/reglages/modifier-profil-dialog";
-import { GoogleCard } from "@/components/reglages/google/google-card";
 
 // Section « Mon compte » - transposition fidèle de reglages.html (bloc
-// profil + carte Google). Server Component : seule l'édition du nom est
-// interactive (dialog client).
+// profil). Server Component : seule l'édition du nom est interactive
+// (dialog client). La carte Google a été retirée au Round 016.
 export function ProfilCard({
   name,
   email,
@@ -42,8 +41,6 @@ export function ProfilCard({
           <ModifierProfilDialog nomActuel={name} />
         </div>
       </div>
-
-      <GoogleCard />
     </section>
   );
 }

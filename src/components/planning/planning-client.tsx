@@ -52,13 +52,14 @@ function libellePourVue(vue: VuePlanning, reference: Date): string {
   }
 }
 
-// Orchestrateur client de la page Planning : sélecteur de vue (jour/semaine/
-// mois/année, préférence mémorisée en localStorage), navigation adaptée à la
-// vue, fetch des événements (ou de l'agrégat de densité pour la vue année)
-// de la fenêtre affichée, rechargement après chaque création/modification/
+// Orchestrateur client de la section « Planning » du cockpit unique (Round
+// 016) : sélecteur de vue (jour par défaut, puis semaine/mois/année,
+// préférence mémorisée en localStorage), navigation adaptée à la vue, fetch
+// des événements (ou de l'agrégat de densité pour la vue année) de la
+// fenêtre affichée, rechargement après chaque création/modification/
 // suppression (le dialog appelle `onSuccess`).
 export function PlanningClient() {
-  const [vue, setVue] = useState<VuePlanning>("semaine");
+  const [vue, setVue] = useState<VuePlanning>("jour");
   const [reference, setReference] = useState(() => new Date());
   const [evenements, setEvenements] = useState<EvenementApi[] | null>(null);
   const [tachesPlanifiees, setTachesPlanifiees] = useState<Task[] | null>(null);

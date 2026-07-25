@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/navbar";
-import { Freshness } from "@/components/layout/freshness";
 import { CockpitClient } from "@/components/cockpit/cockpit-client";
 import { requireUser } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "Ton cockpit",
   description:
-    "Le cockpit personnel qui réunit ton planning, tes tâches, tes notes et tes mails importants.",
+    "Le cockpit personnel qui réunit ton planning, tes tâches et tes notes.",
 };
 
 export default async function HomePage() {
@@ -19,7 +18,6 @@ export default async function HomePage() {
       <main className="mx-auto max-w-4xl px-4 py-6 md:px-6 md:py-10">
         <CockpitClient />
       </main>
-      <Freshness />
     </div>
   );
 }

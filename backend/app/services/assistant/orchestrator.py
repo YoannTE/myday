@@ -55,8 +55,16 @@ async def _dispatch(
             raise RuntimeError("create_event_action indisponible")
         return await create_event_action(user_id, params, action_key)
     if atype == "draft_email":
-        if draft_email is None:
-            raise RuntimeError("draft_email indisponible")
+        # Filet de sécurité (retrait temporaire de l'intégration Google) : le
+        # plan et les params sont déjà censés écarter "draft_email" en amont,
+        # mais si l'action arrive quand même jusqu'ici, on la rejette
+        # proprement avec un message poli, jamais de crash.
+        if not settings.assistant_mails_enabled or draft_email is None:
+            return {
+                "type": atype,
+                "ok": False,
+                "label": "La rédaction de mails n'est pas disponible pour le moment.",
+            }
         return await draft_email(user_id, params, ref_data, action_key)
     raise RuntimeError(f"Type d'action inconnu : {atype}")
 

@@ -23,7 +23,8 @@ const DELAI_DEBOUNCE_MS = 250;
  * Recherche globale (Round 009) - icône loupe dans la navbar + raccourci
  * global ⌘/ (Ctrl+/). Distinct de ⌘K (assistant, R008) : décision figée
  * dans le plan pour éviter tout conflit de raccourci. Résultats groupés
- * (notes/tâches/événements/mails) via `GET /api/search?q=`, debounce 250ms.
+ * (notes/tâches/événements) via `GET /api/search?q=`, debounce 250ms. Round
+ * 016 : le groupe « Mails » est retiré de l'affichage (Gmail désactivé).
  */
 export function SearchModal() {
   const router = useRouter();
@@ -93,8 +94,7 @@ export function SearchModal() {
     aTapeQuelqueChose &&
     resultats.notes.length === 0 &&
     resultats.taches.length === 0 &&
-    resultats.events.length === 0 &&
-    resultats.mails.length === 0;
+    resultats.events.length === 0;
 
   return (
     <>
@@ -120,7 +120,7 @@ export function SearchModal() {
         >
           <DialogTitle className="sr-only">Recherche globale</DialogTitle>
           <DialogDescription className="sr-only">
-            Recherche dans tes notes, tâches, événements et mails.
+            Recherche dans tes notes, tâches et événements.
           </DialogDescription>
 
           <div className="flex items-center gap-2.5 border-b border-ink/10 px-4 py-3">
@@ -129,7 +129,7 @@ export function SearchModal() {
               autoFocus
               value={requete}
               onChange={(e) => setRequete(e.target.value)}
-              placeholder="Rechercher une note, une tâche, un mail, un événement..."
+              placeholder="Rechercher une note, une tâche, un événement..."
               className="h-auto border-none bg-transparent p-0 font-body text-sm shadow-none focus-visible:ring-0"
             />
             <span className="hidden flex-shrink-0 rounded-full bg-soft px-2 py-0.5 font-mono text-[10px] tracking-[.04em] text-ink/30 uppercase sm:inline">
@@ -152,7 +152,7 @@ export function SearchModal() {
 
             {!recherche && !erreur && !aTapeQuelqueChose && (
               <p className="p-2 font-body text-sm text-ink/40">
-                Cherche dans tes notes, tâches, événements et mails.
+                Cherche dans tes notes, tâches et événements.
               </p>
             )}
 
@@ -170,7 +170,7 @@ export function SearchModal() {
                       key={note.id}
                       titre={note.titre}
                       sousTitre={note.contenu}
-                      onSelect={() => allerVers("/notes")}
+                      onSelect={() => allerVers("/")}
                     />
                   ))}
                 </SearchResultGroup>
@@ -180,7 +180,7 @@ export function SearchModal() {
                       key={tache.id}
                       titre={tache.titre}
                       sousTitre={tache.description}
-                      onSelect={() => allerVers("/taches")}
+                      onSelect={() => allerVers("/")}
                     />
                   ))}
                 </SearchResultGroup>
@@ -193,17 +193,7 @@ export function SearchModal() {
                       key={evenement.id}
                       titre={evenement.titre}
                       sousTitre={evenement.lieu}
-                      onSelect={() => allerVers("/planning")}
-                    />
-                  ))}
-                </SearchResultGroup>
-                <SearchResultGroup titre="Mails" count={resultats.mails.length}>
-                  {resultats.mails.map((mail) => (
-                    <SearchResultItem
-                      key={mail.id}
-                      titre={mail.sujet ?? mail.expediteur}
-                      sousTitre={mail.extrait ?? mail.expediteur}
-                      onSelect={() => allerVers("/mails")}
+                      onSelect={() => allerVers("/")}
                     />
                   ))}
                 </SearchResultGroup>

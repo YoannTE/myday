@@ -33,12 +33,14 @@ export interface SearchResults {
   notes: SearchNote[];
   taches: SearchTache[];
   events: SearchEvenement[];
-  mails: SearchMail[];
+  // Round 016 : Gmail retiré de l'interface - la clé peut encore être
+  // envoyée par le backend, mais rien ne l'affiche ; optionnelle pour
+  // tolérer les deux formes de réponse.
+  mails?: SearchMail[];
 }
 
 export const RESULTATS_VIDES: SearchResults = {
   notes: [],
   taches: [],
   events: [],
-  mails: [],
 };

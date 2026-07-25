@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
+
+from app.config import settings
 
 
 class TaskParams(BaseModel):
@@ -66,6 +68,15 @@ class DraftParams(BaseModel):
     subject: str | None = None
     instruction: str = Field(min_length=1)
     reply_to_ref: bool = False
+
+    # Filet de sécurité (retrait temporaire de l'intégration Google) : même si
+    # le LLM renvoie quand même "draft_email", les params sont invalidés ici -
+    # l'action est écartée proprement par `_validate_actions`, jamais de crash.
+    @model_validator(mode="after")
+    def _mails_actifs(self) -> "DraftParams":
+        if not settings.assistant_mails_enabled:
+            raise ValueError("Les capacités mails de l'assistant sont désactivées.")
+        return self
 
 
 ACTION_PARAM_MODELS: dict[str, type[BaseModel]] = {

@@ -56,7 +56,7 @@ export function NavbarAssistantBar() {
         onKeyDown={(e) => {
           if (e.key === "Enter") envoyer();
         }}
-        placeholder="Dis-moi quoi faire — une note, un rendez-vous, un mail..."
+        placeholder="Dis-moi quoi faire, par exemple une note, un rendez-vous, une tâche..."
         className="min-w-0 flex-1 bg-transparent font-body text-sm text-ink placeholder:text-ink/40 focus:outline-none"
       />
       {dicteeSupportee && (

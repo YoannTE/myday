@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { CheckCircle2 } from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
-import { Freshness } from "@/components/layout/freshness";
 import { InstallerGuide } from "@/components/aide/installer-guide";
 import { BarreTheme } from "@/components/aide/barre-theme";
 import { requireUser } from "@/lib/session";
@@ -49,7 +48,6 @@ export default async function AidePage() {
 
         <BarreTheme />
       </main>
-      <Freshness />
     </div>
   );
 }

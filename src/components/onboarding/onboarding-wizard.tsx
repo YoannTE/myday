@@ -7,17 +7,17 @@ import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OnboardingProgress } from "@/components/onboarding/onboarding-progress";
-import { EtapeGoogle } from "@/components/onboarding/etape-google";
 import { EtapePreferences } from "@/components/onboarding/etape-preferences";
 import { EtapePwa } from "@/components/onboarding/etape-pwa";
 import { EtapeFinale } from "@/components/onboarding/etape-finale";
 import type { Preferences } from "@/components/onboarding/types";
 
 /**
- * Wizard d'onboarding (4 étapes : Google, Préférences, PWA, Final). Persiste
- * `onboarding_step` (0 non démarré, 1..4 étape courante affichée) à chaque
- * transition via PATCH /api/preferences (cf. .project/rounds/005/plan.md
- * « Sémantique figée onboarding_step »).
+ * Wizard d'onboarding (3 étapes : Préférences, PWA, Final - l'étape Google
+ * a été retirée au Round 016, Gmail/Agenda n'étant plus proposés dans
+ * l'interface). Persiste `onboarding_step` (0 non démarré, 1..3 étape
+ * courante affichée) à chaque transition via PATCH /api/preferences (cf.
+ * .project/rounds/005/plan.md « Sémantique figée onboarding_step »).
  */
 export function OnboardingWizard() {
   const router = useRouter();
@@ -69,7 +69,7 @@ export function OnboardingWizard() {
     try {
       const reponse = await apiCall<{ data: Preferences }>("/api/preferences", {
         method: "PATCH",
-        body: { onboarding_completed: true, onboarding_step: 4 },
+        body: { onboarding_completed: true, onboarding_step: 3 },
       });
       setPreferences(reponse.data);
       router.push("/");
@@ -100,21 +100,20 @@ export function OnboardingWizard() {
     );
   }
 
-  const etapeActuelle = Math.min(Math.max(preferences.onboarding_step, 1), 4);
+  const etapeActuelle = Math.min(Math.max(preferences.onboarding_step, 1), 3);
 
   return (
     <div className="flex flex-col gap-6">
       <OnboardingProgress etapeActuelle={etapeActuelle} />
 
-      {etapeActuelle === 1 && <EtapeGoogle onContinuer={() => avancer(2)} />}
-      {etapeActuelle === 2 && (
+      {etapeActuelle === 1 && (
         <EtapePreferences
           preferences={preferences}
-          onContinuer={(patch) => avancer(3, patch)}
+          onContinuer={(patch) => avancer(2, patch)}
         />
       )}
-      {etapeActuelle === 3 && <EtapePwa onContinuer={() => avancer(4)} />}
-      {etapeActuelle === 4 && <EtapeFinale onTerminer={terminer} />}
+      {etapeActuelle === 2 && <EtapePwa onContinuer={() => avancer(3)} />}
+      {etapeActuelle === 3 && <EtapeFinale onTerminer={terminer} />}
     </div>
   );
 }

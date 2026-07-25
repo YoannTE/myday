@@ -87,6 +87,9 @@ export const tasks = pgTable(
       onDelete: "set null",
     }),
     completedAt: timestamp("completed_at", { withTimezone: true }),
+    // Ordre manuel des taches sans echeance dans la liste (null = jamais
+    // ordonnee manuellement).
+    position: integer("position"),
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

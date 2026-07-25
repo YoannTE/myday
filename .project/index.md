@@ -8,10 +8,11 @@ FastAPI + Next.js + Postgres (dual-stack) + Agents IA (Agent Platform)
 
 ## Périmètre MVP
 
-- Sources : Google Agenda + Gmail (OAuth officiel) uniquement — WhatsApp/SMS/iCloud exclus (pas d'API fiable)
-- To-do et notes natives MyDay
-- Brief IA à heure choisie + priorisation continue
-- Assistant conversationnel (validation obligatoire avant envoi de mail)
+- Cockpit unique : tout sur la page `/` (brief IA, météo, planning, tâches, notes), sections réordonnables, plus de sous-pages
+- Google (Agenda + Gmail) et mails RETIRÉS temporairement depuis le 2026-07-25 (code conservé, désactivé par flags, cf. decisions.md)
+- Planning, to-do et notes 100 % natifs MyDay
+- Brief IA à heure choisie (sans mails)
+- Assistant conversationnel (tâches, notes, événements ; capacités mails désactivées)
 - Notifications push, recherche globale, espace admin invitations
 
 ## Règles clés

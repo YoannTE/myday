@@ -6,7 +6,7 @@ import { usePwaInstall } from "@/components/pwa/pwa-install-provider";
 import { Button } from "@/components/ui/button";
 
 /**
- * Étape 3 du wizard (transposition de la section « Installe MyDay sur ton
+ * Étape 2 du wizard (transposition de la section « Installe MyDay sur ton
  * téléphone » de onboarding.html) : propose l'installation si le navigateur
  * le permet, affiche les instructions iOS sinon, ou confirme si déjà
  * installée. Toujours passable (contrat `usePwaInstall` figé, cf. plan
@@ -31,7 +31,7 @@ export function EtapePwa({ onContinuer }: { onContinuer: () => void }) {
   return (
     <section className="fade-in delay-1 rounded-card bg-card p-6 shadow-card md:p-10">
       <span className="mb-4 inline-block rounded-full bg-soft px-2.5 py-1 font-mono text-[10px] tracking-[.04em] text-accent uppercase">
-        Étape 3 · En cours
+        Étape 2 · En cours
       </span>
       <h2 className="mb-2 font-display text-lg font-extrabold tracking-[-0.02em] text-ink md:text-2xl">
         Installe MyDay sur ton téléphone

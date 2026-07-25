@@ -45,8 +45,10 @@ class Settings(BaseSettings):
     gmail_lookback_days: int = 7  # fenetre mails au premier sync / resync
     max_mails_per_sync: int = 50  # plafond de mails traites par run
 
-    # Scheduler de synchronisation periodique (~5 min). Desactivable en test.
-    google_scheduler_enabled: bool = True
+    # Scheduler de synchronisation periodique (~5 min). Synchronisation Google
+    # desactivee pour le moment (retrait temporaire de l'integration Gmail /
+    # Agenda) ; reactivable via la variable d'environnement GOOGLE_SCHEDULER_ENABLED.
+    google_scheduler_enabled: bool = False
     google_scheduler_interval_minutes: int = 5
     # Timeout global d'un run de sync declenche par le scheduler (secondes).
     google_sync_run_timeout: int = 60
@@ -109,10 +111,13 @@ class Settings(BaseSettings):
     # LLM en panne -> template) reste actif si un appel échoue malgré tout.
     assistant_llm_model: str = "claude-sonnet-4-5"
     assistant_max_actions_per_message: int = 3
-    assistant_allow_email_send: bool = True
+    assistant_allow_email_send: bool = False
     assistant_hitl_timeout_hours: int = 24
     assistant_reply_tone: str = "naturel"
     assistant_rate_limit_per_min: int = 10
+    # Capacites mails de l'assistant (brouillon/envoi) desactivees avec le
+    # retrait temporaire de l'integration Google ; reversible via env var.
+    assistant_mails_enabled: bool = False
 
     # Notifications push web (Round 009) : clés VAPID (paire d'application,
     # cf. `.env.local`) - la privée est le base64url des 32 octets bruts,

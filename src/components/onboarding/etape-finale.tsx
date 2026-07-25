@@ -5,7 +5,7 @@ import { apiCall } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 
 /**
- * Étape 4 du wizard (transposition fidèle de la variante « Brief prêt en
+ * Étape 3 du wizard (transposition fidèle de la variante « Brief prêt en
  * scène » de onboarding.html) : clôture l'installation et ouvre le cockpit.
  * Déclenche la génération du tout premier brief en best-effort (Round 007) -
  * un échec ne doit jamais bloquer l'entrée dans le cockpit, le brief se
@@ -34,7 +34,7 @@ export function EtapeFinale({
   return (
     <section className="cta-gradient fade-in delay-1 rounded-card p-6 text-white md:p-10">
       <span className="mb-4 inline-block rounded-full bg-white/15 px-2.5 py-1 font-mono text-[10px] tracking-[.04em] text-white/70 uppercase">
-        Étape 4 · Le meilleur moment
+        Étape 3 · Le meilleur moment
       </span>
       <h2 className="mb-3 font-display text-xl font-extrabold tracking-[-0.02em] md:text-3xl">
         Ton cockpit est prêt.

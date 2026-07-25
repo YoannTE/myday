@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Bell, Repeat, TriangleAlert } from "lucide-react";
+import { Bell, ChevronDown, ChevronUp, Repeat, TriangleAlert } from "lucide-react";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
 import { cn } from "@/lib/utils";
@@ -38,6 +38,12 @@ interface TaskItemProps {
   onUpdated: (task: Task) => void;
   onCategoriesChanged?: () => void;
   onDeleted?: (taskId: string) => void;
+  /** Remplace la liste complète après un déplacement (`POST /api/tasks/{id}/deplacer`). */
+  onReordonnee?: (taches: Task[]) => void;
+  /** Fausse quand la tâche est déjà première parmi les sans-échéance de son groupe. */
+  peutMonter?: boolean;
+  /** Fausse quand la tâche est déjà dernière parmi les sans-échéance de son groupe. */
+  peutDescendre?: boolean;
 }
 
 /**
@@ -46,14 +52,25 @@ interface TaskItemProps {
  * inline du titre (clic sur le texte -> input -> Entrée/perte de focus).
  * Case et titre restent actifs pour une tâche partagée reçue ; seul le
  * réglage détaillé (⚙️ `TaskDetailsDialog` : échéance, catégorie, rappel,
- * planification) reste réservé au propriétaire.
+ * planification) reste réservé au propriétaire. Round 016 : flèches de
+ * réordonnancement manuel, réservées aux tâches à faire sans échéance
+ * (`onReordonnee` fourni par le parent).
  */
-export function TaskItem({ task, onUpdated, onCategoriesChanged, onDeleted }: TaskItemProps) {
+export function TaskItem({
+  task,
+  onUpdated,
+  onCategoriesChanged,
+  onDeleted,
+  onReordonnee,
+  peutMonter,
+  peutDescendre,
+}: TaskItemProps) {
   const [enEdition, setEnEdition] = useState(false);
   const [titreEdition, setTitreEdition] = useState(task.titre);
   const [enCours, setEnCours] = useState(false);
   const estFaite = task.statut === "faite";
   const estPartagee = task.partage_par != null;
+  const afficherFleches = Boolean(onReordonnee) && !estFaite && !task.echeance;
 
   async function basculerStatut() {
     if (enCours) return;
@@ -84,6 +101,22 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged, onDeleted }: Ta
       toast.error(
         messageErreurApi(erreur, "Impossible de mettre à jour la tâche."),
       );
+    } finally {
+      setEnCours(false);
+    }
+  }
+
+  async function deplacer(direction: "haut" | "bas") {
+    if (enCours || !onReordonnee) return;
+    setEnCours(true);
+    try {
+      const reponse = await apiCall<{ data: Task[] }>(
+        `/api/tasks/${task.id}/deplacer`,
+        { method: "POST", body: { direction } },
+      );
+      onReordonnee(reponse.data);
+    } catch (erreur) {
+      toast.error(messageErreurApi(erreur, "Impossible de déplacer la tâche."));
     } finally {
       setEnCours(false);
     }
@@ -146,7 +179,7 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged, onDeleted }: Ta
         <span
           onClick={() => !estFaite && setEnEdition(true)}
           className={cn(
-            "min-w-0 flex-1 font-body text-sm break-words text-ink",
+            "min-w-0 flex-1 font-body text-xs break-words text-ink md:text-sm",
             estFaite && "text-ink/50 line-through",
             !estFaite && "cursor-text",
           )}
@@ -179,9 +212,31 @@ export function TaskItem({ task, onUpdated, onCategoriesChanged, onDeleted }: Ta
         />
       )}
       {!estFaite && task.priorite !== "haute" && task.echeance && (
-        <span className="flex-shrink-0 font-mono text-[9px] tracking-[.04em] text-ink/40 uppercase">
+        <span className="flex-shrink-0 font-mono text-[10px] tracking-[.04em] text-ink/40 uppercase">
           {formaterEcheance(task.echeance)}
         </span>
+      )}
+      {afficherFleches && (
+        <div className="flex flex-shrink-0 flex-col">
+          <button
+            type="button"
+            aria-label="Monter la tâche"
+            disabled={enCours || !peutMonter}
+            onClick={() => deplacer("haut")}
+            className="flex h-4 w-4 items-center justify-center text-ink/30 transition-colors hover:text-accent disabled:opacity-30"
+          >
+            <ChevronUp className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Descendre la tâche"
+            disabled={enCours || !peutDescendre}
+            onClick={() => deplacer("bas")}
+            className="flex h-4 w-4 items-center justify-center text-ink/30 transition-colors hover:text-accent disabled:opacity-30"
+          >
+            <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+        </div>
       )}
       {!estPartagee && (
         <TaskDetailsDialog

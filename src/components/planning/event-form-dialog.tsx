@@ -202,10 +202,10 @@ export function EventFormDialog({
           </DialogTitle>
           <DialogDescription>
             {estPartagee
-              ? `Événement partagé par ${evenement?.partage_par} — vous pouvez le modifier à deux.`
+              ? `Événement partagé par ${evenement?.partage_par}, vous pouvez le modifier à deux.`
               : evenement
-                ? "Les modifications sont répercutées sur Google Agenda si ton compte est connecté."
-                : "L'événement est ajouté à ton planning et synchronisé avec Google Agenda si ton compte est connecté."}
+                ? "Les modifications sont enregistrées sur ton planning."
+                : "L'événement est ajouté à ton planning."}
           </DialogDescription>
         </DialogHeader>
         {evenement && (

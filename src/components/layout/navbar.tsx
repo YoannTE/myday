@@ -16,14 +16,6 @@ interface NavbarProps {
   };
 }
 
-const LIENS_NAVIGATION = [
-  { href: "/", label: "Cockpit" },
-  { href: "/planning", label: "Planning" },
-  { href: "/notes", label: "Notes" },
-  { href: "/taches", label: "Tâches" },
-  { href: "/mails", label: "Mails" },
-];
-
 const CLASSE_LIEN_NAV =
   "font-mono text-[11px] font-bold tracking-[.04em] text-ink/50 uppercase whitespace-nowrap hover:text-accent";
 
@@ -40,10 +32,12 @@ function formaterDateDuJour(date: Date): string {
  * Barre du haut AEVIO One (transposition fidèle de
  * .project/mockups/shared/components/navbar.html) : logo M dégradé + date
  * du jour, barre assistant centrale (Round 008 : envoie vers `/assistant` via
- * `NavbarAssistantBar`), recherche globale + cloche de notifications (Round
- * 009), bouton mode sombre fonctionnel et avatar. Server Component : seuls
- * les éléments interactifs (assistant, recherche, notifications, mode
- * sombre, menu utilisateur) sont des Client Components.
+ * `NavbarAssistantBar`), lien « Aide », recherche globale + cloche de
+ * notifications (Round 009), bouton mode sombre fonctionnel et avatar. Tout
+ * le contenu (planning, tâches, notes) vivant désormais sur le cockpit
+ * unique (« / »), il n'y a plus de seconde rangée de liens de navigation.
+ * Server Component : seuls les éléments interactifs (assistant, recherche,
+ * notifications, mode sombre, menu utilisateur) sont des Client Components.
  */
 export function Navbar({ user }: NavbarProps) {
   const dateDuJour = formaterDateDuJour(new Date());
@@ -65,30 +59,15 @@ export function Navbar({ user }: NavbarProps) {
         </div>
 
         <div className="ml-auto flex items-center gap-1.5">
+          <Link href="/aide" className={CLASSE_LIEN_NAV}>
+            Aide
+          </Link>
           <SearchModal />
           <NotificationsBell />
           <DarkModeToggle />
           <NavbarUserMenu initiale={initialeAvatar(user.name, user.email)} />
         </div>
       </div>
-
-      <nav className="mx-auto flex max-w-4xl items-center overflow-x-auto px-4 pb-3 md:px-6">
-        {/* Liens principaux centrés (les marges auto centrent ce groupe et
-            poussent « Aide » à l'extrémité droite, sous l'avatar). */}
-        <div className="mx-auto flex gap-5">
-          {LIENS_NAVIGATION.map((lien) => (
-            <Link key={lien.href} href={lien.href} className={CLASSE_LIEN_NAV}>
-              {lien.label}
-            </Link>
-          ))}
-        </div>
-        <Link
-          href="/aide"
-          className={`${CLASSE_LIEN_NAV} flex-shrink-0 pl-5`}
-        >
-          Aide
-        </Link>
-      </nav>
     </header>
   );
 }

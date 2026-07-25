@@ -12,6 +12,14 @@ interface TachesGroupesProps {
   onDeleted?: (taskId: string) => void;
   onCategoriesChanged: () => void;
   onCreerCategorie: () => void;
+  /** Remplace la liste complète après un déplacement (`POST /api/tasks/{id}/deplacer`). */
+  onReordonnee: (taches: Task[]) => void;
+}
+
+/** Rang de `tache` parmi les tâches sans échéance du même tableau (ordre reçu de l'API). */
+function positionSansEcheance(tache: Task, groupe: Task[]): number {
+  const sansEcheance = groupe.filter((t) => !t.echeance);
+  return sansEcheance.findIndex((t) => t.id === tache.id);
 }
 
 interface Groupe {
@@ -57,6 +65,7 @@ export function TachesGroupes({
   onDeleted,
   onCategoriesChanged,
   onCreerCategorie,
+  onReordonnee,
 }: TachesGroupesProps) {
   if (taches.length === 0) {
     return (
@@ -69,18 +78,25 @@ export function TachesGroupes({
   }
 
   if (!categoriesExistent) {
+    const nombreSansEcheance = taches.filter((t) => !t.echeance).length;
     return (
       <div className="flex flex-col gap-3">
         <div className="divide-y divide-ink/5 rounded-card bg-card shadow-card">
-          {taches.map((tache) => (
-            <TaskItem
-              key={tache.id}
-              task={tache}
-              onUpdated={onUpdated}
+          {taches.map((tache) => {
+            const position = positionSansEcheance(tache, taches);
+            return (
+              <TaskItem
+                key={tache.id}
+                task={tache}
+                onUpdated={onUpdated}
                 onDeleted={onDeleted}
-              onCategoriesChanged={onCategoriesChanged}
-            />
-          ))}
+                onCategoriesChanged={onCategoriesChanged}
+                onReordonnee={onReordonnee}
+                peutMonter={position > 0}
+                peutDescendre={position >= 0 && position < nombreSansEcheance - 1}
+              />
+            );
+          })}
         </div>
         <button
           type="button"
@@ -97,33 +113,42 @@ export function TachesGroupes({
 
   return (
     <div className="flex flex-col gap-6">
-      {groupes.map((groupe) => (
-        <div key={groupe.cle}>
-          <div className="mb-2 flex items-center gap-2">
-            {groupe.couleur && (
-              <span
-                className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: groupe.couleur }}
-                aria-hidden="true"
-              />
-            )}
-            <p className="font-mono text-[11px] tracking-[.04em] text-ink/40 uppercase">
-              {groupe.nom}
-            </p>
+      {groupes.map((groupe) => {
+        const nombreSansEcheance = groupe.taches.filter((t) => !t.echeance).length;
+        return (
+          <div key={groupe.cle}>
+            <div className="mb-2 flex items-center gap-2">
+              {groupe.couleur && (
+                <span
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: groupe.couleur }}
+                  aria-hidden="true"
+                />
+              )}
+              <p className="font-mono text-[11px] tracking-[.04em] text-ink/40 uppercase">
+                {groupe.nom}
+              </p>
+            </div>
+            <div className="divide-y divide-ink/5 rounded-card bg-card shadow-card">
+              {groupe.taches.map((tache) => {
+                const position = positionSansEcheance(tache, groupe.taches);
+                return (
+                  <TaskItem
+                    key={tache.id}
+                    task={tache}
+                    onUpdated={onUpdated}
+                    onDeleted={onDeleted}
+                    onCategoriesChanged={onCategoriesChanged}
+                    onReordonnee={onReordonnee}
+                    peutMonter={position > 0}
+                    peutDescendre={position >= 0 && position < nombreSansEcheance - 1}
+                  />
+                );
+              })}
+            </div>
           </div>
-          <div className="divide-y divide-ink/5 rounded-card bg-card shadow-card">
-            {groupe.taches.map((tache) => (
-              <TaskItem
-                key={tache.id}
-                task={tache}
-                onUpdated={onUpdated}
-                onDeleted={onDeleted}
-                onCategoriesChanged={onCategoriesChanged}
-              />
-            ))}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

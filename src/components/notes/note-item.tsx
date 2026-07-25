@@ -27,7 +27,7 @@ export function NoteItem({ note, selectionnee, onSelect }: NoteItemProps) {
       } ${note.archivee ? "opacity-50" : ""}`}
     >
       <div className="min-w-0 flex-1">
-        <p className="truncate font-display text-sm font-semibold text-ink">
+        <p className="truncate font-display text-xs font-semibold text-ink md:text-sm">
           {note.titre}
         </p>
         {extrait && (
@@ -39,7 +39,7 @@ export function NoteItem({ note, selectionnee, onSelect }: NoteItemProps) {
             <PartageBadge nom={note.partage_par} />
           )}
           {note.items.length > 0 && (
-            <span className="font-mono text-[8px] tracking-[.04em] text-ink/40 uppercase">
+            <span className="font-mono text-[10px] tracking-[.04em] text-ink/40 uppercase">
               ☑ {nombreCoches}/{note.items.length}
             </span>
           )}
@@ -47,7 +47,7 @@ export function NoteItem({ note, selectionnee, onSelect }: NoteItemProps) {
       </div>
       <div className="flex flex-shrink-0 flex-col items-end gap-1">
         {note.archivee ? (
-          <span className="font-mono text-[8px] tracking-[.04em] text-ink/30 uppercase">
+          <span className="font-mono text-[10px] tracking-[.04em] text-ink/30 uppercase">
             Archivée
           </span>
         ) : note.epinglee ? (
@@ -56,12 +56,12 @@ export function NoteItem({ note, selectionnee, onSelect }: NoteItemProps) {
             aria-label="Épinglée"
           />
         ) : (
-          <span className="font-mono text-[8px] tracking-[.04em] text-ink/30 uppercase">
+          <span className="font-mono text-[10px] tracking-[.04em] text-ink/30 uppercase">
             {formaterFraicheur(note.updated_at)}
           </span>
         )}
         {note.origine === "assistant" && (
-          <span className="font-mono text-[9px] tracking-[.04em] text-accent uppercase">
+          <span className="font-mono text-[10px] tracking-[.04em] text-accent uppercase">
             via l&apos;assistant
           </span>
         )}

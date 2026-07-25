@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,16 +26,20 @@ function TachesSkeleton() {
 }
 
 /**
- * Page `/taches` (F5) : liste complète des tâches, ajout rapide et cochage,
- * en réutilisant `TaskItem`/`TaskQuickAdd` (mêmes composants que le cockpit).
- * Round 012 (F1/F2) : groupement par catégorie via `TachesGroupes`, gestion
- * des catégories via `TaskCategoriesDialog`.
+ * Section « Tâches » du cockpit unique : liste complète des tâches, ajout
+ * rapide et cochage, en réutilisant `TaskItem`/`TaskQuickAdd`. Round 012
+ * (F1/F2) : groupement par catégorie via `TachesGroupes`, gestion des
+ * catégories via `TaskCategoriesDialog`. Round 016 : les tâches sont reçues
+ * déjà triées par le backend (échéance croissante puis sans-date), les
+ * terminées sont repliées par défaut, et le déplacement manuel des tâches
+ * sans échéance remplace la liste complète reçue de l'API.
  */
 export function TachesClient() {
   const [taches, setTaches] = useState<Task[] | null>(null);
   const [categories, setCategories] = useState<TaskCategory[] | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [dialogCategoriesOuvert, setDialogCategoriesOuvert] = useState(false);
+  const [terminesOuvertes, setTerminesOuvertes] = useState(false);
 
   const chargerTaches = useCallback(async () => {
     try {
@@ -79,6 +84,10 @@ export function TachesClient() {
     setTaches((actuelles) => [tache, ...(actuelles ?? [])]);
   }
 
+  function handleReordonnee(nouvellesTaches: Task[]) {
+    setTaches(nouvellesTaches);
+  }
+
   if (erreur) {
     return (
       <div className="rounded-card bg-card p-6 text-center shadow-card">
@@ -117,23 +126,35 @@ export function TachesClient() {
         onDeleted={handleDeleted}
         onCategoriesChanged={chargerCategories}
         onCreerCategorie={() => setDialogCategoriesOuvert(true)}
+        onReordonnee={handleReordonnee}
       />
       {faites.length > 0 && (
         <div>
-          <p className="mb-3 font-mono text-[11px] tracking-[.04em] text-ink/40 uppercase">
-            Terminées
-          </p>
-          <div className="divide-y divide-ink/5 rounded-card bg-card shadow-card">
-            {faites.map((tache) => (
-              <TaskItem
-                key={tache.id}
-                task={tache}
-                onUpdated={handleUpdated}
-                onDeleted={handleDeleted}
-                onCategoriesChanged={chargerCategories}
-              />
-            ))}
-          </div>
+          <button
+            type="button"
+            onClick={() => setTerminesOuvertes((ouvert) => !ouvert)}
+            className="mb-3 flex items-center gap-1.5 font-mono text-[11px] tracking-[.04em] text-ink/40 uppercase"
+          >
+            {terminesOuvertes ? (
+              <ChevronDown className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5" />
+            )}
+            Terminées ({faites.length})
+          </button>
+          {terminesOuvertes && (
+            <div className="divide-y divide-ink/5 rounded-card bg-card shadow-card">
+              {faites.map((tache) => (
+                <TaskItem
+                  key={tache.id}
+                  task={tache}
+                  onUpdated={handleUpdated}
+                  onDeleted={handleDeleted}
+                  onCategoriesChanged={chargerCategories}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
       <TaskCategoriesDialog

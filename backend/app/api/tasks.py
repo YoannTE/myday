@@ -15,6 +15,7 @@ from app.auth.session import AuthUser, get_current_user
 from app.models.tasks import (
     STATUTS,
     TaskCreate,
+    TaskDeplacer,
     TaskPlanifier,
     TaskResponse,
     TaskUpdate,
@@ -67,6 +68,20 @@ async def deplanifier_task(
 ):
     task = await tasks_service.deplanifier_task(user["id"], str(task_id))
     return {"data": TaskResponse(**task).model_dump()}
+
+
+@router.post("/{task_id}/deplacer")
+async def deplacer_task(
+    task_id: UUID,
+    payload: TaskDeplacer,
+    user: AuthUser = Depends(get_current_user),
+):
+    """Déplace une tâche sans échéance vers le haut/bas dans l'ordre manuel
+    (Round 018). Renvoie la liste complète des tâches de l'utilisateur."""
+    tasks = await tasks_service.deplacer_task(
+        user["id"], str(task_id), payload.direction
+    )
+    return {"data": [TaskResponse(**t).model_dump() for t in tasks]}
 
 
 @router.patch("/{task_id}")

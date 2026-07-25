@@ -51,8 +51,8 @@ export function DangerZone() {
         Supprimer mon compte
       </h2>
       <p className="mb-4 font-body text-sm text-ink/50">
-        Toutes tes données MyDay sont effacées définitivement. Tes mails et
-        ton agenda Google ne sont pas touchés.
+        Toutes tes données MyDay (planning, tâches, notes) sont effacées
+        définitivement.
       </p>
       <Dialog
         open={open}

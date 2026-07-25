@@ -4,11 +4,10 @@ import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
 
 export const metadata: Metadata = {
   title: "Bienvenue",
-  description:
-    "Connecte Google, règle ton brief et installe MyDay en quatre étapes rapides.",
+  description: "Règle ton brief et installe MyDay en trois étapes rapides.",
 };
 
-// Wizard d'accueil (4 étapes) - transposition fidèle de onboarding.html.
+// Wizard d'accueil (3 étapes) - transposition fidèle de onboarding.html.
 // Server Component : seule la garde d'accès (`requireUser`) est ici, tout le
 // reste vit dans le wizard client (persistance `onboarding_step`).
 export default async function OnboardingPage() {

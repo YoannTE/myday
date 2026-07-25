@@ -207,18 +207,23 @@ def test_brief_ordre_des_blocs_source_unique():
     assert ordre_effectif == BRIEF_BLOCK_ORDER
 
 
-def test_brief_ordre_des_blocs_contexte_riche(user_id):
+def test_brief_ordre_des_blocs_contexte_riche(user_id, monkeypatch):
     """Contexte riche (évènement + tâche du jour + mail) : les 3 blocs sont
     tous renseignés (aucun bloc fantôme). L'ordre réel (a -> b -> c) est
     garanti au niveau Python par `test_brief_ordre_des_blocs_source_unique` -
     la persistance jsonb de Postgres ne préserve pas l'ordre des clés, donc
-    ce test-ci ne vérifie que le contenu, pas l'ordre des clés en BDD."""
+    ce test-ci ne vérifie que le contenu, pas l'ordre des clés en BDD.
+
+    Le bloc mails suppose une connexion Google active (sync désactivée par
+    défaut avec le retrait temporaire de l'intégration) - simulée ici."""
+    monkeypatch.setattr(settings, "google_scheduler_enabled", True)
     now = datetime.now(_TZ)
     insert_event(user_id, "Point équipe", now + timedelta(hours=1), now + timedelta(hours=2))
     insert_task(user_id, "Relire le devis", now + timedelta(hours=4))
     insert_triaged_mail(
         user_id, "g-ordre", "client@corp.com", "Devis à valider", 75, now - timedelta(hours=2)
     )
+    upsert_google_sync(user_id, now, now)
 
     result = run_in_loop(lambda: run_daily_brief(user_id, "manual", today_str()))
     contenu = get_brief_contenu(result["brief_id"])
@@ -228,14 +233,17 @@ def test_brief_ordre_des_blocs_contexte_riche(user_id):
     assert contenu["mails_summary"] != "Aucun mail important n'attend de réponse."
 
 
-def test_brief_bloc_rdv_vide_mais_taches_et_mails_presents(user_id):
+def test_brief_bloc_rdv_vide_mais_taches_et_mails_presents(user_id, monkeypatch):
     """Aucun rendez-vous aujourd'hui mais des tâches/mails : le bloc RDV
-    affiche le message vide explicite, les autres blocs restent renseignés."""
+    affiche le message vide explicite, les autres blocs restent renseignés
+    (avec une connexion Google active - sync désactivée par défaut)."""
+    monkeypatch.setattr(settings, "google_scheduler_enabled", True)
     now = datetime.now(_TZ)
     insert_task(user_id, "Relancer le fournisseur", now + timedelta(hours=2))
     insert_triaged_mail(
         user_id, "g-vide-rdv", "fournisseur@corp.com", "Relance", 70, now - timedelta(hours=1)
     )
+    upsert_google_sync(user_id, now, now)
 
     result = run_in_loop(lambda: run_daily_brief(user_id, "manual", today_str()))
     contenu = get_brief_contenu(result["brief_id"])
@@ -259,16 +267,19 @@ def test_brief_tache_en_retard_non_incluse_dans_les_taches_du_jour(user_id):
     assert not any("Tâche très en retard" in p for p in contenu["priorities"])
 
 
-def test_brief_mails_top_3_parmi_plus_de_trois(user_id):
+def test_brief_mails_top_3_parmi_plus_de_trois(user_id, monkeypatch):
     """Seuls les 3 mails les plus importants (score décroissant) reçus dans
     les 5 derniers jours composent le bloc mails (Round 014 F5) - même si
-    davantage de mails importants existent."""
+    davantage de mails importants existent (avec une connexion Google active
+    - sync désactivée par défaut avec le retrait temporaire de l'intégration)."""
+    monkeypatch.setattr(settings, "google_scheduler_enabled", True)
     now = datetime.now(_TZ)
     for i, score in enumerate([90, 65, 60, 95, 80]):  # 5 mails >= seuil (60)
         insert_triaged_mail(
             user_id, f"g-top3-{i}", f"expediteur{i}@corp.com", f"Sujet {i}",
             score, now - timedelta(hours=i + 1),
         )
+    upsert_google_sync(user_id, now, now)
 
     result = run_in_loop(lambda: run_daily_brief(user_id, "manual", today_str()))
     contenu = get_brief_contenu(result["brief_id"])

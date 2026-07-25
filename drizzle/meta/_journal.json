@@ -169,6 +169,13 @@
       "when": 1784029818713,
       "tag": "0023_dapper_the_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1784971271334,
+      "tag": "0024_melted_bishop",
+      "breakpoints": true
     }
   ]
 }

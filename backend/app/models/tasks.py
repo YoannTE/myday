@@ -1,6 +1,7 @@
 """Schémas Pydantic du domaine Tâches."""
 
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -112,6 +113,9 @@ class TaskResponse(BaseModel):
     completed_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
+    # Ordre manuel des tâches sans échéance (haut/bas) : nul tant que la tâche
+    # n'a jamais été déplacée, le tri retombe alors sur `created_at`.
+    position: int | None = None
 
 
 class TaskPlanifier(BaseModel):
@@ -134,3 +138,10 @@ class TaskPlanifier(BaseModel):
                 "ou -1 pour aucune notification."
             )
         return value
+
+
+class TaskDeplacer(BaseModel):
+    """Déplacement manuel (haut/bas) d'une tâche sans échéance, dans l'ordre
+    de sa catégorie (Round 018)."""
+
+    direction: Literal["haut", "bas"]

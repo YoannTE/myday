@@ -183,7 +183,7 @@ export function NoteOuverte({
         value={contenu}
         onChange={(evenement) => setContenu(evenement.target.value)}
         placeholder="Écris ici..."
-        className="min-h-40 w-full max-w-full resize-none border-none bg-transparent p-0 text-sm leading-relaxed break-words whitespace-pre-wrap text-ink/80 shadow-none focus-visible:ring-0 disabled:opacity-100"
+        className="min-h-40 w-full max-w-full resize-none rounded-2xl border-none bg-ink/5 px-4 py-3 text-sm leading-relaxed break-words whitespace-pre-wrap text-ink/80 shadow-none focus-visible:ring-0 disabled:opacity-100"
       />
       <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-ink/5 pt-4">
         <span className="font-mono text-[10px] tracking-[.04em] text-ink/30 uppercase">

@@ -4,39 +4,20 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Eye } from "lucide-react";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
-import { Skeleton } from "@/components/ui/skeleton";
 import { BriefHero } from "@/components/cockpit/brief-hero";
+import { CockpitSection } from "@/components/cockpit/cockpit-section";
+import { CockpitSkeleton } from "@/components/cockpit/cockpit-skeleton";
+import {
+  useOrdreSections,
+  type CleSection,
+} from "@/components/cockpit/use-ordre-sections";
 import { MeteoWidget } from "@/components/meteo/meteo-widget";
-import { NotesEpinglees } from "@/components/cockpit/notes-epinglees";
-import { JourneeTimeline } from "@/components/cockpit/journee-timeline";
-import { TachesChecklist } from "@/components/cockpit/taches-checklist";
-import { MailsImportants } from "@/components/cockpit/mails-importants";
+import { PlanningClient } from "@/components/planning/planning-client";
+import { TachesClient } from "@/components/taches/taches-client";
+import { NotesClient } from "@/components/notes/notes-client";
 import { OnboardingResumeBanner } from "@/components/onboarding/onboarding-resume-banner";
 import type { CockpitData } from "@/components/cockpit/types";
-import type { Task } from "@/components/taches/types";
 
-function CockpitSkeleton() {
-  return (
-    <div className="flex flex-col gap-10">
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="flex flex-col gap-4">
-          <Skeleton className="h-6 w-32" />
-          <div className="rounded-card bg-card p-6 shadow-card">
-            <Skeleton className="mb-3 h-4 w-full" />
-            <Skeleton className="mb-3 h-4 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/**
- * Cockpit `/` (F3) : charge `GET /api/cockpit`, émet `dashboard_opened` une
- * seule fois au montage, puis rend la carte hero Brief (F8, Round 007) suivie
- * des blocs Notes/Journée/Tâches/Mails.
- */
 /**
  * Clé localStorage : mémorise (par appareil) si l'utilisateur a choisi
  * d'afficher le brief. Masqué par défaut (absence de valeur) : le brief
@@ -44,17 +25,41 @@ function CockpitSkeleton() {
  */
 const CLE_BRIEF_AFFICHE = "myday:brief-affiche";
 
-/** Scope Google requis pour lire les mails (tri IA de la boîte Gmail). */
-const SCOPE_GMAIL = "https://www.googleapis.com/auth/gmail.readonly";
+const LIBELLES_SECTION: Record<CleSection, string> = {
+  meteo: "Météo",
+  planning: "Planning",
+  taches: "Tâches",
+  notes: "Notes",
+};
 
+function contenuSection(cle: CleSection) {
+  switch (cle) {
+    case "meteo":
+      return <MeteoWidget />;
+    case "planning":
+      return <PlanningClient />;
+    case "taches":
+      return <TachesClient />;
+    case "notes":
+      return <NotesClient />;
+  }
+}
+
+/**
+ * Cockpit unique `/` (Round 016) : charge `GET /api/cockpit` uniquement pour
+ * le brief du jour, émet `dashboard_opened` une seule fois au montage, puis
+ * rend la carte hero Brief (non réordonnable) suivie des 4 sections
+ * Météo/Planning/Tâches/Notes, réordonnables par l'utilisateur
+ * (`useOrdreSections`). Le planning, les tâches et les notes ne dépendent
+ * plus de sous-pages dédiées : `PlanningClient`/`TachesClient`/`NotesClient`
+ * gèrent eux-mêmes leur chargement.
+ */
 export function CockpitClient() {
   const [donnees, setDonnees] = useState<CockpitData | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [briefVisible, setBriefVisible] = useState(false);
-  // La section « Mails importants » n'a de sens que si Gmail est connecté.
-  // Masquée par défaut (et tant que le statut n'est pas confirmé).
-  const [gmailConnecte, setGmailConnecte] = useState(false);
   const evenementEmis = useRef(false);
+  const { ordre, deplacer } = useOrdreSections();
 
   const charger = useCallback(async () => {
     try {
@@ -81,18 +86,6 @@ export function CockpitClient() {
     setBriefVisible(localStorage.getItem(CLE_BRIEF_AFFICHE) === "1");
   }, []);
 
-  useEffect(() => {
-    apiCall<{ data: { connected: boolean; scopes: string[] } }>(
-      "/api/google/status",
-    )
-      .then((reponse) =>
-        setGmailConnecte(
-          reponse.data.connected && reponse.data.scopes.includes(SCOPE_GMAIL),
-        ),
-      )
-      .catch(() => setGmailConnecte(false));
-  }, []);
-
   function basculerBrief() {
     setBriefVisible((visible) => {
       const nouveau = !visible;
@@ -115,31 +108,6 @@ export function CockpitClient() {
       // Journal d'usage non bloquant - un échec ne doit jamais gêner l'utilisateur.
     });
   }, []);
-
-  function handleTacheSupprimee(taskId: string) {
-    setDonnees((actuelles) =>
-      actuelles
-        ? { ...actuelles, taches: actuelles.taches.filter((t) => t.id !== taskId) }
-        : actuelles,
-    );
-  }
-
-  function handleTacheMiseAJour(tache: Task) {
-    setDonnees((actuelles) => {
-      if (!actuelles) return actuelles;
-      if (tache.statut === "faite") {
-        return {
-          ...actuelles,
-          taches: actuelles.taches.filter((t) => t.id !== tache.id),
-        };
-      }
-      const existeDeja = actuelles.taches.some((t) => t.id === tache.id);
-      const taches = existeDeja
-        ? actuelles.taches.map((t) => (t.id === tache.id ? tache : t))
-        : [tache, ...actuelles.taches];
-      return { ...actuelles, taches };
-    });
-  }
 
   if (erreur) {
     return (
@@ -171,21 +139,19 @@ export function CockpitClient() {
           Afficher le brief du jour
         </button>
       )}
-      <MeteoWidget />
       <OnboardingResumeBanner />
-      <JourneeTimeline evenements={donnees.prochains} onSuccess={charger} />
-      <TachesChecklist
-        taches={donnees.taches}
-        onUpdated={handleTacheMiseAJour}
-        onDeleted={handleTacheSupprimee}
-      />
-      <NotesEpinglees notes={donnees.notes_epinglees} />
-      {gmailConnecte && (
-        <MailsImportants
-          placeholder={donnees.mails_importants.placeholder}
-          mails={donnees.mails_importants.mails ?? []}
-        />
-      )}
+      {ordre.map((cle, index) => (
+        <CockpitSection
+          key={cle}
+          titre={LIBELLES_SECTION[cle]}
+          peutMonter={index > 0}
+          peutDescendre={index < ordre.length - 1}
+          onMonter={() => deplacer(cle, "haut")}
+          onDescendre={() => deplacer(cle, "bas")}
+        >
+          {contenuSection(cle)}
+        </CockpitSection>
+      ))}
     </div>
   );
 }

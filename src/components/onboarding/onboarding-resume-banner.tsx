@@ -6,17 +6,17 @@ import { apiCall } from "@/lib/api";
 import type { Preferences } from "@/components/onboarding/types";
 
 const LIBELLES_ETAPE: Record<number, string> = {
-  0: "Connecte Google",
-  1: "Connecte Google",
-  2: "Règle ton brief",
-  3: "Installe MyDay",
-  4: "Ouvre ton cockpit",
+  0: "Règle ton brief",
+  1: "Règle ton brief",
+  2: "Installe MyDay",
+  3: "Ouvre ton cockpit",
 };
 
 /**
  * Bannière de reprise d'onboarding (cockpit `/`) : discrète, affichée tant
  * que `onboarding_completed` est faux, renvoie vers l'étape où
- * l'utilisateur s'était arrêté (corr. arch#9, plan Round 005).
+ * l'utilisateur s'était arrêté (corr. arch#9, plan Round 005). 3 étapes
+ * depuis le Round 016 (l'étape Google a été retirée).
  */
 export function OnboardingResumeBanner() {
   const [preferences, setPreferences] = useState<Preferences | null>(null);
@@ -38,7 +38,7 @@ export function OnboardingResumeBanner() {
 
   if (!preferences || preferences.onboarding_completed) return null;
 
-  const etape = Math.min(Math.max(preferences.onboarding_step, 1), 4);
+  const etape = Math.min(Math.max(preferences.onboarding_step, 1), 3);
 
   return (
     <Link
@@ -46,7 +46,7 @@ export function OnboardingResumeBanner() {
       className="fade-in flex items-center justify-between gap-3 rounded-inner border border-accent/20 bg-soft px-4 py-3 font-body text-sm text-ink/70 transition-colors hover:border-accent/40"
     >
       <span>
-        Termine ta configuration —{" "}
+        Termine ta configuration,{" "}
         <span className="font-medium text-ink">{LIBELLES_ETAPE[etape]}</span>
       </span>
       <span className="font-medium text-accent">Continuer →</span>

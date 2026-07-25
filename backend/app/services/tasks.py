@@ -27,13 +27,18 @@ _SELECT = """
     SELECT t.id, t.titre, t.description, t.priorite, t.echeance, t.categorie_id,
            t.statut, t.origine, t.mail_id, t.recurrence, t.rappel_at,
            t.planifie_debut, t.planifie_fin, t.rappel_avance_minutes,
-           t.completed_at, t.created_at, t.updated_at,
+           t.completed_at, t.created_at, t.updated_at, t.position,
            t.user_id AS proprietaire_id, prop.name AS proprietaire_nom,
            c.nom AS categorie_nom, c.couleur AS categorie_couleur
     FROM tasks t
     LEFT JOIN "user" prop ON prop.id = t.user_id
     LEFT JOIN task_categories c ON c.id = t.categorie_id
 """
+
+# Round 018 : ordre d'affichage des listes de tâches. Une échéance passe
+# toujours avant une tâche sans échéance ; à échéance égale (ou absente),
+# `position` (ordre manuel haut/bas) prime, puis la date de création.
+_ORDER_BY = "ORDER BY t.echeance ASC NULLS LAST, t.position ASC NULLS LAST, t.created_at DESC"
 
 
 def _ajouter_mois(dt: datetime, n: int) -> datetime:
@@ -93,6 +98,7 @@ def _serialize(row: asyncpg.Record, user_id: str) -> dict:
         "completed_at": row["completed_at"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
+        "position": row["position"],
     }
 
 
@@ -132,14 +138,10 @@ async def list_tasks(user_id: str, statut: str | None) -> list[dict]:
     async with scoped_connection(user_id) as conn:
         if statut is not None:
             rows = await conn.fetch(
-                f"{_SELECT} WHERE t.statut = $1 "
-                "ORDER BY t.echeance ASC NULLS LAST, t.created_at DESC",
-                statut,
+                f"{_SELECT} WHERE t.statut = $1 {_ORDER_BY}", statut
             )
         else:
-            rows = await conn.fetch(
-                f"{_SELECT} ORDER BY t.echeance ASC NULLS LAST, t.created_at DESC"
-            )
+            rows = await conn.fetch(f"{_SELECT} {_ORDER_BY}")
     return [_serialize(r, user_id) for r in rows]
 
 
@@ -381,6 +383,61 @@ async def list_planned_tasks(
             date_from,
             date_to,
         )
+    return [_serialize(r, user_id) for r in rows]
+
+
+async def deplacer_task(user_id: str, task_id: str, direction: str) -> list[dict]:
+    """Déplace une tâche sans échéance vers le haut/bas dans l'ordre manuel de
+    sa catégorie (Round 018). La tâche doit être « à faire » et sans échéance
+    (le tri par échéance prime toujours et n'est pas réordonnable). No-op si
+    elle est déjà en première/dernière position du groupe ; renvoie dans tous
+    les cas la liste complète des tâches de l'utilisateur."""
+    async with scoped_connection(user_id) as conn:
+        async with conn.transaction():
+            task = await conn.fetchrow(
+                "SELECT id, categorie_id, echeance, statut FROM tasks "
+                "WHERE id = $1 AND user_id = $2",
+                task_id,
+                user_id,
+            )
+            if task is None:
+                raise not_found("Tâche introuvable.")
+            if task["echeance"] is not None or task["statut"] != "a_faire":
+                raise bad_request(
+                    "Seules les tâches à faire et sans échéance peuvent être "
+                    "réordonnées manuellement."
+                )
+
+            # Même groupe = même catégorie (NULL = « sans catégorie »), tâches
+            # à faire sans échéance, triées comme à l'affichage.
+            group = await conn.fetch(
+                "SELECT id::text AS id, position FROM tasks "
+                "WHERE user_id = $1 AND echeance IS NULL AND statut = 'a_faire' "
+                "AND categorie_id IS NOT DISTINCT FROM $2 "
+                "ORDER BY position ASC NULLS LAST, created_at DESC",
+                user_id,
+                task["categorie_id"],
+            )
+            ordered_ids = [r["id"] for r in group]
+            positions_avant = {r["id"]: r["position"] for r in group}
+
+            index = ordered_ids.index(task_id)
+            voisin_index = index - 1 if direction == "haut" else index + 1
+            if 0 <= voisin_index < len(ordered_ids):
+                ordered_ids[index], ordered_ids[voisin_index] = (
+                    ordered_ids[voisin_index],
+                    ordered_ids[index],
+                )
+
+            for position, tid in enumerate(ordered_ids):
+                if positions_avant[tid] != position:
+                    await conn.execute(
+                        "UPDATE tasks SET position = $2, updated_at = now() WHERE id = $1",
+                        tid,
+                        position,
+                    )
+
+        rows = await conn.fetch(f"{_SELECT} {_ORDER_BY}")
     return [_serialize(r, user_id) for r in rows]
 
 

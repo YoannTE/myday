@@ -22,6 +22,7 @@ from datetime import date as date_type
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
+from app.config import settings
 from app.db.client import scoped_connection
 
 _EVENTS_LIMIT = 20
@@ -114,6 +115,17 @@ async def collect_context(
             day_start, day_end, _TASKS_LIMIT + 1,
         )
 
+        sync_row = await conn.fetchrow(
+            "SELECT status, LEAST(calendar_synced_at, gmail_synced_at) AS last_sync_at "
+            "FROM google_connections"
+        )
+
+        # Synchronisation Google desactivee ou aucune connexion active : le
+        # brief reste pleinement fonctionnel (events + tasks + notes), sans
+        # bloc mails plutot que d'exposer des donnees obsoletes/absentes.
+        connexion_active = sync_row is not None and sync_row["status"] == "connected"
+        include_mails = include_mails and settings.google_scheduler_enabled and connexion_active
+
         mail_rows: list = []
         if include_mails:
             mail_rows = await conn.fetch(
@@ -124,11 +136,6 @@ async def collect_context(
                 day_end - timedelta(days=_MAILS_LOOKBACK_DAYS),
                 _MAILS_LIMIT + 1,
             )
-
-        sync_row = await conn.fetchrow(
-            "SELECT LEAST(calendar_synced_at, gmail_synced_at) AS last_sync_at "
-            "FROM google_connections"
-        )
 
     events, events_truncated = _bound(event_rows, _EVENTS_LIMIT)
     tomorrow, tomorrow_truncated = _bound(tomorrow_rows, _EVENTS_LIMIT)

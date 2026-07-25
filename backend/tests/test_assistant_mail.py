@@ -233,6 +233,7 @@ def test_draft_email_llm_echoue_fallback_minimal(user_id, monkeypatch):
 
 
 def test_approve_envoie_puis_double_approve_409(user_id, monkeypatch):
+    monkeypatch.setattr(settings, "assistant_allow_email_send", True)
     draft_id = insert_draft(user_id)
     _mock_send_ok(monkeypatch)
 
@@ -253,6 +254,7 @@ def test_reject_draft(user_id):
 
 
 def test_approve_edited_body_envoye(user_id, monkeypatch):
+    monkeypatch.setattr(settings, "assistant_allow_email_send", True)
     draft_id = insert_draft(
         user_id, destinataire="orig@ex.com", objet="Objet orig", corps="Corps orig"
     )
@@ -272,6 +274,7 @@ def test_approve_edited_body_envoye(user_id, monkeypatch):
 
 
 def test_approve_echec_ambigu_sending_unconfirmed(user_id, monkeypatch):
+    monkeypatch.setattr(settings, "assistant_allow_email_send", True)
     draft_id = insert_draft(user_id)
 
     async def fake(*args, **kwargs):
@@ -285,6 +288,7 @@ def test_approve_echec_ambigu_sending_unconfirmed(user_id, monkeypatch):
 
 
 def test_reconciliation_rfc822msgid_sent_sans_renvoi(user_id, monkeypatch):
+    monkeypatch.setattr(settings, "assistant_allow_email_send", True)
     draft_id = insert_draft(user_id, statut="sending_unconfirmed")
 
     async def fake_reconcile(user_id_, draft_id_):
@@ -301,6 +305,7 @@ def test_reconciliation_rfc822msgid_sent_sans_renvoi(user_id, monkeypatch):
 
 
 def test_reconciliation_absente_autorise_un_renvoi(user_id, monkeypatch):
+    monkeypatch.setattr(settings, "assistant_allow_email_send", True)
     draft_id = insert_draft(user_id, statut="sending_unconfirmed")
 
     async def fake_reconcile(user_id_, draft_id_):
@@ -322,7 +327,8 @@ def test_allow_email_send_false_403(user_id, monkeypatch):
     assert exc_info.value.status_code == 403
 
 
-def test_approve_rls_autre_user_404(user_id):
+def test_approve_rls_autre_user_404(user_id, monkeypatch):
+    monkeypatch.setattr(settings, "assistant_allow_email_send", True)
     other_uid = create_user(f"assistant-mail-other-{uuid.uuid4().hex}@test.local")
     try:
         draft_id = insert_draft(other_uid)
@@ -344,6 +350,7 @@ def test_expiration_marque_expired(user_id, monkeypatch):
 
 
 def test_repondu_true_apres_envoi_reponse(user_id, monkeypatch):
+    monkeypatch.setattr(settings, "assistant_allow_email_send", True)
     mail_id = insert_mail(user_id, "Contact <contact@ex.com>")
     draft_id = insert_draft(user_id, mail_origine_id=mail_id)
     _mock_send_ok(monkeypatch, gmail_id="msg-reply")

@@ -42,6 +42,8 @@ export interface Task {
   planifie_fin: string | null;
   /** Délai de notification avant le créneau planifié : 60, 30, 5 ou 0 min. */
   rappel_avance_minutes: number;
+  /** Rang manuel parmi les tâches sans échéance du même groupe (tri Round 016). */
+  position: number | null;
   completed_at: string | null;
   /** Nom du propriétaire si la tâche est partagée avec l'utilisateur courant, sinon `null`. */
   partage_par: string | null;

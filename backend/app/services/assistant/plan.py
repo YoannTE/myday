@@ -36,13 +36,23 @@ class ActionPlanModel(BaseModel):
 
 
 def _build_system_prompt(max_actions: int, allow_email_send: bool) -> str:
-    email_note = (
-        ""
-        if allow_email_send
-        else (
+    mails_enabled = settings.assistant_mails_enabled
+    email_note = ""
+    if mails_enabled and not allow_email_send:
+        email_note = (
             "\nNote : l'envoi de mails est désactivé - les brouillons seront "
             "préparés mais non envoyés, dis-le si un mail est demandé."
         )
+
+    draft_email_action = (
+        '- "draft_email" : params {"to": str | null, "subject": str | null, '
+        '"instruction": str, "reply_to_ref": true|false} - reply_to_ref=true '
+        "si l'utilisateur répond au mail fourni en référence\n"
+        if mails_enabled
+        else ""
+    )
+    query_entities = (
+        '"events"|"tasks"|"notes"|"mails"' if mails_enabled else '"events"|"tasks"|"notes"'
     )
     return f"""Tu es le planificateur de l'assistant MyDay, le cockpit personnel de l'utilisateur. Tu transformes son message en plan d'actions JSON. Tu ne réponds JAMAIS en texte libre.
 
@@ -52,9 +62,8 @@ Actions disponibles :
 - "create_task" : params {{"title": str, "priority": "haute"|"normale"|"basse", "due": "YYYY-MM-DD" | null}}
 - "create_note" : params {{"note_title": str, "content_to_add": str}} - pour ajouter à une note existante (ex. liste de courses), reprends son titre exact s'il apparaît dans l'historique
 - "create_event" : params {{"title": str, "start": "YYYY-MM-DDTHH:MM", "end": "YYYY-MM-DDTHH:MM", "location": str | null, "description": str | null}} - durée par défaut 1h si non précisée. Mets dans "description" TOUTES les informations complémentaires données par l'utilisateur (contexte, personnes concernées, ordre du jour, numéro de téléphone, consignes, notes), null si aucune. Ne mets PAS le titre, l'horaire ni le lieu dans la description.
-- "query_data" : params {{"entity": "events"|"tasks"|"notes"|"mails", "question": str}} - pour répondre à une question sur ses données
-- "draft_email" : params {{"to": str | null, "subject": str | null, "instruction": str, "reply_to_ref": true|false}} - reply_to_ref=true si l'utilisateur répond au mail fourni en référence
-
+- "query_data" : params {{"entity": {query_entities}, "question": str}} - pour répondre à une question sur ses données
+{draft_email_action}
 Règles :
 - "intent" : "actions" si au moins une action, "question" si uniquement query_data, "clarification" si la demande est ambiguë (destinataire inconnu, date impossible à déduire, action floue).
 - Maximum {max_actions} actions par message. Si l'utilisateur en demande plus, garde les premières.
@@ -100,6 +109,12 @@ def _validate_actions(raw_actions: list[dict], max_actions: int) -> tuple[list[d
             break
         # Tolérance : certains modèles renvoient la clé "action" au lieu de "type".
         atype = (raw.get("type") or raw.get("action")) if isinstance(raw, dict) else None
+        # Filet de sécurité : le LLM peut renvoyer "draft_email" malgré le
+        # retrait du prompt (retrait de l'intégration Google) - on l'écarte
+        # comme un type inconnu, jamais de dispatch vers le mail.
+        if atype == "draft_email" and not settings.assistant_mails_enabled:
+            discarded += 1
+            continue
         model = ACTION_PARAM_MODELS.get(atype)
         if model is None:
             discarded += 1

@@ -40,9 +40,9 @@ const NOTIFICATIONS = [
 type ValeursNotifications = Record<(typeof NOTIFICATIONS)[number]["cle"], boolean>;
 
 /**
- * Étape 2 du wizard (transposition interactive de la section « Règle ton
+ * Étape 1 du wizard (transposition interactive de la section « Règle ton
  * brief » de onboarding.html) : heure du brief + 3 alertes, envoyées en une
- * seule transition vers l'étape 3.
+ * seule transition vers l'étape 2.
  */
 export function EtapePreferences({
   preferences,
@@ -61,7 +61,7 @@ export function EtapePreferences({
   return (
     <section className="fade-in delay-1 rounded-card bg-card p-6 shadow-card md:p-10">
       <span className="mb-4 inline-block rounded-full bg-soft px-2.5 py-1 font-mono text-[10px] tracking-[.04em] text-accent uppercase">
-        Étape 2 · En cours
+        Étape 1 · En cours
       </span>
       <h2 className="mb-2 font-display text-lg font-extrabold tracking-[-0.02em] text-ink md:text-2xl">
         Règle ton brief

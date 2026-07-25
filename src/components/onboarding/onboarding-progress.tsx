@@ -1,16 +1,16 @@
 import { Fragment } from "react";
 
 const ETAPES = [
-  { numero: 1, label: "Google" },
-  { numero: 2, label: "Préférences" },
-  { numero: 3, label: "Sur ton téléphone" },
-  { numero: 4, label: "Ton brief" },
+  { numero: 1, label: "Préférences" },
+  { numero: 2, label: "Sur ton téléphone" },
+  { numero: 3, label: "Ton brief" },
 ];
 
 /**
  * Barre de progression du wizard d'onboarding (variante « Étapes numérotées »
  * de onboarding.html, choisie par défaut) : cercles numérotés reliés par des
- * traits, labels masqués sur mobile sauf via le numéro.
+ * traits, labels masqués sur mobile sauf via le numéro. 3 étapes depuis le
+ * Round 016 (l'étape Google a été retirée).
  */
 export function OnboardingProgress({
   etapeActuelle,
