@@ -170,6 +170,21 @@ async def get_event(user_id: str, event_id: str) -> dict:
     return event
 
 
+async def _google_actif(user_id: str) -> bool:
+    """Vrai seulement si l'integration Google est ACTIVE et l'utilisateur connecte.
+
+    Le flag `GOOGLE_SCHEDULER_ENABLED` pilote tout le retrait temporaire de
+    Google (decisions.md, 2026-07-25) : quand il est faux, le scheduler de
+    rattrapage ne tourne plus et l'ecran de (re)connexion est masque. Marquer
+    malgre tout un evenement `sync_pending` a cause d'une ancienne ligne
+    `google_connections` restee en base laisserait le badge « Non synchronisé »
+    a vie, sans aucun run capable de le resorber.
+    """
+    if not settings.google_scheduler_enabled:
+        return False
+    return await get_connection(user_id) is not None
+
+
 async def create_event(user_id: str, payload: EventCreate) -> dict:
     if payload.fin <= payload.debut:
         raise bad_request("La date de fin doit etre apres la date de debut.")
@@ -177,7 +192,7 @@ async def create_event(user_id: str, payload: EventCreate) -> dict:
     categorie_id = str(payload.categorie_id) if payload.categorie_id else None
     await _assert_categorie_valide(user_id, categorie_id)
 
-    connected = await get_connection(user_id) is not None
+    connected = await _google_actif(user_id)
     sync_status = "sync_pending" if connected else "synced"
 
     async with scoped_connection(user_id) as conn:
@@ -266,7 +281,7 @@ async def update_event(user_id: str, event_id: str, payload: EventUpdate) -> dic
             )
     event = await _fetch_event(user_id, event_id)
 
-    if event["google_event_id"]:
+    if event["google_event_id"] and settings.google_scheduler_enabled:
         # Push via la connexion Google du PROPRIETAIRE : un evenement partage
         # modifie par le destinataire doit se propager sur l'agenda du
         # proprietaire (le sien ne connait pas cet evenement).
@@ -293,5 +308,5 @@ async def delete_event(user_id: str, event_id: str) -> None:
     if row is None:
         raise not_found("Evenement introuvable.")
     google_event_id = row["google_event_id"]
-    if google_event_id:
+    if google_event_id and settings.google_scheduler_enabled:
         await events_google.delete_remote(user_id, google_event_id)

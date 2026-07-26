@@ -183,6 +183,13 @@
       "when": 1784981422131,
       "tag": "0025_friendly_blizzard",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1784981423131,
+      "tag": "0026_events_sync_status_reset",
+      "breakpoints": true
     }
   ]
 }

@@ -53,7 +53,23 @@ def auth_user(client):
     delete_user(uid)
 
 
+@pytest.fixture(autouse=True)
+def _restaure_flag_google():
+    """L'integration Google est desactivee par defaut (decisions.md, 2026-07-25).
+
+    Les tests qui simulent un utilisateur connecte la reactivent via
+    `connect_google` ; on restaure la valeur initiale apres chaque test.
+    """
+    initial = settings.google_scheduler_enabled
+    yield
+    settings.google_scheduler_enabled = initial
+
+
 def connect_google(user_id: str) -> None:
+    # Une connexion Google n'a de sens que si l'integration est active : le
+    # service ignore volontairement les anciennes lignes `google_connections`
+    # quand `google_scheduler_enabled` est faux.
+    settings.google_scheduler_enabled = True
     run_in_loop(
         lambda: repo.upsert_tokens(
             user_id,
@@ -157,6 +173,23 @@ def test_patch_fin_avant_debut_400(client, auth_user):
 
 def test_creation_sans_google_synced_sans_push(client, auth_user):
     _, cookie = auth_user
+    resp = client.post("/api/events", json=_payload(), headers=_cookie(cookie))
+    assert resp.status_code == 201
+    data = resp.json()["data"]
+    assert data["sync_status"] == "synced"
+    assert data["google_event_id"] is None
+
+
+def test_creation_integration_google_desactivee_reste_synced(client, auth_user):
+    """Une ancienne connexion Google ne doit plus marquer l'evenement pending.
+
+    Sans ce garde-fou, le badge « Non synchronisé » resterait affiche a vie :
+    l'integration etant coupee, aucun run de rattrapage ne repasse jamais.
+    """
+    uid, cookie = auth_user
+    connect_google(uid)
+    settings.google_scheduler_enabled = False
+
     resp = client.post("/api/events", json=_payload(), headers=_cookie(cookie))
     assert resp.status_code == 201
     data = resp.json()["data"]
