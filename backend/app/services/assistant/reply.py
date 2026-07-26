@@ -35,6 +35,7 @@ Règles :
 - Pour une recherche (query_data), réponds à la question à partir des résultats fournis - si la liste est vide, dis que tu n'as rien trouvé. N'invente JAMAIS une donnée.
 - Si un brouillon de mail est fourni, dis qu'il attend validation avant envoi.
 - Pas de listes à puces pour une ou deux actions.
+- Jamais d'emoji.
 
 Réponds UNIQUEMENT avec le JSON {{"reply": "..."}}"""
 
@@ -68,14 +69,37 @@ def _build_template_reply(
     return " ".join(parts)[:1000]
 
 
+def _peut_repondre_sans_llm(
+    plan: dict, action_results: list[dict], draft: dict | None
+) -> bool:
+    """Vrai quand la confirmation se rédige sans appeler le LLM (un appel économisé).
+
+    Réservé aux créations toutes réussies : le `label` posé par l'action décrit
+    déjà précisément ce qui a été fait (« Tâche « X » ajoutée pour demain »),
+    le LLM ne ferait que le reformuler. Une question (`query_data`), un
+    brouillon de mail, une clarification ou un échec ont besoin du LLM pour
+    être formulés correctement : le template n'y répondrait que « C'est fait. ».
+    """
+    if draft is not None or plan.get("intent") != "actions":
+        return False
+    if not action_results:
+        return False
+    return all(
+        r.get("ok") and r.get("label") and r.get("type") != "query_data"
+        for r in action_results
+    )
+
+
 async def compose_reply(
     user_id: str, plan: dict, action_results: list[dict], draft: dict | None, tone: str
 ) -> str:
+    if _peut_repondre_sans_llm(plan, action_results, draft):
+        return _build_template_reply(plan, action_results, draft)
     try:
         raw = await complete_json(
             user_id=user_id,
             agent="assistant_reply",
-            model=settings.assistant_llm_model,
+            model=settings.assistant_reply_llm_model,
             system=_build_system_prompt(tone),
             user_prompt=_build_user_prompt(plan, action_results, draft),
             max_tokens=400,

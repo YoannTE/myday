@@ -156,12 +156,23 @@ def test_plan_actions_params_invalides_ecartees(monkeypatch):
 
 
 def test_run_assistant_message_cree_une_tache(user_id, monkeypatch):
+    """Une création réussie se confirme SANS appeler le LLM de rédaction.
+
+    Le `label` de l'action décrit déjà ce qui a été fait : le deuxième appel
+    LLM du tour est économisé (environ -30 % sur le coût de la demande).
+    """
     conversation_id = create_conversation(user_id)
     monkeypatch.setattr(
         plan_module, "complete_json",
         _mock_plan(actions=[{"type": "create_task", "params": {"title": "Acheter le pain"}}]),
     )
-    monkeypatch.setattr(reply_module, "complete_json", _mock_reply("Le pain est sur ta liste."))
+    appels_reply: list[str] = []
+
+    async def _reply_interdit(**kwargs):
+        appels_reply.append(kwargs.get("agent", ""))
+        return {"reply": "réponse LLM"}
+
+    monkeypatch.setattr(reply_module, "complete_json", _reply_interdit)
 
     result = run_in_loop(lambda: run_assistant_message(
         user_id, conversation_id, "turn-task", "ajoute le pain a ma liste", None,
@@ -170,8 +181,30 @@ def test_run_assistant_message_cree_une_tache(user_id, monkeypatch):
     assert result["clarification_needed"] is False
     assert len(result["actions_done"]) == 1
     assert result["actions_done"][0]["ok"] is True
-    assert result["reply"] == "Le pain est sur ta liste."
+    assert appels_reply == []
+    assert result["reply"] == "Tâche « Acheter le pain » créée."
     assert count_tasks(user_id) == 1
+
+
+def test_run_assistant_message_question_appelle_le_llm_de_reponse(user_id, monkeypatch):
+    """Une question a besoin du LLM : le template ne dirait que « C'est fait. »."""
+    conversation_id = create_conversation(user_id)
+    monkeypatch.setattr(
+        plan_module, "complete_json",
+        _mock_plan(
+            intent="question",
+            actions=[{"type": "query_data", "params": {"entity": "tasks", "question": "quoi ?"}}],
+        ),
+    )
+    monkeypatch.setattr(
+        reply_module, "complete_json", _mock_reply("Il te reste 2 tâches à faire.")
+    )
+
+    result = run_in_loop(lambda: run_assistant_message(
+        user_id, conversation_id, "turn-question", "il me reste quoi a faire ?", None,
+    ))
+
+    assert result["reply"] == "Il te reste 2 tâches à faire."
 
 
 # --- Clarification -----------------------------------------------------------
