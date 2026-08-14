@@ -70,6 +70,8 @@ export const CATEGORIES: Record<Sens, string[]> = {
     "Transport",
     "Loisirs",
     "Santé",
+    "Habillement",
+    "Hygiène & entretien",
     "Abonnements",
     "Assurances",
     "Équipement",

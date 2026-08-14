@@ -274,6 +274,93 @@ def test_cycle_recurrent(client, auth_user):
     assert client.get("/api/budget", headers=ouvert).json()["data"]["recurrents"] == []
 
 
+def test_lot_recurrents(client, auth_user):
+    _uid, headers = auth_user
+    ouvert = _ouvrir(client, headers)
+    resp = client.post(
+        "/api/budget/recurrents/lot",
+        json={
+            "lignes": [
+                {
+                    "libelle": "Salaire",
+                    "categorie": "Salaire",
+                    "montant": 2190,
+                    "sens": "entree",
+                },
+                {
+                    "libelle": "Loyer",
+                    "categorie": "Logement",
+                    "montant": 680,
+                    "sens": "sortie",
+                },
+            ]
+        },
+        headers=ouvert,
+    )
+    assert resp.status_code == 201
+    assert len(resp.json()["data"]) == 2
+    assert len(client.get("/api/budget", headers=ouvert).json()["data"]["recurrents"]) == 2
+
+
+def test_lot_est_tout_ou_rien(client, auth_user):
+    """Une ligne fautive au milieu ne doit rien laisser derrière elle."""
+    _uid, headers = auth_user
+    ouvert = _ouvrir(client, headers)
+    resp = client.post(
+        "/api/budget/recurrents/lot",
+        json={
+            "lignes": [
+                {
+                    "libelle": "Correcte",
+                    "categorie": "Logement",
+                    "montant": 100,
+                    "sens": "sortie",
+                },
+                {
+                    "libelle": "Fautive",
+                    "categorie": "Logement",
+                    "montant": -5,
+                    "sens": "sortie",
+                },
+            ]
+        },
+        headers=ouvert,
+    )
+    assert resp.status_code == 400
+    assert client.get("/api/budget", headers=ouvert).json()["data"]["recurrents"] == []
+
+
+def test_lot_vide_et_lot_trop_gros(client, auth_user):
+    _uid, headers = auth_user
+    ouvert = _ouvrir(client, headers)
+    assert (
+        client.post(
+            "/api/budget/recurrents/lot", json={"lignes": []}, headers=ouvert
+        ).json()["data"]
+        == []
+    )
+    trop = [
+        {"libelle": f"L{i}", "categorie": "Autre", "montant": 1, "sens": "sortie"}
+        for i in range(101)
+    ]
+    assert (
+        client.post(
+            "/api/budget/recurrents/lot", json={"lignes": trop}, headers=ouvert
+        ).status_code
+        == 400
+    )
+    assert client.get("/api/budget", headers=ouvert).json()["data"]["recurrents"] == []
+
+
+def test_lot_exige_le_deverrouillage(client, auth_user):
+    _uid, headers = auth_user
+    client.post("/api/budget/acces/definir", json={"code": CODE}, headers=headers)
+    resp = client.post(
+        "/api/budget/recurrents/lot", json={"lignes": []}, headers=headers
+    )
+    assert resp.status_code == 401
+
+
 def test_cycle_operation(client, auth_user):
     _uid, headers = auth_user
     ouvert = _ouvrir(client, headers)

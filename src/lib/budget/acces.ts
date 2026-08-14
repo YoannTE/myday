@@ -49,6 +49,35 @@ export function oublierJeton(): void {
   }
 }
 
+// Repère posé sur l'appareil quand l'utilisateur charge le budget type, pour
+// lui rappeler tant qu'il ne l'a pas écarté que ces montants ne sont pas les
+// siens. Purement local : c'est un état d'affichage, pas une donnée du budget.
+const CLE_EXEMPLE = "myday:budget-exemple";
+
+export function marquerBudgetType(): void {
+  try {
+    localStorage.setItem(CLE_EXEMPLE, "1");
+  } catch {
+    // Sans stockage, le rappel ne survit pas au rechargement — acceptable.
+  }
+}
+
+export function budgetTypeCharge(): boolean {
+  try {
+    return localStorage.getItem(CLE_EXEMPLE) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function oublierBudgetType(): void {
+  try {
+    localStorage.removeItem(CLE_EXEMPLE);
+  } catch {
+    // Rien à faire.
+  }
+}
+
 /** `true` quand l'API répond « budget verrouillé » (≠ session MyDay expirée). */
 export function estVerrouille(erreur: unknown): boolean {
   return erreur instanceof ApiError && erreur.status === 401;

@@ -32,6 +32,7 @@ from app.models.budget import (
     BudgetPrevisionResponse,
     BudgetPrevisionUpdate,
     BudgetRecurrentCreate,
+    BudgetRecurrentLot,
     BudgetRecurrentResponse,
     BudgetRecurrentUpdate,
 )
@@ -100,6 +101,16 @@ async def post_recurrent(
 ):
     ligne = await budget_service.creer_recurrent(user["id"], payload)
     return {"data": BudgetRecurrentResponse(**ligne).model_dump()}
+
+
+@router.post("/recurrents/lot", status_code=status.HTTP_201_CREATED)
+async def post_recurrents_lot(
+    payload: BudgetRecurrentLot, user: AuthUser = Depends(require_budget_unlock)
+):
+    """Création groupée (budget type). Déclarée avant les routes `/{id}` par
+    convention, même si la méthode POST suffirait à les distinguer."""
+    lignes = await budget_service.creer_recurrents_lot(user["id"], payload.lignes)
+    return {"data": [BudgetRecurrentResponse(**ligne).model_dump() for ligne in lignes]}
 
 
 @router.patch("/recurrents/{recurrent_id}")

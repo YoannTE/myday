@@ -89,6 +89,17 @@ class BudgetRecurrentCreate(_TexteObligatoire):
     actif: bool = True
 
 
+class BudgetRecurrentLot(BaseModel):
+    """Création groupée, en une seule transaction.
+
+    Sert au budget type proposé à l'ouverture : une trentaine de lignes qui
+    doivent atterrir ensemble ou pas du tout. Un import à moitié appliqué
+    laisserait un budget faux que l'utilisateur devrait nettoyer à la main.
+    """
+
+    lignes: list[BudgetRecurrentCreate]
+
+
 class BudgetRecurrentUpdate(BaseModel):
     libelle: str | None = None
     categorie: str | None = None

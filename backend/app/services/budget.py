@@ -48,6 +48,9 @@ MONTANT_MAX = Decimal("9999999999.99")
 LIBELLE_MAX = 160
 CENTIMES = Decimal("0.01")
 
+#: Garde-fou sur la création groupée : le budget type en fait une trentaine.
+LOT_MAX = 100
+
 _COLS_RECURRENT = (
     "id, libelle, categorie, montant, sens, actif, created_at, updated_at"
 )
@@ -230,6 +233,52 @@ async def creer_recurrent(user_id: str, payload: BudgetRecurrentCreate) -> dict:
             payload.actif,
         )
     return _recurrent(row)
+
+
+async def creer_recurrents_lot(
+    user_id: str, lignes: list[BudgetRecurrentCreate]
+) -> list[dict]:
+    """Insère plusieurs récurrents en UNE transaction (tout ou rien).
+
+    Deux précautions : la validation de toutes les lignes se fait AVANT
+    d'ouvrir la connexion (une seule ligne fautive ne doit pas immobiliser une
+    connexion du pool), et les insertions vivent dans la transaction ouverte
+    par `scoped_connection` — un échec sur la 20ᵉ ligne annule les 19
+    premières.
+    """
+    if not lignes:
+        return []
+    if len(lignes) > LOT_MAX:
+        raise bad_request(
+            f"Un import ne peut pas dépasser {LOT_MAX} lignes à la fois."
+        )
+
+    valeurs = [
+        (
+            _libelle(ligne.libelle),
+            _libelle(ligne.categorie, champ="nom de catégorie"),
+            _montant(ligne.montant),
+            ligne.sens,
+            ligne.actif,
+        )
+        for ligne in lignes
+    ]
+
+    async with scoped_connection(user_id) as conn:
+        rows = [
+            await conn.fetchrow(
+                f"""
+                INSERT INTO budget_recurrents
+                  (user_id, libelle, categorie, montant, sens, actif)
+                VALUES ($1, $2, $3, $4, $5, $6)
+                RETURNING {_COLS_RECURRENT}
+                """,
+                user_id,
+                *valeur,
+            )
+            for valeur in valeurs
+        ]
+    return [_recurrent(row) for row in rows]
 
 
 async def modifier_recurrent(

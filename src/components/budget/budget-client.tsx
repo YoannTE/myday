@@ -1,13 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, Lock, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Lock, Plus, X } from "lucide-react";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
 import {
   apiBudget,
+  budgetTypeCharge,
   estVerrouille,
   lireJeton,
+  marquerBudgetType,
+  oublierBudgetType,
   oublierJeton,
 } from "@/lib/budget/acces";
 import {
@@ -70,6 +73,7 @@ export function BudgetClient() {
   const [onglet, setOnglet] = useState<Onglet>("ensemble");
   const [ligne, setLigne] = useState<LigneEnEdition | null>(null);
   const [demarrageIgnore, setDemarrageIgnore] = useState(false);
+  const [rappelExemple, setRappelExemple] = useState(false);
 
   const charger = useCallback(async () => {
     try {
@@ -100,7 +104,9 @@ export function BudgetClient() {
     let annule = false;
     (async () => {
       const etatLu = await lireEtat();
-      if (annule || !etatLu?.code_defini) return;
+      if (annule) return;
+      setRappelExemple(budgetTypeCharge());
+      if (!etatLu?.code_defini) return;
       if (lireJeton()) await charger();
     })();
     return () => {
@@ -147,7 +153,16 @@ export function BudgetClient() {
     donnees.comptes.length === 0;
 
   if (vide && !demarrageIgnore) {
-    return <DemarrageBudget onCommencer={() => setDemarrageIgnore(true)} />;
+    return (
+      <DemarrageBudget
+        onCommencer={() => setDemarrageIgnore(true)}
+        onBudgetType={async () => {
+          marquerBudgetType();
+          setRappelExemple(true);
+          await charger();
+        }}
+      />
+    );
   }
 
   function ouvrirRecurrent(recurrent: Recurrent) {
@@ -201,6 +216,34 @@ export function BudgetClient() {
 
   return (
     <div className="flex flex-col gap-5">
+      {rappelExemple ? (
+        <div className="fade-in flex items-start gap-3 rounded-card bg-soft p-4">
+          <Info
+            className="mt-0.5 h-4 w-4 shrink-0 text-accent"
+            aria-hidden="true"
+          />
+          <p className="min-w-0 flex-1 font-body text-sm text-ink/70">
+            Ces montants viennent d&apos;un budget type (couple avec deux
+            enfants, sources ONPES, INSEE et CAF).{" "}
+            <strong className="font-bold text-ink">
+              Ce ne sont pas tes chiffres
+            </strong>{" "}
+            : reprends chaque ligne dans « Chaque mois » et ajuste-la.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              oublierBudgetType();
+              setRappelExemple(false);
+            }}
+            aria-label="Masquer ce rappel"
+            className="focus-ring -m-1 shrink-0 rounded-full p-1 text-ink/40 transition-colors hover:text-ink"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-card">
           <button
