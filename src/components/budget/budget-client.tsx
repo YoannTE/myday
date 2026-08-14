@@ -56,7 +56,7 @@ interface EtatAcces {
  * Racine de la page Budget. Enchaîne trois états :
  *
  *   1. verrouillé — le clavier à 4 chiffres (aucune donnée n'est chargée) ;
- *   2. vide — proposition de reprendre le classeur Budget MYE ;
+ *   2. vide — accueil qui explique les trois rythmes de saisie ;
  *   3. ouvert — le mois courant, ses cinq écrans et la fiche de saisie.
  *
  * Toutes les données sont chargées en un appel et les calculs se font côté
@@ -147,12 +147,7 @@ export function BudgetClient() {
     donnees.comptes.length === 0;
 
   if (vide && !demarrageIgnore) {
-    return (
-      <DemarrageBudget
-        onPret={charger}
-        onIgnorer={() => setDemarrageIgnore(true)}
-      />
-    );
+    return <DemarrageBudget onCommencer={() => setDemarrageIgnore(true)} />;
   }
 
   function ouvrirRecurrent(recurrent: Recurrent) {
