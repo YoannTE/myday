@@ -18,9 +18,20 @@ from app.models.preferences import (
 from app.utils.errors import bad_request
 
 _COLUMNS = (
-    "brief_hour, brief_tone, timezone, theme, meteo_ville, notif_important_mail, "
+    "brief_hour, brief_tone, timezone, theme, meteo_ville, "
+    "section_meteo, section_planning, section_taches, section_notes, "
+    "section_budget, notif_important_mail, "
     "notif_event_reminder, notif_brief_ready, onboarding_completed, "
     "onboarding_step, created_at, updated_at"
+)
+
+#: Sections du cockpit affichables, dans l'ordre de la carte des réglages.
+SECTIONS = (
+    "section_meteo",
+    "section_planning",
+    "section_taches",
+    "section_notes",
+    "section_budget",
 )
 
 _METEO_VILLE_MAX = 120
@@ -70,6 +81,7 @@ def _serialize(row: asyncpg.Record) -> dict:
         "timezone": row["timezone"],
         "theme": row["theme"],
         "meteo_ville": row["meteo_ville"],
+        **{section: row[section] for section in SECTIONS},
         "notif_important_mail": row["notif_important_mail"],
         "notif_event_reminder": row["notif_event_reminder"],
         "notif_brief_ready": row["notif_brief_ready"],
@@ -110,9 +122,12 @@ async def update_preferences(user_id: str, payload: PreferencesUpdate) -> dict:
             f"""
             UPDATE user_preferences
             SET brief_hour = $2, brief_tone = $3, timezone = $4, theme = $5,
-                meteo_ville = $6, notif_important_mail = $7,
-                notif_event_reminder = $8, notif_brief_ready = $9,
-                onboarding_completed = $10, onboarding_step = $11,
+                meteo_ville = $6,
+                section_meteo = $7, section_planning = $8, section_taches = $9,
+                section_notes = $10, section_budget = $11,
+                notif_important_mail = $12,
+                notif_event_reminder = $13, notif_brief_ready = $14,
+                onboarding_completed = $15, onboarding_step = $16,
                 updated_at = now()
             WHERE user_id = $1
             RETURNING {_COLUMNS}
@@ -123,6 +138,7 @@ async def update_preferences(user_id: str, payload: PreferencesUpdate) -> dict:
             fields.get("timezone", current["timezone"]),
             fields.get("theme", current["theme"]),
             fields.get("meteo_ville", current["meteo_ville"]),
+            *[fields.get(section, current[section]) for section in SECTIONS],
             fields.get("notif_important_mail", current["notif_important_mail"]),
             fields.get("notif_event_reminder", current["notif_event_reminder"]),
             fields.get("notif_brief_ready", current["notif_brief_ready"]),

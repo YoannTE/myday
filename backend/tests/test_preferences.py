@@ -77,12 +77,66 @@ def test_get_preferences_create_or_default(client, auth_user):
     assert data["meteo_ville"] == "Paris"
     # Theme par defaut = clair.
     assert data["theme"] == "clair"
+    # Toutes les sections du cockpit sont affichees par defaut : masquer est
+    # un choix explicite de l'utilisateur.
+    for section in ("meteo", "planning", "taches", "notes", "budget"):
+        assert data[f"section_{section}"] is True, section
     assert _count_preferences(uid) == 1
 
     # Un deuxieme GET ne recree pas de ligne.
     resp2 = client.get("/api/preferences", headers=headers)
     assert resp2.status_code == 200
     assert _count_preferences(uid) == 1
+
+
+def test_masquer_une_section(client, auth_user):
+    _uid, headers = auth_user
+    resp = client.patch(
+        "/api/preferences", json={"section_budget": False}, headers=headers
+    )
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert data["section_budget"] is False
+    # Le PATCH partiel n'a touche aucune autre section.
+    for section in ("meteo", "planning", "taches", "notes"):
+        assert data[f"section_{section}"] is True, section
+
+    # La valeur est bien persistee, et se reactive.
+    assert (
+        client.get("/api/preferences", headers=headers).json()["data"][
+            "section_budget"
+        ]
+        is False
+    )
+    resp = client.patch(
+        "/api/preferences", json={"section_budget": True}, headers=headers
+    )
+    assert resp.json()["data"]["section_budget"] is True
+
+
+def test_masquer_toutes_les_sections(client, auth_user):
+    """Rien n'interdit de tout masquer : le cockpit le dit et renvoie aux
+    reglages, plutot qu'un garde-fou qui empecherait un choix legitime."""
+    _uid, headers = auth_user
+    resp = client.patch(
+        "/api/preferences",
+        json={
+            "section_meteo": False,
+            "section_planning": False,
+            "section_taches": False,
+            "section_notes": False,
+            "section_budget": False,
+        },
+        headers=headers,
+    )
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert not any(
+        data[f"section_{s}"] for s in ("meteo", "planning", "taches", "notes", "budget")
+    )
+    # Les autres preferences n'ont pas bouge.
+    assert data["theme"] == "clair"
+    assert data["brief_hour"] == "07:00"
 
 
 def test_get_preferences_idempotence_concurrente(client, auth_user):

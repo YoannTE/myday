@@ -38,6 +38,16 @@ export const userPreferences = pgTable(
     // Ville affichée par le widget météo du cockpit (Round 015). Ville par
     // défaut : Paris. Modifiable par l'utilisateur, mémorisée sur son profil.
     meteoVille: text("meteo_ville").notNull().default("Paris"),
+    // Affichage des sections du cockpit. Une par colonne plutôt qu'une liste
+    // sérialisée : c'est l'idiome déjà en place pour les notifications, ça se
+    // valide tout seul et ça se lit en clair dans la base. Toutes à `true` :
+    // masquer une section est un choix explicite de l'utilisateur.
+    sectionMeteo: boolean("section_meteo").notNull().default(true),
+    sectionPlanning: boolean("section_planning").notNull().default(true),
+    sectionTaches: boolean("section_taches").notNull().default(true),
+    sectionNotes: boolean("section_notes").notNull().default(true),
+    sectionBudget: boolean("section_budget").notNull().default(true),
+
     notifImportantMail: boolean("notif_important_mail").notNull().default(true),
     notifEventReminder: boolean("notif_event_reminder").notNull().default(true),
     notifBriefReady: boolean("notif_brief_ready").notNull().default(true),

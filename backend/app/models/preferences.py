@@ -32,6 +32,11 @@ class PreferencesUpdate(BaseModel):
     timezone: str | None = None
     theme: str | None = None
     meteo_ville: str | None = None
+    section_meteo: bool | None = None
+    section_planning: bool | None = None
+    section_taches: bool | None = None
+    section_notes: bool | None = None
+    section_budget: bool | None = None
     notif_important_mail: bool | None = None
     notif_event_reminder: bool | None = None
     notif_brief_ready: bool | None = None
@@ -47,6 +52,11 @@ class PreferencesResponse(BaseModel):
     timezone: str
     theme: str
     meteo_ville: str
+    section_meteo: bool
+    section_planning: bool
+    section_taches: bool
+    section_notes: bool
+    section_budget: bool
     notif_important_mail: bool
     notif_event_reminder: bool
     notif_brief_ready: bool

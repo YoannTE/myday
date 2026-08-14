@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Eye } from "lucide-react";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
@@ -18,6 +19,11 @@ import { NotesClient } from "@/components/notes/notes-client";
 import { BudgetSection } from "@/components/budget/budget-section";
 import { OnboardingResumeBanner } from "@/components/onboarding/onboarding-resume-banner";
 import type { CockpitData } from "@/components/cockpit/types";
+import {
+  sectionVisible,
+  SECTIONS_TOUTES_VISIBLES,
+  type PreferencesSections,
+} from "@/lib/sections-cockpit";
 
 /**
  * Clé localStorage : mémorise (par appareil) si l'utilisateur a choisi
@@ -60,6 +66,7 @@ function contenuSection(cle: CleSection) {
  */
 export function CockpitClient() {
   const [donnees, setDonnees] = useState<CockpitData | null>(null);
+  const [sections, setSections] = useState<PreferencesSections | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [briefVisible, setBriefVisible] = useState(false);
   const evenementEmis = useRef(false);
@@ -84,6 +91,25 @@ export function CockpitClient() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     charger();
   }, [charger]);
+
+  // Les sections masquées sont lues avant le premier rendu de la liste : les
+  // afficher puis les retirer donnerait un clignotement à chaque ouverture.
+  useEffect(() => {
+    let annule = false;
+    apiCall<{ data: PreferencesSections }>("/api/preferences")
+      .then((reponse) => {
+        if (!annule) {
+          setSections({ ...SECTIONS_TOUTES_VISIBLES, ...reponse.data });
+        }
+      })
+      .catch(() => {
+        // Préférences illisibles : on montre tout plutôt que rien.
+        if (!annule) setSections(SECTIONS_TOUTES_VISIBLES);
+      });
+    return () => {
+      annule = true;
+    };
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -121,9 +147,11 @@ export function CockpitClient() {
     );
   }
 
-  if (!donnees) {
+  if (!donnees || !sections) {
     return <CockpitSkeleton />;
   }
+
+  const visibles = ordre.filter((cle) => sectionVisible(cle, sections));
 
   return (
     <div className="flex flex-col gap-10">
@@ -144,12 +172,23 @@ export function CockpitClient() {
         </button>
       )}
       <OnboardingResumeBanner />
-      {ordre.map((cle, index) => (
+      {visibles.length === 0 ? (
+        <div className="rounded-card bg-card p-6 text-center shadow-card">
+          <p className="font-body text-sm text-ink/60">
+            Toutes tes sections sont masquées. Tu peux les réafficher depuis{" "}
+            <Link href="/reglages" className="font-bold text-accent hover:underline">
+              les réglages
+            </Link>
+            .
+          </p>
+        </div>
+      ) : null}
+      {visibles.map((cle, index) => (
         <CockpitSection
           key={cle}
           titre={LIBELLES_SECTION[cle]}
           peutMonter={index > 0}
-          peutDescendre={index < ordre.length - 1}
+          peutDescendre={index < visibles.length - 1}
           onMonter={() => deplacer(cle, "haut")}
           onDescendre={() => deplacer(cle, "bas")}
         >

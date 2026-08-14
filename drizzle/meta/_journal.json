@@ -197,6 +197,13 @@
       "when": 1786687644208,
       "tag": "0027_eager_klaw",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1786698703385,
+      "tag": "0028_graceful_sentry",
+      "breakpoints": true
     }
   ]
 }
