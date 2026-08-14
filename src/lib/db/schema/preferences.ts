@@ -35,6 +35,13 @@ export const userPreferences = pgTable(
     // Thème par défaut de l'application (Round 016+). Mémorisé sur le profil
     // pour être réappliqué à chaque ouverture, sur tous les appareils.
     theme: text("theme").notNull().default("clair"),
+    // Couleur d'accent de toute l'interface. On stocke la CLÉ de la couleur,
+    // pas son hexadécimal : les valeurs exactes vivent dans le CSS et peuvent
+    // être retouchées sans migrer les données. Choix limité à une palette
+    // fermée, chaque valeur ayant été vérifiée sur trois contrastes (texte
+    // blanc dessus, lisibilité sur fond clair et sur fond noir) - un
+    // sélecteur libre produirait vite des combinaisons illisibles.
+    couleurAccent: text("couleur_accent").notNull().default("bleu"),
     // Ville affichée par le widget météo du cockpit (Round 015). Ville par
     // défaut : Paris. Modifiable par l'utilisateur, mémorisée sur son profil.
     meteoVille: text("meteo_ville").notNull().default("Paris"),
@@ -79,6 +86,10 @@ export const userPreferences = pgTable(
     check(
       "user_preferences_theme_check",
       sql`${table.theme} IN ('clair', 'sombre')`,
+    ),
+    check(
+      "user_preferences_couleur_accent_check",
+      sql`${table.couleurAccent} IN ('bleu', 'indigo', 'rose', 'turquoise', 'ardoise')`,
     ),
   ],
 );

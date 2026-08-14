@@ -12,13 +12,14 @@ from app.db.client import scoped_connection
 from app.models.preferences import (
     BRIEF_HOUR_RE,
     BRIEF_TONE_VALUES,
+    COULEUR_ACCENT_VALUES,
     THEME_VALUES,
     PreferencesUpdate,
 )
 from app.utils.errors import bad_request
 
 _COLUMNS = (
-    "brief_hour, brief_tone, timezone, theme, meteo_ville, "
+    "brief_hour, brief_tone, timezone, theme, couleur_accent, meteo_ville, "
     "section_meteo, section_planning, section_taches, section_notes, "
     "section_budget, notif_important_mail, "
     "notif_event_reminder, notif_brief_ready, onboarding_completed, "
@@ -61,6 +62,10 @@ def _valider_champs(fields: dict) -> None:
     if theme is not None and theme not in THEME_VALUES:
         raise bad_request("Le thème doit être clair ou sombre.")
 
+    couleur = fields.get("couleur_accent")
+    if couleur is not None and couleur not in COULEUR_ACCENT_VALUES:
+        raise bad_request("Cette couleur d'accent n'existe pas.")
+
     meteo_ville = fields.get("meteo_ville")
     if meteo_ville is not None:
         ville = meteo_ville.strip()
@@ -80,6 +85,7 @@ def _serialize(row: asyncpg.Record) -> dict:
         "brief_tone": row["brief_tone"],
         "timezone": row["timezone"],
         "theme": row["theme"],
+        "couleur_accent": row["couleur_accent"],
         "meteo_ville": row["meteo_ville"],
         **{section: row[section] for section in SECTIONS},
         "notif_important_mail": row["notif_important_mail"],
@@ -122,12 +128,12 @@ async def update_preferences(user_id: str, payload: PreferencesUpdate) -> dict:
             f"""
             UPDATE user_preferences
             SET brief_hour = $2, brief_tone = $3, timezone = $4, theme = $5,
-                meteo_ville = $6,
-                section_meteo = $7, section_planning = $8, section_taches = $9,
-                section_notes = $10, section_budget = $11,
-                notif_important_mail = $12,
-                notif_event_reminder = $13, notif_brief_ready = $14,
-                onboarding_completed = $15, onboarding_step = $16,
+                couleur_accent = $6, meteo_ville = $7,
+                section_meteo = $8, section_planning = $9, section_taches = $10,
+                section_notes = $11, section_budget = $12,
+                notif_important_mail = $13,
+                notif_event_reminder = $14, notif_brief_ready = $15,
+                onboarding_completed = $16, onboarding_step = $17,
                 updated_at = now()
             WHERE user_id = $1
             RETURNING {_COLUMNS}
@@ -137,6 +143,7 @@ async def update_preferences(user_id: str, payload: PreferencesUpdate) -> dict:
             fields.get("brief_tone", current["brief_tone"]),
             fields.get("timezone", current["timezone"]),
             fields.get("theme", current["theme"]),
+            fields.get("couleur_accent", current["couleur_accent"]),
             fields.get("meteo_ville", current["meteo_ville"]),
             *[fields.get(section, current[section]) for section in SECTIONS],
             fields.get("notif_important_mail", current["notif_important_mail"]),

@@ -22,9 +22,12 @@ export function LogoMyDay({
       {variante === "pastille" && (
         <>
           <defs>
+            {/* Le monogramme suit la couleur d'accent choisie dans les
+                réglages : un logo bleu à côté d'une interface rose ferait
+                tache. Mêmes jetons que `.cta-gradient`. */}
             <linearGradient id="logo-md-g" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#3A6BFF" />
-              <stop offset="1" stopColor="#2350E6" />
+              <stop offset="0" stopColor="var(--accent-clair)" />
+              <stop offset="1" stopColor="var(--accent)" />
             </linearGradient>
           </defs>
           <rect width="96" height="96" rx="22" fill="url(#logo-md-g)" />

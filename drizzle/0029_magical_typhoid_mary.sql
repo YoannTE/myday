@@ -1,0 +1,2 @@
+ALTER TABLE "user_preferences" ADD COLUMN "couleur_accent" text DEFAULT 'bleu' NOT NULL;--> statement-breakpoint
+ALTER TABLE "user_preferences" ADD CONSTRAINT "user_preferences_couleur_accent_check" CHECK ("user_preferences"."couleur_accent" IN ('bleu', 'indigo', 'rose', 'turquoise', 'ardoise'));

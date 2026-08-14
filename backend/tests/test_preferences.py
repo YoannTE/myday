@@ -89,6 +89,39 @@ def test_get_preferences_create_or_default(client, auth_user):
     assert _count_preferences(uid) == 1
 
 
+def test_couleur_accent_defaut_et_changement(client, auth_user):
+    _uid, headers = auth_user
+    assert (
+        client.get("/api/preferences", headers=headers).json()["data"][
+            "couleur_accent"
+        ]
+        == "bleu"
+    )
+    resp = client.patch(
+        "/api/preferences", json={"couleur_accent": "rose"}, headers=headers
+    )
+    assert resp.status_code == 200
+    assert resp.json()["data"]["couleur_accent"] == "rose"
+    # Le PATCH partiel n'a pas touche au theme.
+    assert resp.json()["data"]["theme"] == "clair"
+
+
+def test_couleur_accent_inconnue_refusee(client, auth_user):
+    """Palette fermee : une valeur hors liste doit etre refusee cote service
+    (400 explicite) et non atteindre la contrainte CHECK de la base."""
+    _uid, headers = auth_user
+    resp = client.patch(
+        "/api/preferences", json={"couleur_accent": "fuchsia"}, headers=headers
+    )
+    assert resp.status_code == 400
+    assert (
+        client.get("/api/preferences", headers=headers).json()["data"][
+            "couleur_accent"
+        ]
+        == "bleu"
+    )
+
+
 def test_masquer_une_section(client, auth_user):
     _uid, headers = auth_user
     resp = client.patch(

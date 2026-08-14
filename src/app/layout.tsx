@@ -28,6 +28,10 @@ const scriptAntiFlashModeSombre = `(function () {
     if (mode === "dark") {
       document.documentElement.setAttribute("data-mode", "dark");
     }
+    var accent = localStorage.getItem("myday-accent");
+    if (accent && accent !== "bleu" && /^[a-z]+$/.test(accent)) {
+      document.documentElement.setAttribute("data-accent", accent);
+    }
   } catch (erreur) {
     /* localStorage indisponible (navigation privee, etc.) : on reste en clair */
   }

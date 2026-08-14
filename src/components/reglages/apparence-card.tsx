@@ -6,6 +6,13 @@ import { Moon, Sun } from "lucide-react";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
 import { appliquerTheme } from "@/lib/theme";
+import {
+  appliquerCouleurAccent,
+  COULEURS_ACCENT,
+  COULEUR_PAR_DEFAUT,
+  estCouleurAccent,
+  type CouleurAccent,
+} from "@/lib/couleur-accent";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { Theme } from "@/components/onboarding/types";
@@ -16,20 +23,29 @@ const OPTIONS: { valeur: Theme; libelle: string; icone: typeof Sun }[] = [
 ];
 
 /**
- * Carte « Apparence » de /reglages : choix du thème par défaut (clair /
- * sombre). Le choix est mémorisé sur le profil (PATCH /api/preferences) et
- * réappliqué à chaque ouverture de l'application, sur tous les appareils. Le
- * bouton ☾ de la navbar permet toujours une bascule rapide.
+ * Carte « Apparence » de /reglages : thème par défaut (clair / sombre) et
+ * couleur d'accent de toute l'interface. Les deux sont mémorisés sur le profil
+ * (PATCH /api/preferences) et réappliqués à chaque ouverture, sur tous les
+ * appareils. Le bouton ☾ de la navbar permet toujours une bascule rapide.
+ *
+ * La couleur s'applique immédiatement au DOM, avant même la réponse du
+ * serveur : on juge une couleur en la voyant, pas en attendant.
  */
 export function ApparenceCard() {
   const [theme, setTheme] = useState<Theme | null>(null);
+  const [couleur, setCouleur] = useState<CouleurAccent>(COULEUR_PAR_DEFAUT);
   const [enCours, setEnCours] = useState(false);
 
   useEffect(() => {
     let annule = false;
-    apiCall<{ data: { theme: Theme } }>("/api/preferences")
+    apiCall<{ data: { theme: Theme; couleur_accent?: string } }>(
+      "/api/preferences",
+    )
       .then((reponse) => {
-        if (!annule) setTheme(reponse.data.theme);
+        if (annule) return;
+        setTheme(reponse.data.theme);
+        const recue = reponse.data.couleur_accent;
+        if (estCouleurAccent(recue)) setCouleur(recue);
       })
       .catch(() => {
         if (!annule) setTheme("clair");
@@ -38,6 +54,29 @@ export function ApparenceCard() {
       annule = true;
     };
   }, []);
+
+  async function choisirCouleur(nouvelle: CouleurAccent) {
+    if (nouvelle === couleur || enCours) return;
+    const precedente = couleur;
+    setCouleur(nouvelle);
+    appliquerCouleurAccent(nouvelle);
+    setEnCours(true);
+    try {
+      await apiCall("/api/preferences", {
+        method: "PATCH",
+        body: { couleur_accent: nouvelle },
+      });
+      toast.success("Couleur enregistrée");
+    } catch (erreur) {
+      setCouleur(precedente);
+      appliquerCouleurAccent(precedente);
+      toast.error(
+        messageErreurApi(erreur, "Impossible d'enregistrer la couleur."),
+      );
+    } finally {
+      setEnCours(false);
+    }
+  }
 
   async function choisir(nouveau: Theme) {
     if (nouveau === theme || enCours) return;
@@ -106,6 +145,47 @@ export function ApparenceCard() {
           })}
         </div>
       )}
+
+      <div className="mt-6 border-t border-ink/10 pt-5">
+        <h3 className="mb-1 font-body text-sm font-bold text-ink">
+          Couleur de l&apos;interface
+        </h3>
+        <p className="mb-4 font-body text-sm text-ink/50">
+          Elle habille les bandeaux de section, les boutons, les liens et les
+          graphiques. Palette volontairement fermée : chaque teinte a été
+          vérifiée pour rester lisible en clair comme en sombre.
+        </p>
+        <div className="flex flex-wrap gap-2.5">
+          {COULEURS_ACCENT.map((option) => {
+            const actif = couleur === option.cle;
+            return (
+              <button
+                key={option.cle}
+                type="button"
+                disabled={enCours}
+                onClick={() => choisirCouleur(option.cle)}
+                aria-pressed={actif}
+                title={option.libelle}
+                className={cn(
+                  "focus-ring flex items-center gap-2.5 rounded-inner border px-3 py-2 transition-colors",
+                  actif
+                    ? "border-accent bg-accent/5"
+                    : "border-ink/10 hover:border-ink/20",
+                )}
+              >
+                <span
+                  aria-hidden="true"
+                  className="h-5 w-5 flex-shrink-0 rounded-full"
+                  style={{ backgroundColor: option.echantillon }}
+                />
+                <span className="font-body text-sm font-medium text-ink">
+                  {option.libelle}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </section>
   );
 }

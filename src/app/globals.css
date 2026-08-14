@@ -44,6 +44,7 @@
   --color-ink: var(--ink);
   --color-soft: var(--soft);
   --color-success: var(--success);
+  --color-accent-clair: var(--accent-clair);
 
   --font-display: var(--font-plus-jakarta);
   --font-body: var(--font-plus-jakarta);
@@ -64,7 +65,8 @@
 
   --shadow-card:
     0 1px 2px rgba(17, 26, 55, 0.04), 0 24px 48px -32px rgba(17, 26, 55, 0.28);
-  --shadow-cta: 0 10px 22px -8px rgba(47, 98, 255, 0.6);
+  --shadow-cta: 0 10px 22px -8px
+    color-mix(in srgb, var(--accent-clair) 60%, transparent);
 }
 
 :root {
@@ -72,6 +74,8 @@
   --bg: #f5f7fb;
   --ink: #111a37;
   --accent: #2350e6;
+  /* Teinte claire du degrade signature, reglee par la couleur d'accent. */
+  --accent-clair: #3a6bff;
   --soft: #eaf0ff;
   --success: var(--accent); /* aucun vert dans l'app (decision utilisateur) */
   --surface: #ffffff;
@@ -109,6 +113,34 @@
   --sidebar-accent-foreground: var(--ink);
   --sidebar-border: color-mix(in srgb, var(--ink) 10%, transparent);
   --sidebar-ring: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* -- Couleur d'accent (bouton dans Reglages > Apparence) --
+   Chaque valeur a ete verifiee sur trois contrastes : texte blanc pose dessus,
+   lisibilite sur le fond clair, et sur le fond noir du mode sombre. C'est ce
+   qui justifie une palette fermee plutot qu'un selecteur libre.
+   Ces blocs precedent volontairement `html[data-mode="dark"]` : a specificite
+   egale, c'est l'ordre du fichier qui tranche, et le mode sombre doit imposer
+   son `--soft` gris neutre. L'accent, lui, vaut pour les deux modes. */
+html[data-accent="indigo"] {
+  --accent: #7d4cf0;
+  --accent-clair: #9f7bf4;
+  --soft: #ede7fb;
+}
+html[data-accent="rose"] {
+  --accent: #e40c66;
+  --accent-clair: #f53887;
+  --soft: #fce6ef;
+}
+html[data-accent="turquoise"] {
+  --accent: #047f98;
+  --accent-clair: #05b1d3;
+  --soft: #e6f9fc;
+}
+html[data-accent="ardoise"] {
+  --accent: #5f7695;
+  --accent-clair: #8395af;
+  --soft: #eef1f4;
 }
 
 /* Mode sombre (bouton ☾ dans la barre du haut) */
@@ -159,8 +191,8 @@ html[data-mode="dark"] {
 /* -- Utilitaires AEVIO One (transposition fidele de
    .project/mockups/shared/design-system.css) -- */
 .cta-gradient {
-  background: linear-gradient(180deg, #3a6bff, #2350e6);
-  box-shadow: 0 10px 22px -8px rgba(47, 98, 255, 0.6);
+  background: linear-gradient(180deg, var(--accent-clair), var(--accent));
+  box-shadow: var(--shadow-cta);
 }
 
 .focus-ring:focus {

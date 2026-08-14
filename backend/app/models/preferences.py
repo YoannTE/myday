@@ -22,6 +22,7 @@ from pydantic import BaseModel, ConfigDict
 BRIEF_HOUR_RE = re.compile(r"^[0-2][0-9]:[0-5][0-9]$")
 BRIEF_TONE_VALUES = ("neutre", "motivant", "direct")
 THEME_VALUES = ("clair", "sombre")
+COULEUR_ACCENT_VALUES = ("bleu", "indigo", "rose", "turquoise", "ardoise")
 
 
 class PreferencesUpdate(BaseModel):
@@ -31,6 +32,7 @@ class PreferencesUpdate(BaseModel):
     brief_tone: str | None = None
     timezone: str | None = None
     theme: str | None = None
+    couleur_accent: str | None = None
     meteo_ville: str | None = None
     section_meteo: bool | None = None
     section_planning: bool | None = None
@@ -51,6 +53,7 @@ class PreferencesResponse(BaseModel):
     brief_tone: str
     timezone: str
     theme: str
+    couleur_accent: str
     meteo_ville: str
     section_meteo: bool
     section_planning: bool
