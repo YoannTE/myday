@@ -19,6 +19,7 @@ from app.db.client import (
 from app.api.admin import router as admin_router
 from app.api.assistant import router as assistant_router
 from app.api.brief import router as brief_router
+from app.api.budget import router as budget_router
 from app.api.google import router as google_router
 from app.api.health import router as health_router
 from app.api.mails import router as mails_router
@@ -121,6 +122,7 @@ app.include_router(preferences_router, prefix="/api")
 app.include_router(usage_router, prefix="/api")
 app.include_router(mails_router, prefix="/api")
 app.include_router(brief_router, prefix="/api")
+app.include_router(budget_router, prefix="/api")
 app.include_router(assistant_router, prefix="/api")
 app.include_router(push_router, prefix="/api")
 app.include_router(notifications_router, prefix="/api")

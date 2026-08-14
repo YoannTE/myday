@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Euro } from "lucide-react";
 import { DarkModeToggle } from "@/components/layout/dark-mode-toggle";
 import { LogoMyDay } from "@/components/layout/logo-myday";
 import { NavbarAssistantBar } from "@/components/layout/navbar-assistant-bar";
@@ -61,6 +62,17 @@ export function Navbar({ user }: NavbarProps) {
         <div className="ml-auto flex items-center gap-1.5">
           <Link href="/aide" className={CLASSE_LIEN_NAV}>
             Aide
+          </Link>
+          {/* Accès au budget : section privée, toujours reverrouillée par un
+              code à 4 chiffres — le bouton mène à l'écran de saisie, jamais
+              directement aux chiffres. */}
+          <Link
+            href="/budget"
+            aria-label="Budget"
+            title="Budget"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-ink/50 transition-colors hover:bg-soft hover:text-accent"
+          >
+            <Euro className="h-4 w-4" aria-hidden="true" />
           </Link>
           <SearchModal />
           <NotificationsBell />

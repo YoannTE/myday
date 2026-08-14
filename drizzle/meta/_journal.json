@@ -190,6 +190,13 @@
       "when": 1784981423131,
       "tag": "0026_events_sync_status_reset",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1786687644208,
+      "tag": "0027_eager_klaw",
+      "breakpoints": true
     }
   ]
 }
