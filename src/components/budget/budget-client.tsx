@@ -143,7 +143,15 @@ export function BudgetClient() {
   }
 
   if (!donnees) {
-    return <VerrouBudget etat={etat} onOuvert={apresDeverrouillage} />;
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <VerrouBudget
+          etat={etat}
+          onOuvert={apresDeverrouillage}
+          captureClavier
+        />
+      </div>
+    );
   }
 
   const vide =

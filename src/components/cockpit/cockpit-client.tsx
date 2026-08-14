@@ -15,6 +15,7 @@ import { MeteoWidget } from "@/components/meteo/meteo-widget";
 import { PlanningClient } from "@/components/planning/planning-client";
 import { TachesClient } from "@/components/taches/taches-client";
 import { NotesClient } from "@/components/notes/notes-client";
+import { BudgetSection } from "@/components/budget/budget-section";
 import { OnboardingResumeBanner } from "@/components/onboarding/onboarding-resume-banner";
 import type { CockpitData } from "@/components/cockpit/types";
 
@@ -30,6 +31,7 @@ const LIBELLES_SECTION: Record<CleSection, string> = {
   planning: "Planning",
   taches: "Tâches",
   notes: "Notes",
+  budget: "Budget",
 };
 
 function contenuSection(cle: CleSection) {
@@ -42,6 +44,8 @@ function contenuSection(cle: CleSection) {
       return <TachesClient />;
     case "notes":
       return <NotesClient />;
+    case "budget":
+      return <BudgetSection />;
   }
 }
 

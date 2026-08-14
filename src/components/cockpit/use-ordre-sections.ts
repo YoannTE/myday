@@ -2,10 +2,19 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-export type CleSection = "meteo" | "planning" | "taches" | "notes";
+export type CleSection = "meteo" | "planning" | "taches" | "notes" | "budget";
 
 const CLE_STOCKAGE = "myday:cockpit-ordre";
-const ORDRE_PAR_DEFAUT: CleSection[] = ["meteo", "planning", "taches", "notes"];
+// « budget » est placé en dernier : `normaliser` ajoute les sections absentes
+// d'un ordre déjà stocké à la fin, donc les utilisateurs qui avaient rangé
+// leurs sections retrouvent leur agencement, avec le budget ajouté en bas.
+const ORDRE_PAR_DEFAUT: CleSection[] = [
+  "meteo",
+  "planning",
+  "taches",
+  "notes",
+  "budget",
+];
 
 function estCleSection(valeur: unknown): valeur is CleSection {
   return (
@@ -28,7 +37,7 @@ function normaliser(valeur: unknown): CleSection[] {
 
 /**
  * Ordre des sections réordonnables du cockpit unique (Météo/Planning/Tâches/
- * Notes), persisté en localStorage (clé `myday:cockpit-ordre`, Round 016).
+ * Notes/Budget), persisté en localStorage (clé `myday:cockpit-ordre`).
  */
 export function useOrdreSections() {
   const [ordre, setOrdre] = useState<CleSection[]>(ORDRE_PAR_DEFAUT);
