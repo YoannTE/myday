@@ -131,6 +131,8 @@ def test_plan_actions_cree_une_action_valide(monkeypatch):
     assert result["intent"] == "actions"
     assert result["actions"] == [{"type": "create_task", "params": {
         "title": "Acheter le pain", "priority": "normale", "due": None,
+        "description": None, "scheduled_start": None, "scheduled_end": None,
+        "reminder_at": None, "recurrence": None, "category": None,
     }}]
 
 

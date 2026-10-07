@@ -10,9 +10,10 @@ par l'orchestrateur (contrat d'import figé, plan Round 008).
 from __future__ import annotations
 
 import re
-from datetime import date, datetime, timezone
+from datetime import datetime
 
 from app.db.client import scoped_connection
+from app.services.assistant.dates_fr import parse_due_date
 
 _STOPWORDS = {
     "le", "la", "les", "un", "une", "des", "de", "du", "et", "ou", "a", "à",
@@ -26,7 +27,7 @@ def _parse_due(due: str | None) -> datetime | None:
     if not due:
         return None
     try:
-        return datetime.combine(date.fromisoformat(due), datetime.min.time(), tzinfo=timezone.utc)
+        return parse_due_date(due)
     except ValueError:
         return None
 

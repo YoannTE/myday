@@ -62,7 +62,14 @@ _RETRY_INSTRUCTION = (
 _PRICING_PER_MILLION: dict[str, tuple[float, float]] = {
     "claude-haiku-4-5": (1.0, 5.0),
     "claude-sonnet-4-5": (3.0, 15.0),
+    "claude-opus-5-5": (4.0, 20.0),
 }
+
+# Modèles qui acceptent le repli automatique côté serveur quand le modèle
+# demandé décline une requête (refus de sécurité) : la même demande est alors
+# rejouée sur un autre modèle, dans le même appel.
+_FALLBACK_MODELS = {"claude-opus-5-5"}
+_FALLBACK_BETA = "server-side-fallback-2026-07-01"
 
 
 class LlmUnavailable(Exception):
@@ -111,11 +118,13 @@ async def complete_json(
     system: str,
     user_prompt: str,
     max_tokens: int = 2000,
+    effort: str | None = None,
 ) -> dict[str, Any]:
     """Appelle Anthropic Messages API et parse un JSON strict.
 
     1 re-tentative avec consigne de format renforcée si la première réponse
-    n'est pas un JSON valide. Lève `LlmUnavailable` si la clé est absente ou
+    n'est pas un JSON valide. `effort` (low → max) règle la profondeur de
+    réflexion des modèles récents (Opus 5.5 : réflexion toujours active). Lève `LlmUnavailable` si la clé est absente ou
     si les 2 tentatives échouent. Enregistre l'usage tokens même en cas
     d'échec final de parsing (l'appel a bien consommé des tokens).
     """
@@ -123,12 +132,20 @@ async def complete_json(
     prompt_tokens = completion_tokens = 0
     try:
         for attempt in range(2):
-            response = await client.messages.create(
-                model=model,
-                max_tokens=max_tokens,
-                system=system if attempt == 0 else system + _RETRY_INSTRUCTION,
-                messages=[{"role": "user", "content": user_prompt}],
-            )
+            kwargs: dict[str, Any] = {
+                "model": model,
+                "max_tokens": max_tokens,
+                "system": system if attempt == 0 else system + _RETRY_INSTRUCTION,
+                "messages": [{"role": "user", "content": user_prompt}],
+            }
+            if effort:
+                kwargs["output_config"] = {"effort": effort}
+            if model in _FALLBACK_MODELS:
+                response = await client.beta.messages.create(
+                    **kwargs, betas=[_FALLBACK_BETA], fallbacks="default"
+                )
+            else:
+                response = await client.messages.create(**kwargs)
             usage = getattr(response, "usage", None)
             prompt_tokens += getattr(usage, "input_tokens", 0) or 0
             completion_tokens += getattr(usage, "output_tokens", 0) or 0

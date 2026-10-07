@@ -109,13 +109,16 @@ class Settings(BaseSettings):
     # est le chemin nominal de ce round (contrairement aux rounds précédents).
     # Le fallback gracieux (plan invalide/LLM en panne -> clarification, reply
     # LLM en panne -> template) reste actif si un appel échoue malgré tout.
-    assistant_llm_model: str = "claude-sonnet-4-5"
+    # Planificateur : le modèle le plus performant (compréhension fine des
+    # demandes dictées, retrouve le bon élément malgré une erreur d'écoute).
+    assistant_llm_model: str = "claude-opus-5-5"
+    assistant_llm_effort: str = "high"
     # Rédaction de la réponse du chat : tâche simple (reformuler un résultat
     # déjà calculé), un petit modèle suffit et coûte 3 fois moins cher. Le
     # PLANIFICATEUR reste sur Sonnet : mesuré, un petit modèle y demande une
     # clarification au lieu d'agir dans environ un cas sur trois.
     assistant_reply_llm_model: str = "claude-haiku-4-5"
-    assistant_max_actions_per_message: int = 3
+    assistant_max_actions_per_message: int = 10
     assistant_allow_email_send: bool = False
     assistant_hitl_timeout_hours: int = 24
     assistant_reply_tone: str = "naturel"

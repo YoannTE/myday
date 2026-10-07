@@ -21,8 +21,10 @@ from app.config import settings
 from app.services.assistant import persist
 from app.services.assistant.actions import create_note, create_task, query_data
 from app.services.assistant.context import load_context
+from app.services.assistant.dispatch import EDIT_TYPES, apply_task_extras, dispatch_edit
 from app.services.assistant.plan import plan_actions
 from app.services.assistant.reply import compose_reply
+from app.services.assistant.snapshot import load_snapshot
 
 logger = logging.getLogger("myday.assistant.orchestrator")
 
@@ -45,7 +47,8 @@ async def _dispatch(
     user_id: str, action_key: str, atype: str, params: dict, ref_data: dict
 ) -> dict:
     if atype == "create_task":
-        return await create_task(user_id, action_key, params)
+        result = await create_task(user_id, action_key, params)
+        return await apply_task_extras(user_id, result, params)
     if atype == "create_note":
         return await create_note(user_id, action_key, params)
     if atype == "query_data":
@@ -81,7 +84,15 @@ async def run_assistant_message(
         return existing
 
     ctx = await load_context(user_id, conversation_id, context_ref)
-    plan = await plan_actions(user_id, message, ctx["history"], ctx["ref_data"])
+    try:
+        snapshot = await load_snapshot(user_id)
+    except Exception as exc:  # vue indisponible : l'assistant sait encore créer
+        logger.info("assistant snapshot indisponible raison=%s", type(exc).__name__)
+        snapshot = {"text": "", "refs": {}}
+    plan = await plan_actions(
+        user_id, message, ctx["history"], ctx["ref_data"],
+        snapshot["text"], ctx["pending_deletions"],
+    )
 
     if plan["intent"] == "clarification":
         reply = await compose_reply(user_id, plan, [], None, settings.assistant_reply_tone)
@@ -98,13 +109,21 @@ async def run_assistant_message(
         action_key = f"{turn_key}:{index}"
         atype = action["type"]
         try:
-            r = await _dispatch(user_id, action_key, atype, action["params"], ctx["ref_data"])
+            if atype in EDIT_TYPES:
+                results = await dispatch_edit(
+                    user_id, atype, action["params"], snapshot["refs"], ctx["pending_deletions"]
+                )
+            else:
+                results = [
+                    await _dispatch(user_id, action_key, atype, action["params"], ctx["ref_data"])
+                ]
         except Exception as exc:
             logger.info("assistant action échouée type=%s raison=%s", atype, type(exc).__name__)
-            r = {"type": atype, "ok": False, "label": "Cette action n'a pas pu être réalisée."}
-        if atype == "draft_email" and r.get("ok", True):
-            draft = r
-        action_results.append(r)
+            results = [{"type": atype, "ok": False, "label": "Cette action n'a pas pu être réalisée."}]
+        for r in results:
+            if atype == "draft_email" and r.get("ok", True):
+                draft = r
+            action_results.append(r)
 
     reply = await compose_reply(
         user_id, plan, action_results, draft, settings.assistant_reply_tone

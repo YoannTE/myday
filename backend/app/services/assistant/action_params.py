@@ -11,12 +11,21 @@ from typing import Literal
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from app.config import settings
+from app.services.assistant.action_params_edit import EDIT_PARAM_MODELS
 
 
 class TaskParams(BaseModel):
     title: str = Field(min_length=1)
     priority: Literal["haute", "normale", "basse"] = "normale"
     due: str | None = None
+    # Compléments optionnels appliqués juste après la création (mêmes règles
+    # que la modification : créneau dans le planning, rappel, répétition...).
+    description: str | None = Field(default=None, max_length=2000)
+    scheduled_start: str | None = None
+    scheduled_end: str | None = None
+    reminder_at: str | None = None
+    recurrence: Literal["aucune", "quotidienne", "hebdomadaire", "mensuelle"] | None = None
+    category: str | None = None
 
     @field_validator("title")
     @classmethod
@@ -85,4 +94,8 @@ ACTION_PARAM_MODELS: dict[str, type[BaseModel]] = {
     "create_event": EventParams,
     "query_data": QueryParams,
     "draft_email": DraftParams,
+    **EDIT_PARAM_MODELS,
 }
+
+# Actions dont seuls les champs envoyés sont appliqués (champ absent = inchangé).
+PARTIAL_ACTION_TYPES = set(EDIT_PARAM_MODELS)

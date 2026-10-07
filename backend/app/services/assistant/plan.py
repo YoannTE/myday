@@ -21,7 +21,11 @@ from typing import Literal
 from pydantic import BaseModel, Field, ValidationError
 
 from app.config import settings
-from app.services.assistant.action_params import ACTION_PARAM_MODELS
+from app.services.assistant.action_params import (
+    ACTION_PARAM_MODELS,
+    PARTIAL_ACTION_TYPES,
+)
+from app.services.assistant.plan_prompt import build_system_prompt, build_user_prompt
 from app.services.mail_triage.llm import complete_json
 
 logger = logging.getLogger("myday.assistant.plan")
@@ -33,72 +37,6 @@ class ActionPlanModel(BaseModel):
     intent: Literal["actions", "question", "clarification"]
     actions: list[dict] = Field(default_factory=list)
     clarification_question: str | None = None
-
-
-def _build_system_prompt(max_actions: int, allow_email_send: bool) -> str:
-    mails_enabled = settings.assistant_mails_enabled
-    email_note = ""
-    if mails_enabled and not allow_email_send:
-        email_note = (
-            "\nNote : l'envoi de mails est désactivé - les brouillons seront "
-            "préparés mais non envoyés, dis-le si un mail est demandé."
-        )
-
-    draft_email_action = (
-        '- "draft_email" : params {"to": str | null, "subject": str | null, '
-        '"instruction": str, "reply_to_ref": true|false} - reply_to_ref=true '
-        "si l'utilisateur répond au mail fourni en référence\n"
-        if mails_enabled
-        else ""
-    )
-    query_entities = (
-        '"events"|"tasks"|"notes"|"mails"' if mails_enabled else '"events"|"tasks"|"notes"'
-    )
-    return f"""Tu es le planificateur de l'assistant MyDay, le cockpit personnel de l'utilisateur. Tu transformes son message en plan d'actions JSON. Tu ne réponds JAMAIS en texte libre.
-
-Chaque action est un objet {{"type": "<nom_action>", "params": {{...}}}} — la clé est TOUJOURS "type".
-
-Actions disponibles :
-- "create_task" : params {{"title": str, "priority": "haute"|"normale"|"basse", "due": "YYYY-MM-DD" | null}}
-- "create_note" : params {{"note_title": str, "content_to_add": str}} - pour ajouter à une note existante (ex. liste de courses), reprends son titre exact s'il apparaît dans l'historique
-- "create_event" : params {{"title": str, "start": "YYYY-MM-DDTHH:MM", "end": "YYYY-MM-DDTHH:MM", "location": str | null, "description": str | null}} - durée par défaut 1h si non précisée. Mets dans "description" TOUTES les informations complémentaires données par l'utilisateur (contexte, personnes concernées, ordre du jour, numéro de téléphone, consignes, notes), null si aucune. Ne mets PAS le titre, l'horaire ni le lieu dans la description.
-- "query_data" : params {{"entity": {query_entities}, "question": str}} - pour répondre à une question sur ses données
-{draft_email_action}
-Règles :
-- "intent" : "actions" si au moins une action, "question" si uniquement query_data, "clarification" si la demande est ambiguë (destinataire inconnu, date impossible à déduire, action floue).
-- Maximum {max_actions} actions par message. Si l'utilisateur en demande plus, garde les premières.
-- Les dates relatives ("vendredi", "demain") se résolvent avec la date du jour fournie. Ne devine JAMAIS une date ambiguë : demande une clarification.
-- N'invente JAMAIS un destinataire de mail : s'il n'est ni dans le message, ni dans le mail de référence, ni dans l'historique -> clarification.
-- En cas de clarification : "actions": [] et "clarification_question" en français, une seule question précise.{email_note}
-- Ne mets JAMAIS de champ "action_key" dans les actions.
-
-Réponds UNIQUEMENT avec le JSON demandé, exemple : {{"intent": "actions", "actions": [{{"type": "create_task", "params": {{"title": "...", "priority": "normale", "due": null}}}}], "clarification_question": null}}"""
-
-
-def _build_user_prompt(message: str, history: list[dict], ref_data: dict) -> str:
-    from datetime import datetime
-    from zoneinfo import ZoneInfo
-
-    from app.config import settings
-
-    maintenant = datetime.now(ZoneInfo(settings.app_timezone))
-    date_jour = maintenant.strftime("%A %d %B %Y, %Hh%M")
-    history_formatted = "\n".join(
-        f"- {h['role']} : {h['content']}" for h in history
-    ) or "(aucun)"
-    ref_block = ""
-    mail = ref_data.get("mail")
-    if mail:
-        ref_block = (
-            f"\nMail en référence : de {mail.get('expediteur')}, objet "
-            f"« {mail.get('sujet')} », extrait : {mail.get('extrait')}"
-        )
-    return (
-        f"Date et heure actuelles : {date_jour} (format ISO : {maintenant.isoformat()}).\n"
-        f"Utilise cette date pour résoudre les dates relatives (« vendredi », « demain »).\n"
-        f"Historique récent de la conversation :\n{history_formatted}\n"
-        f"{ref_block}\n\nMessage de l'utilisateur : {message}"
-    )
 
 
 def _validate_actions(raw_actions: list[dict], max_actions: int) -> tuple[list[dict], int]:
@@ -124,17 +62,27 @@ def _validate_actions(raw_actions: list[dict], max_actions: int) -> tuple[list[d
         except ValidationError:
             discarded += 1
             continue
-        valid.append({"type": atype, "params": params.model_dump()})
+        # Modifications : seuls les champs envoyés comptent (absent = inchangé).
+        dumped = params.model_dump(exclude_unset=atype in PARTIAL_ACTION_TYPES)
+        valid.append({"type": atype, "params": dumped})
     return valid, discarded
 
 
 async def plan_actions(
-    user_id: str, message: str, history: list[dict], ref_data: dict
+    user_id: str,
+    message: str,
+    history: list[dict],
+    ref_data: dict,
+    snapshot_text: str = "",
+    pending_deletions: list[dict] | None = None,
 ) -> dict:
-    system = _build_system_prompt(
+    system = build_system_prompt(
         settings.assistant_max_actions_per_message, settings.assistant_allow_email_send
     )
-    user_prompt = _build_user_prompt(message, history, ref_data)
+    user_prompt = build_user_prompt(
+        message, history, ref_data, snapshot_text or "(non disponible)",
+        pending_deletions or [],
+    )
 
     try:
         raw = await complete_json(
@@ -143,7 +91,9 @@ async def plan_actions(
             model=settings.assistant_llm_model,
             system=system,
             user_prompt=user_prompt,
-            max_tokens=1200,
+            # Large : la réflexion du modèle compte dans ce plafond.
+            max_tokens=16000,
+            effort=settings.assistant_llm_effort,
         )
         parsed = ActionPlanModel(**raw)
     except Exception as exc:  # filet systématique (SOP) - jamais de crash

@@ -59,7 +59,7 @@ def _build_template_reply(
         if r.get("ok"):
             label = r.get("label")
             if label:
-                parts.append(f"{label}.")
+                parts.append(label if label.rstrip()[-1] in ".!?…" else f"{label}.")
         else:
             parts.append("Une action n'a pas pu être réalisée.")
     if draft:
@@ -80,7 +80,8 @@ def _peut_repondre_sans_llm(
     brouillon de mail, une clarification ou un échec ont besoin du LLM pour
     être formulés correctement : le template n'y répondrait que « C'est fait. ».
     """
-    if draft is not None or plan.get("intent") != "actions":
+    # « question » répondue par une action `answer` : le texte est déjà rédigé.
+    if draft is not None or plan.get("intent") not in ("actions", "question"):
         return False
     if not action_results:
         return False

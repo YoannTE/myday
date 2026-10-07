@@ -10,6 +10,7 @@ requête SQL pour ne pas faire échouer la transaction en cours.
 
 from __future__ import annotations
 
+import json
 import logging
 from uuid import UUID
 
@@ -31,6 +32,23 @@ def _valid_uuid(value: str | None) -> str | None:
         return None
 
 
+def _pending_deletions(dernier_tour) -> list[dict]:
+    """Suppressions demandées au tour précédent et pas encore confirmées
+    (seul le DERNIER message de l'assistant compte : une confirmation ne
+    vaut que pour la question qui vient d'être posée). Les 2 lignes d'un tour
+    partagent le même `created_at` (même transaction) : le tri secondaire
+    sur le rôle place la réponse de l'assistant après le message de
+    l'utilisateur."""
+    if dernier_tour is None or dernier_tour["role"] != "assistant" or not dernier_tour["actions"]:
+        return []
+    stored = json.loads(dernier_tour["actions"])
+    return [
+        {"kind": a["kind"], "id": a["id"], "titre": a["titre"]}
+        for a in stored.get("actions_done", [])
+        if a.get("type") == "delete_pending" and a.get("kind") and a.get("id")
+    ]
+
+
 async def load_context(
     user_id: str, conversation_id: str, context_ref: dict | None
 ) -> dict:
@@ -49,9 +67,9 @@ async def load_context(
 
         rows = await conn.fetch(
             """
-            SELECT role, contenu, created_at FROM assistant_conversation_turns
+            SELECT role, contenu, actions, created_at FROM assistant_conversation_turns
             WHERE conversation_id = $1::uuid
-            ORDER BY created_at DESC LIMIT $2
+            ORDER BY created_at DESC, (role = 'assistant') DESC LIMIT $2
             """,
             conversation_id,
             _HISTORY_LIMIT,
@@ -59,6 +77,7 @@ async def load_context(
         history = [
             {"role": r["role"], "content": r["contenu"]} for r in reversed(rows)
         ]
+        pending_deletions = _pending_deletions(rows[0] if rows else None)
 
         prefs = await conn.fetchrow(
             "SELECT timezone FROM user_preferences WHERE user_id = $1", user_id
@@ -89,4 +108,9 @@ async def load_context(
             else:
                 logger.info("assistant context_ref event_id ignoré (étranger ou absent)")
 
-    return {"history": history, "ref_data": ref_data, "timezone": timezone_str}
+    return {
+        "history": history,
+        "ref_data": ref_data,
+        "timezone": timezone_str,
+        "pending_deletions": pending_deletions,
+    }
