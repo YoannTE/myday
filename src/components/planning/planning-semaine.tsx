@@ -2,6 +2,8 @@
 
 import { EventCard } from "@/components/planning/event-card";
 import { PlanningTacheBloc } from "@/components/planning/planning-tache-bloc";
+import { GrilleHoraire } from "@/components/planning/grille/grille-horaire";
+import type { ElementPlanning } from "@/components/planning/grille/disposition";
 import { estAujourdHui, formaterEnteteJour } from "@/components/planning/date-utils";
 import { elementsDuJour } from "@/components/planning/element-jour";
 import { cn } from "@/lib/utils";
@@ -13,12 +15,13 @@ interface PlanningSemaineProps {
   evenements: EvenementApi[];
   tachesPlanifiees?: Task[];
   onSuccess: () => void;
+  onDeposer: (element: ElementPlanning, debut: Date, fin: Date) => void;
 }
 
 /**
- * Vue semaine. Desktop (md et +) : grille 7 colonnes (transposition fidèle
- * de la variante « Semaine en colonnes » de planning.html), la journée en
- * cours mise en avant. Mobile (< md, Round 017) : liste verticale des 7
+ * Vue semaine. Desktop (md et +) : grille horaire 7 colonnes façon
+ * calendrier Apple, où l'on déplace rendez-vous et tâches planifiées à la
+ * souris (autre jour, autre heure, durée). Mobile (< md, Round 017) : liste verticale des 7
  * jours, plus lisible qu'une grille compressée — en-tête par jour (jour
  * courant mis en avant, badge « Aujourd'hui »), événements/tâches en
  * dessous en pleine largeur, jours vides réduits à leur seul en-tête. Les
@@ -31,6 +34,7 @@ export function PlanningSemaine({
   evenements,
   tachesPlanifiees = [],
   onSuccess,
+  onDeposer,
 }: PlanningSemaineProps) {
   return (
     <div className="fade-in delay-1 rounded-card bg-card p-2 shadow-card md:p-6">
@@ -79,46 +83,16 @@ export function PlanningSemaine({
         })}
       </div>
 
-      {/* Grille 7 colonnes desktop */}
-      <div className="hidden md:grid md:grid-cols-7 md:gap-3">
-        {jours.map((jour) => {
-          const aujourdHui = estAujourdHui(jour);
-          const elements = elementsDuJour(evenements, tachesPlanifiees, jour);
-
-          return (
-            <div
-              key={jour.toISOString()}
-              className={cn(
-                "min-w-0",
-                aujourdHui && "rounded-inner border border-accent/20 bg-soft/50 p-1",
-              )}
-            >
-              <p
-                className={cn(
-                  "mb-3 text-center font-mono text-[10px] tracking-[.04em] break-words uppercase",
-                  aujourdHui ? "mt-2 text-accent" : "text-ink/40",
-                )}
-              >
-                {formaterEnteteJour(jour)}
-                {aujourdHui && " · Auj."}
-              </p>
-              {elements.map((element) =>
-                element.type === "evenement" ? (
-                  <EventCard
-                    key={element.evenement.id}
-                    evenement={element.evenement}
-                    onSuccess={onSuccess}
-                  />
-                ) : (
-                  <PlanningTacheBloc
-                    key={element.tache.id}
-                    tache={element.tache}
-                  />
-                ),
-              )}
-            </div>
-          );
-        })}
+      {/* Grille horaire 7 colonnes desktop : glisser-déposer entre jours et heures */}
+      <div className="hidden md:block">
+        <GrilleHoraire
+          jours={jours}
+          evenements={evenements}
+          taches={tachesPlanifiees}
+          onDeposer={onDeposer}
+          onSuccess={onSuccess}
+          avecEntetes
+        />
       </div>
 
       {evenements.length === 0 && tachesPlanifiees.length === 0 && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { apiCall } from "@/lib/api";
 import { PlanningHeader } from "@/components/planning/planning-header";
 import { PlanningJour } from "@/components/planning/planning-jour";
@@ -10,6 +10,7 @@ import { PlanningAnnee } from "@/components/planning/planning-annee";
 import { PlanningSkeleton } from "@/components/planning/planning-skeleton";
 import { EventCategoriesDialog } from "@/components/planning/event-categories-dialog";
 import { EventDeepLink } from "@/components/planning/event-deep-link";
+import { useDeplacerElement } from "@/components/planning/grille/use-deplacer-element";
 import {
   debutAnnee,
   debutSemaine,
@@ -99,7 +100,13 @@ export function PlanningClient() {
     window.localStorage.setItem(CLE_VUE_PLANNING, vue);
   }, [vue]);
 
+  // Numéro de la dernière requête : une réponse lente d'une vue précédente
+  // n'écrase jamais celle de la vue affichée.
+  const requeteRef = useRef(0);
+
   const recharger = useCallback(async () => {
+    const requete = ++requeteRef.current;
+    const estPerimee = () => requete !== requeteRef.current;
     try {
       if (vue === "annee") {
         const debut = debutAnnee(reference);
@@ -107,6 +114,7 @@ export function PlanningClient() {
         const reponse = await apiCall<{ data: CompteurJourApi[] }>(
           `/api/events/counts?from=${encodeURIComponent(debut.toISOString())}&to=${encodeURIComponent(fin.toISOString())}`,
         );
+        if (estPerimee()) return;
         setCompteurs(reponse.data);
       } else {
         const { debut, fin } = fenetreVue(vue, reference);
@@ -121,18 +129,21 @@ export function PlanningClient() {
               `/api/tasks/planned?from=${depuis}&to=${jusqua}`,
             ),
           ]);
+          if (estPerimee()) return;
           setEvenements(reponseEvenements.data);
           setTachesPlanifiees(reponseTaches.data);
         } else {
           const reponse = await apiCall<{ data: EvenementApi[] }>(
             `/api/events?from=${depuis}&to=${jusqua}`,
           );
+          if (estPerimee()) return;
           setEvenements(reponse.data);
           setTachesPlanifiees(null);
         }
       }
       setErreur(null);
     } catch (erreurChargement) {
+      if (estPerimee()) return;
       setErreur(
         erreurChargement instanceof Error
           ? erreurChargement.message
@@ -141,13 +152,28 @@ export function PlanningClient() {
     }
   }, [vue, reference]);
 
+  // Squelette seulement au changement de vue. En passant d'un jour (ou d'une
+  // semaine) à l'autre, la grille reste affichée pendant le chargement : un
+  // rendez-vous en cours de glissement vers le jour suivant n'est jamais
+  // démonté sous le doigt. Les éléments affichés sont filtrés par jour, ceux
+  // de la période précédente n'apparaissent donc pas.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setEvenements(null);
     setTachesPlanifiees(null);
     setCompteurs(null);
+  }, [vue]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     recharger();
   }, [recharger]);
+
+  const deplacerElement = useDeplacerElement({
+    setEvenements,
+    setTaches: setTachesPlanifiees,
+    recharger,
+  });
 
   return (
     <div>
@@ -190,6 +216,10 @@ export function PlanningClient() {
           evenements={evenements}
           tachesPlanifiees={tachesPlanifiees ?? []}
           onSuccess={recharger}
+          onDeposer={deplacerElement}
+          onChangerJour={(delta) =>
+            setReference((actuelle) => decalerReference("jour", actuelle, delta))
+          }
         />
       ) : vue === "semaine" ? (
         <PlanningSemaine
@@ -197,11 +227,13 @@ export function PlanningClient() {
           evenements={evenements}
           tachesPlanifiees={tachesPlanifiees ?? []}
           onSuccess={recharger}
+          onDeposer={deplacerElement}
         />
       ) : (
         <PlanningMois
           reference={reference}
           evenements={evenements}
+          onDeposer={deplacerElement}
           onSelectionnerJour={(jour) => {
             setReference(jour);
             setVue("jour");

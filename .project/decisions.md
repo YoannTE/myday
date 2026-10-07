@@ -94,3 +94,11 @@ devient disponible — l'architecture en « steps » purs facilite cette migrati
 - Une heure donnée pour une tâche = échéance ce jour-là + créneau d'1 h dans le planning.
 - **Suppressions toujours confirmées** : l'assistant demande « oui », la suppression n'est exécutée qu'au message suivant, à partir de ce qui est stocké en base (jamais d'une cible fournie par le modèle).
 - Micro inchangé (reconnaissance vocale du navigateur) : le modèle corrige les mots mal entendus.
+
+## Planning : glisser-déposer façon calendrier Apple (2026-10-08)
+
+- Vues Jour (téléphone et ordinateur) et Semaine (ordinateur) passent d'une liste à une **grille horaire** (52 px par heure, 0 h à 24 h, défilement interne, ouverture vers l'heure actuelle). La vue Semaine sur téléphone reste la liste verticale par jour : 7 colonnes seraient illisibles.
+- Glisser-déposer **maison** (`grille/use-glisser.ts`, Pointer Events) plutôt qu'une librairie : la grille a besoin de positions continues calées au quart d'heure, d'un changement de durée et d'un passage au jour suivant au bord de l'écran, que les librairies de listes gèrent mal. Souris : dès 4 px de mouvement. Doigt : appui long de 450 ms puis vibration ; un doigt qui bouge avant fait défiler la page.
+- Positions en « minutes absolues » (jour civil Paris x 1440 + minutes), jamais le fuseau du navigateur. Poignée du bas : durée (15 min minimum). Vue Mois : une pastille se dépose sur un autre jour en gardant son heure.
+- Enregistrement immédiat (mise à jour locale puis `PATCH /api/events/{id}` ou `POST /api/tasks/{id}/planifier`), retour en place si le serveur refuse, toast avec « Annuler ».
+- Le squelette de chargement n'apparaît plus qu'au changement de vue : en changeant de jour, la grille reste affichée pendant le chargement, sinon le bloc tenu sous le doigt serait démonté et le navigateur perdrait le glissement.

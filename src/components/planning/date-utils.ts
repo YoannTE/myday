@@ -429,3 +429,37 @@ export function versIso(valeurLocale: string): string {
   const [heure, minute] = (heurePart ?? "00:00").split(":").map(Number);
   return dateDepuisComposantsCivils(annee, mois, jour, heure, minute, 0, 0).toISOString();
 }
+
+// --- Grille horaire (glisser-déposer) -------------------------------------
+// Une position dans le planning est un nombre de « minutes absolues » :
+// numéro du jour civil Paris x 1440 + minutes écoulées depuis minuit Paris.
+// Décaler un rendez-vous revient à ajouter un écart à ce nombre, sans jamais
+// passer par le fuseau du navigateur (même règle que le reste du fichier).
+
+export const MINUTES_PAR_JOUR = 1440;
+
+/** Numéro du jour civil Paris (jours écoulés depuis le 1er janvier 1970). */
+export function numeroJourCivil(date: Date): number {
+  const { annee, mois, jour } = composantsFuseau(date);
+  return Math.round(Date.UTC(annee, mois - 1, jour) / 86_400_000);
+}
+
+/** Minutes absolues (jour civil Paris x 1440 + minutes depuis minuit Paris). */
+export function minutesAbsolues(date: Date): number {
+  const civil = composantsFuseau(date);
+  return numeroJourCivil(date) * MINUTES_PAR_JOUR + civil.heure * 60 + civil.minute;
+}
+
+/** Instant correspondant à des minutes absolues (heure civile Paris). */
+export function instantDepuisMinutesAbsolues(total: number): Date {
+  const numeroJour = Math.floor(total / MINUTES_PAR_JOUR);
+  const reste = total - numeroJour * MINUTES_PAR_JOUR;
+  const civil = new Date(numeroJour * 86_400_000);
+  return dateDepuisComposantsCivils(
+    civil.getUTCFullYear(),
+    civil.getUTCMonth() + 1,
+    civil.getUTCDate(),
+    Math.floor(reste / 60),
+    reste % 60,
+  );
+}
