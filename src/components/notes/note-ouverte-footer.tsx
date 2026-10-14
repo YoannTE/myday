@@ -3,32 +3,30 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { EtatSauvegarde } from "@/components/notes/use-sauvegarde-auto";
 import type { NoteApi } from "@/components/notes/types";
 
 interface NoteOuverteFooterProps {
   note: NoteApi;
   estPartagee: boolean;
-  modifie: boolean;
-  enregistrement: boolean;
+  etatSauvegarde: EtatSauvegarde;
   enCours: boolean;
-  onSauvegarder: () => void;
+  onReessayer: () => void;
   onBasculerArchivee: () => void;
   onSupprimer: () => void;
 }
 
 /**
- * Pied de la note ouverte (date de création + Enregistrer/Archiver) -
+ * Pied de la note ouverte (état de l'enregistrement automatique + Archiver) -
  * extrait de `NoteOuverte` pour garder le parent sous ~150 lignes.
- * « Enregistrer » reste actif pour une note partagée reçue (le contenu est
- * modifiable) ; « Archiver » reste réservé au propriétaire de la note.
+ * « Archiver » reste réservé au propriétaire de la note.
  */
 export function NoteOuverteFooter({
   note,
   estPartagee,
-  modifie,
-  enregistrement,
+  etatSauvegarde,
   enCours,
-  onSauvegarder,
+  onReessayer,
   onBasculerArchivee,
   onSupprimer,
 }: NoteOuverteFooterProps) {
@@ -36,15 +34,17 @@ export function NoteOuverteFooter({
 
   return (
     <div className="ml-auto flex flex-wrap items-center gap-3">
-      {modifie && (
-        <Button
-          type="button"
-          size="sm"
-          disabled={enregistrement}
-          onClick={onSauvegarder}
-        >
-          {enregistrement ? "Enregistrement..." : "Enregistrer"}
-        </Button>
+      {etatSauvegarde === "erreur" ? (
+        <span className="flex items-center gap-2 font-body text-xs text-destructive">
+          Non enregistrée
+          <Button type="button" size="xs" variant="outline" onClick={onReessayer}>
+            Réessayer
+          </Button>
+        </span>
+      ) : (
+        <span aria-live="polite" className="font-mono text-[10px] tracking-[.04em] text-ink/35 uppercase">
+          {etatSauvegarde === "enregistre" ? "Enregistrée" : "Enregistrement..."}
+        </span>
       )}
       {!estPartagee && (
         <button

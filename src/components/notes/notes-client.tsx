@@ -135,6 +135,7 @@ export function NotesClient() {
           />
           {noteSelectionnee ? (
             <NoteOuverte
+              key={noteSelectionnee.id}
               note={noteSelectionnee}
               onChange={onNoteChange}
               onDeleted={onNoteDeleted}

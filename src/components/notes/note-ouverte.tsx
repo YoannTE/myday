@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
@@ -13,6 +13,7 @@ import {
 import { NoteChecklist } from "@/components/notes/note-checklist";
 import { NoteOuverteHeader } from "@/components/notes/note-ouverte-header";
 import { NoteOuverteFooter } from "@/components/notes/note-ouverte-footer";
+import { useSauvegardeAuto } from "@/components/notes/use-sauvegarde-auto";
 import { PartageDialog } from "@/components/partage/partage-dialog";
 import type { NoteApi, NoteCategory } from "@/components/notes/types";
 
@@ -24,7 +25,8 @@ interface NoteOuverteProps {
   onCategoryCreated: (categorie: NoteCategory) => void;
 }
 
-// Panneau de la note ouverte : édition du contenu, archiver/désarchiver,
+// Panneau de la note ouverte : édition du contenu (enregistré automatiquement
+// pendant l'écriture), archiver/désarchiver,
 // catégorie (Round 015). Badge « via l'assistant » autorisé (correction #7).
 // Une note partagée reçue reste modifiable (titre, contenu, liste à cocher)
 // mais catégorie/archiver/partager restent réservés au propriétaire.
@@ -35,19 +37,11 @@ export function NoteOuverte({
   categories,
   onCategoryCreated,
 }: NoteOuverteProps) {
-  const [contenu, setContenu] = useState(note.contenu ?? "");
-  const [enregistrement, setEnregistrement] = useState(false);
+  const { contenu, modifier, etat, reessayer } = useSauvegardeAuto(note, onChange);
   const [enCours, setEnCours] = useState(false);
   const [enCoursCategorie, setEnCoursCategorie] = useState(false);
   const [partageOuvert, setPartageOuvert] = useState(false);
   const estPartagee = note.partage_par != null;
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setContenu(note.contenu ?? "");
-  }, [note.id, note.contenu]);
-
-  const modifie = contenu !== (note.contenu ?? "");
 
   async function appliquerPatch(payload: Partial<NoteApi>) {
     const reponse = await apiCall<{ data: NoteApi }>(`/api/notes/${note.id}`, {
@@ -56,22 +50,6 @@ export function NoteOuverte({
     });
     onChange(reponse.data);
     return reponse.data;
-  }
-
-  async function sauvegarderContenu() {
-    setEnregistrement(true);
-    try {
-      await appliquerPatch({ contenu });
-      toast.success("Note enregistrée.");
-    } catch (erreur) {
-      toast.error(
-        erreur instanceof Error
-          ? erreur.message
-          : "Impossible d'enregistrer la note.",
-      );
-    } finally {
-      setEnregistrement(false);
-    }
   }
 
   async function basculerArchivee() {
@@ -163,7 +141,7 @@ export function NoteOuverte({
       />
       <Textarea
         value={contenu}
-        onChange={(evenement) => setContenu(evenement.target.value)}
+        onChange={(evenement) => modifier(evenement.target.value)}
         placeholder="Écris ici..."
         className="min-h-40 w-full max-w-full resize-none rounded-2xl border-none bg-ink/5 px-4 py-3 text-xs leading-relaxed break-words whitespace-pre-wrap text-ink/80 shadow-none focus-visible:ring-0 disabled:opacity-100 md:text-sm"
       />
@@ -178,10 +156,9 @@ export function NoteOuverte({
         <NoteOuverteFooter
           note={note}
           estPartagee={estPartagee}
-          modifie={modifie}
-          enregistrement={enregistrement}
+          etatSauvegarde={etat}
           enCours={enCours}
-          onSauvegarder={sauvegarderContenu}
+          onReessayer={reessayer}
           onBasculerArchivee={basculerArchivee}
           onSupprimer={supprimer}
         />

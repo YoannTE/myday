@@ -13,7 +13,16 @@ import {
 } from "@/components/planning/date-utils";
 import { EventFormDialog } from "@/components/planning/event-form-dialog";
 import { BlocGrille } from "@/components/planning/grille/bloc-grille";
-import { FondColonnes, GoutiereHeures, HAUTEUR_GRILLE, HAUTEUR_HEURE } from "@/components/planning/grille/grille-fond";
+import {
+  FondColonnes,
+  GoutiereHeures,
+  HEURE_DEBUT,
+  HEURE_FIN,
+  MINUTE_DEBUT,
+  MINUTE_FIN,
+  positionMinute,
+  useHauteurHeure,
+} from "@/components/planning/grille/grille-fond";
 import {
   disposerSegments,
   elementsPlanning,
@@ -38,10 +47,15 @@ interface GrilleHoraireProps {
 
 const PAS_MINUTES = 15;
 
-function placement(segment: Pick<Segment, "colonne" | "debutMinutes" | "finMinutes" | "voie" | "voies">, nombreJours: number) {
+function placement(
+  segment: Pick<Segment, "colonne" | "debutMinutes" | "finMinutes" | "voie" | "voies">,
+  nombreJours: number,
+  hauteurHeure: number,
+) {
   const largeur = 100 / nombreJours;
-  const top = (segment.debutMinutes / 60) * HAUTEUR_HEURE;
-  const hauteur = Math.max(((segment.finMinutes - segment.debutMinutes) / 60) * HAUTEUR_HEURE - 2, 16);
+  const hauteur = Math.max(positionMinute(segment.finMinutes, hauteurHeure) - positionMinute(segment.debutMinutes, hauteurHeure) - 2, 16);
+  // Hors de la plage 8h-22h : le bloc reste visible, collé au bord.
+  const top = Math.min(positionMinute(segment.debutMinutes, hauteurHeure), (HEURE_FIN - HEURE_DEBUT) * hauteurHeure - hauteur);
   return {
     hauteur,
     style: {
@@ -60,6 +74,7 @@ function placement(segment: Pick<Segment, "colonne" | "debutMinutes" | "finMinut
  */
 export function GrilleHoraire({ jours, evenements, taches, onDeposer, onSuccess, onBord, avecEntetes = false }: GrilleHoraireProps) {
   const router = useRouter();
+  const hauteurHeure = useHauteurHeure();
   const defilementRef = useRef<HTMLDivElement>(null);
   const colonnesRef = useRef<HTMLDivElement>(null);
   const apercuRef = useRef<HTMLDivElement>(null);
@@ -75,10 +90,10 @@ export function GrilleHoraire({ jours, evenements, taches, onDeposer, onSuccess,
       const zone = colonnesRef.current?.getBoundingClientRect();
       if (!zone || zone.width === 0) return null;
       const colonne = Math.min(Math.max(Math.floor(((x - zone.left) / zone.width) * jours.length), 0), jours.length - 1);
-      const minute = Math.min(Math.max(((y - zone.top) / HAUTEUR_HEURE) * 60, 0), MINUTES_PAR_JOUR - 1);
+      const minute = Math.min(Math.max(MINUTE_DEBUT + ((y - zone.top) / hauteurHeure) * 60, MINUTE_DEBUT), MINUTE_FIN - 1);
       return numeroJourCivil(jours[colonne]) * MINUTES_PAR_JOUR + minute;
     },
-    [jours],
+    [jours, hauteurHeure],
   );
 
   const { glissement, demarrer, vientDeGlisser } = useGlisser({
@@ -90,15 +105,15 @@ export function GrilleHoraire({ jours, evenements, taches, onDeposer, onSuccess,
   });
 
   // Ouverture : vers l'heure actuelle si aujourd'hui est affiché, sinon vers
-  // le premier rendez-vous (7h par défaut). Jamais pendant un glissement.
+  // le premier rendez-vous (8h par défaut). Jamais pendant un glissement.
   const premierJour = jours[0]?.getTime();
   useLayoutEffect(() => {
     const zone = defilementRef.current;
     if (!zone || actifRef.current) return;
     const aujourdHui = jours.some((jour) => estAujourdHui(jour));
-    const premiere = Math.min(...segments.map((s) => s.debutMinutes), 7 * 60);
+    const premiere = Math.min(...segments.map((s) => s.debutMinutes), MINUTE_DEBUT);
     const cible = aujourdHui ? (minutesAbsolues(new Date()) % MINUTES_PAR_JOUR) - 90 : premiere - 30;
-    zone.scrollTop = Math.max((cible / 60) * HAUTEUR_HEURE, 0);
+    zone.scrollTop = positionMinute(cible, hauteurHeure);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [premierJour]);
 
@@ -134,7 +149,9 @@ export function GrilleHoraire({ jours, evenements, taches, onDeposer, onSuccess,
   const sourceAbsente = actif && cleSource !== null && !segments.some((s) => s.cleRendu === cleSource);
 
   return (
-    <div ref={defilementRef} className="relative max-h-[62vh] overflow-y-auto overscroll-contain md:max-h-[68vh]">
+    // Téléphone : pas de défilement interne, la grille compacte tient en entier
+    // et le doigt fait défiler la page. Ordinateur : grille plus haute, défilante.
+    <div ref={defilementRef} className="relative md:max-h-[68vh] md:overflow-y-auto md:overscroll-contain">
       {avecEntetes && (
         <div className="sticky top-0 z-40 flex border-b border-ink/5 bg-card pb-1.5">
           <div className="w-10 flex-shrink-0 md:w-12" />
@@ -146,12 +163,12 @@ export function GrilleHoraire({ jours, evenements, taches, onDeposer, onSuccess,
         </div>
       )}
       <div className="flex pt-2">
-        <GoutiereHeures />
-        <div ref={colonnesRef} className="relative flex-1" style={{ height: HAUTEUR_GRILLE }}>
-          <FondColonnes jours={jours} />
+        <GoutiereHeures hauteurHeure={hauteurHeure} />
+        <div ref={colonnesRef} className="relative flex-1" style={{ height: (HEURE_FIN - HEURE_DEBUT) * hauteurHeure }}>
+          <FondColonnes jours={jours} hauteurHeure={hauteurHeure} />
           {[
             ...segments.map((segment) => {
-              const { hauteur, style } = placement(segment, jours.length);
+              const { hauteur, style } = placement(segment, jours.length, hauteurHeure);
               const enCours = glissement?.element.cle === segment.element.cle;
               return (
                 <BlocGrille
@@ -176,7 +193,7 @@ export function GrilleHoraire({ jours, evenements, taches, onDeposer, onSuccess,
               : []),
             ...(glissement
               ? apercus.map((apercu, index) => {
-                  const { hauteur, style } = placement({ ...apercu, voie: 0, voies: 1 }, jours.length);
+                  const { hauteur, style } = placement({ ...apercu, voie: 0, voies: 1 }, jours.length, hauteurHeure);
                   return (
                     <BlocGrille
                       key={`apercu-${apercu.cleRendu}`}
