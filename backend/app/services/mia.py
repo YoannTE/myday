@@ -1,7 +1,8 @@
 """Lecture « Ma journée » pour l'accès machine de la page MIA (`/api/mia`).
 
 Vue volontairement réduite à ce dont la page MIA a besoin (titres, dates,
-noms de catégories), sans identifiants internes ni brief. Tout passe par
+noms de catégories, et l'id des tâches et rendez-vous pour pouvoir les
+modifier), sans brief. Tout passe par
 `scoped_connection(user_id)` : la RLS s'applique exactement comme pour une
 session du site (données propres + éléments partagés avec l'utilisateur).
 
@@ -25,12 +26,12 @@ async def get_journee(user_id: str) -> dict:
     now = _now_local()
     async with scoped_connection(user_id) as conn:
         prochains = await conn.fetch(
-            "SELECT e.titre, e.debut, e.fin, e.lieu FROM events e "
+            "SELECT e.id::text, e.titre, e.debut, e.fin, e.lieu FROM events e "
             "WHERE e.debut >= $1 ORDER BY e.debut ASC LIMIT $2",
             now, _PROCHAINS_LIMIT,
         )
         taches = await conn.fetch(
-            "SELECT t.titre, t.priorite, t.echeance, c.nom AS categorie "
+            "SELECT t.id::text, t.titre, t.priorite, t.echeance, c.nom AS categorie "
             "FROM tasks t "
             "LEFT JOIN task_categories c ON c.id = t.categorie_id "
             "WHERE t.statut = 'a_faire' "

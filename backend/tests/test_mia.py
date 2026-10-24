@@ -186,11 +186,12 @@ def test_mia_journee_donnees_du_compte_configure(client, mia_user, autre_user):
     assert set(data) == {"prochains", "taches", "notes"}
 
     assert [e["titre"] for e in data["prochains"]] == ["Visite hôtel"]
-    assert set(data["prochains"][0]) == {"titre", "debut", "fin", "lieu"}
+    assert set(data["prochains"][0]) == {"id", "titre", "debut", "fin", "lieu"}
     assert data["prochains"][0]["lieu"] == "Cannes"
 
     assert [t["titre"] for t in data["taches"]] == ["Rappeler le client", "Sans échéance"]
     assert data["taches"][0] == {
+        "id": data["taches"][0]["id"],
         "titre": "Rappeler le client",
         "priorite": "haute",
         "echeance": data["taches"][0]["echeance"],
@@ -289,7 +290,88 @@ def test_mia_creer_note(client, mia_user):
     )
 
 
-def test_mia_aucune_modification_ni_suppression(client, mia_user):
-    for methode in ("patch", "put", "delete"):
+def _tache(uid, titre="À décaler", echeance=None):
+    return admin_val(
+        "INSERT INTO tasks (user_id, titre, statut, echeance) "
+        "VALUES ($1, $2, 'a_faire', $3) RETURNING id::text",
+        uid, titre, echeance,
+    )
+
+
+def test_mia_decaler_et_cocher_tache(client, mia_user):
+    hier = datetime.now(timezone.utc) - timedelta(days=1)
+    tid = _tache(mia_user, echeance=hier)
+    demain = (datetime.now(timezone.utc) + timedelta(days=1)).replace(microsecond=0)
+    resp = client.patch(
+        f"/api/mia/taches/{tid}",
+        json={"echeance": demain.isoformat(), "titre": "Décalée"},
+        headers=_bearer(),
+    )
+    assert resp.status_code == 200
+    assert resp.json()["data"]["titre"] == "Décalée"
+    assert admin_val("SELECT echeance FROM tasks WHERE id = $1::uuid", tid) == demain
+
+    resp = client.patch(
+        f"/api/mia/taches/{tid}", json={"statut": "faite"}, headers=_bearer()
+    )
+    assert resp.status_code == 200
+    assert admin_val("SELECT statut FROM tasks WHERE id = $1::uuid", tid) == "faite"
+
+
+def test_mia_modifier_tache_champ_interdit_ou_invalide(client, mia_user):
+    tid = _tache(mia_user)
+    # Champ hors liste MIA : refusé, pas ignoré.
+    resp = client.patch(
+        f"/api/mia/taches/{tid}", json={"categorie_id": None}, headers=_bearer()
+    )
+    assert resp.status_code == 422
+    resp = client.patch(
+        f"/api/mia/taches/{tid}", json={"priorite": "urgente"}, headers=_bearer()
+    )
+    assert resp.status_code == 400
+    assert "Priorité invalide" in resp.json()["detail"]
+
+
+def test_mia_modifier_tache_autre_compte_404(client, mia_user, autre_user):
+    tid = _tache(autre_user, titre="Secret")
+    resp = client.patch(
+        f"/api/mia/taches/{tid}", json={"titre": "Piraté"}, headers=_bearer()
+    )
+    assert resp.status_code == 404
+    assert admin_val("SELECT titre FROM tasks WHERE id = $1::uuid", tid) == "Secret"
+
+
+def test_mia_deplacer_evenement(client, mia_user):
+    debut = datetime.now(timezone.utc).replace(microsecond=0) + timedelta(days=1)
+    eid = admin_val(
+        "INSERT INTO events (user_id, titre, debut, fin) "
+        "VALUES ($1, 'RDV', $2, $3) RETURNING id::text",
+        mia_user, debut, debut + timedelta(hours=1),
+    )
+    nouveau = debut + timedelta(days=1)
+    resp = client.patch(
+        f"/api/mia/evenements/{eid}",
+        json={"debut": nouveau.isoformat(), "fin": (nouveau + timedelta(hours=1)).isoformat(), "lieu": "Monaco"},
+        headers=_bearer(),
+    )
+    assert resp.status_code == 200
+    assert resp.json()["data"]["lieu"] == "Monaco"
+    assert admin_val("SELECT debut FROM events WHERE id = $1::uuid", eid) == nouveau
+
+    resp = client.patch(
+        f"/api/mia/evenements/{eid}",
+        json={"fin": (nouveau - timedelta(hours=1)).isoformat()},
+        headers=_bearer(),
+    )
+    assert resp.status_code == 400
+
+
+def test_mia_aucune_suppression(client, mia_user):
+    tid = _tache(mia_user)
+    for chemin in ("/api/mia/taches", f"/api/mia/taches/{tid}"):
+        resp = client.delete(chemin, headers=_bearer())
+        assert resp.status_code == 405, chemin
+    assert admin_val("SELECT count(*) FROM tasks WHERE id = $1::uuid", tid) == 1
+    for methode in ("patch", "put"):
         resp = getattr(client, methode)("/api/mia/taches", headers=_bearer())
         assert resp.status_code == 405, methode
