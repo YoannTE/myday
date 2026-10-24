@@ -39,6 +39,7 @@ class PreferencesUpdate(BaseModel):
     section_taches: bool | None = None
     section_notes: bool | None = None
     section_budget: bool | None = None
+    section_brief: bool | None = None
     notif_important_mail: bool | None = None
     notif_event_reminder: bool | None = None
     notif_brief_ready: bool | None = None
@@ -60,6 +61,7 @@ class PreferencesResponse(BaseModel):
     section_taches: bool
     section_notes: bool
     section_budget: bool
+    section_brief: bool
     notif_important_mail: bool
     notif_event_reminder: bool
     notif_brief_ready: bool

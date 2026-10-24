@@ -1,7 +1,8 @@
 """Scheduler du brief quotidien (Round 007), calqué sur `google/scheduler.py`.
 
 Chaque tick (~5 min) : liste les utilisateurs ayant terminé l'onboarding
-(`onboarding_completed = true`), calcule l'heure locale via leur `timezone`,
+(`onboarding_completed = true`) et n'ayant pas désactivé le brief
+(`section_brief = true`, réglage « Sections du cockpit »), calcule l'heure locale via leur `timezone`,
 et déclenche un brief `scheduled` si `heure_locale >= brief_hour` ET qu'aucun
 brief `quotidien` n'existe déjà pour la date locale (idempotent, rattrapage
 inclus après un redémarrage). Chaque run utilisateur est isolé (try/except)
@@ -35,7 +36,7 @@ async def _list_onboarded_users() -> list[dict]:
     pool = get_admin_pool()
     rows = await pool.fetch(
         "SELECT user_id, brief_hour, timezone FROM user_preferences "
-        "WHERE onboarding_completed = true"
+        "WHERE onboarding_completed = true AND section_brief = true"
     )
     return [dict(r) for r in rows]
 

@@ -88,15 +88,25 @@ async def get_cockpit(user_id: str) -> dict:
         # dans la MEME scoped_connection - pas settings.app_timezone global
         # (sinon le brief du jour serait invisible pour un utilisateur hors
         # du fuseau applicatif par defaut).
-        user_timezone = await conn.fetchval(
-            "SELECT timezone FROM user_preferences WHERE user_id = $1", user_id
-        ) or settings.app_timezone
+        prefs_row = await conn.fetchrow(
+            "SELECT timezone, section_brief FROM user_preferences WHERE user_id = $1",
+            user_id,
+        )
+        user_timezone = (prefs_row and prefs_row["timezone"]) or settings.app_timezone
         today_local = datetime.now(ZoneInfo(user_timezone)).date()
-        brief_row = await conn.fetchrow(
-            "SELECT contenu, degraded, generated_at, type FROM briefs "
-            "WHERE brief_date = $1 "
-            "ORDER BY (type = 'quotidien') DESC, generated_at DESC LIMIT 1",
-            today_local,
+        # Brief désactivé dans les réglages : `brief` reste dans la réponse
+        # (forme inchangée) mais vaut `None`, même si un ancien brief du jour
+        # existe encore en base.
+        brief_active = prefs_row is None or prefs_row["section_brief"] is not False
+        brief_row = (
+            await conn.fetchrow(
+                "SELECT contenu, degraded, generated_at, type FROM briefs "
+                "WHERE brief_date = $1 "
+                "ORDER BY (type = 'quotidien') DESC, generated_at DESC LIMIT 1",
+                today_local,
+            )
+            if brief_active
+            else None
         )
 
         notes = await conn.fetch(

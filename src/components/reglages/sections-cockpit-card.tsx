@@ -14,8 +14,9 @@ import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
- * Carte « Sections du cockpit » de /reglages : affiche ou masque chacune des
- * cinq sections. Tout est affiché au départ, masquer est un choix explicite.
+ * Carte « Sections du cockpit » de /reglages : affiche ou masque le brief du
+ * jour et chacune des cinq sections. Tout est affiché au départ, masquer est
+ * un choix explicite. Couper le brief arrête aussi sa préparation côté moteur.
  *
  * Le réglage vit sur le profil et non sur l'appareil : une section masquée
  * doit l'être sur le Mac comme sur le téléphone, au même titre que le thème.

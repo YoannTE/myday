@@ -20,6 +20,7 @@ import { BudgetSection } from "@/components/budget/budget-section";
 import { OnboardingResumeBanner } from "@/components/onboarding/onboarding-resume-banner";
 import type { CockpitData } from "@/components/cockpit/types";
 import {
+  briefActif,
   sectionVisible,
   SECTIONS_TOUTES_VISIBLES,
   type PreferencesSections,
@@ -155,7 +156,9 @@ export function CockpitClient() {
 
   return (
     <div className="flex flex-col gap-10">
-      {briefVisible ? (
+      {/* Brief coupé dans les réglages : ni la carte, ni le bouton pour
+          l'afficher (le moteur ne le prépare plus de toute façon). */}
+      {!briefActif(sections) ? null : briefVisible ? (
         <BriefHero
           brief={donnees.brief}
           onRegenerated={charger}

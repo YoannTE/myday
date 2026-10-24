@@ -79,7 +79,7 @@ def test_get_preferences_create_or_default(client, auth_user):
     assert data["theme"] == "clair"
     # Toutes les sections du cockpit sont affichees par defaut : masquer est
     # un choix explicite de l'utilisateur.
-    for section in ("meteo", "planning", "taches", "notes", "budget"):
+    for section in ("meteo", "planning", "taches", "notes", "budget", "brief"):
         assert data[f"section_{section}"] is True, section
     assert _count_preferences(uid) == 1
 
@@ -145,6 +145,34 @@ def test_masquer_une_section(client, auth_user):
         "/api/preferences", json={"section_budget": True}, headers=headers
     )
     assert resp.json()["data"]["section_budget"] is True
+
+
+def test_desactiver_le_brief(client, auth_user):
+    """`section_brief` se bascule comme les autres sections, sans toucher au
+    reste (heure, ton, notification « brief prêt »), et se réactive."""
+    _uid, headers = auth_user
+    resp = client.patch(
+        "/api/preferences", json={"section_brief": False}, headers=headers
+    )
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert data["section_brief"] is False
+    for section in ("meteo", "planning", "taches", "notes", "budget"):
+        assert data[f"section_{section}"] is True, section
+    assert data["brief_hour"] == "07:00"
+    assert data["brief_tone"] == "neutre"
+    assert data["notif_brief_ready"] is True
+
+    assert (
+        client.get("/api/preferences", headers=headers).json()["data"][
+            "section_brief"
+        ]
+        is False
+    )
+    resp = client.patch(
+        "/api/preferences", json={"section_brief": True}, headers=headers
+    )
+    assert resp.json()["data"]["section_brief"] is True
 
 
 def test_masquer_toutes_les_sections(client, auth_user):

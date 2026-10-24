@@ -71,6 +71,7 @@ npm run dev
 | `S3_*` | MinIO / stockage | oui (dev via docker) |
 | `ANTHROPIC_API_KEY` | IA (tri, brief, assistant). **Absente → mode « règles »** | non |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | Notifications push web | pour le push |
+| `MIA_TOKEN` / `MIA_USER_EMAIL` | Accès « machine » de la page MIA (`/api/mia`, en-tête `Authorization: Bearer`), pour le seul compte de cet email. Jeton secret de 32 caractères minimum. **L'un des deux absent → `/api/mia` répond 404** | non (moteur) |
 
 **Sans clé IA** : le tri des mails et le brief fonctionnent en mode heuristique (« règles ») ;
 l'assistant conversationnel, lui, a besoin d'une clé pour comprendre le langage naturel. Ajouter la

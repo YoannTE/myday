@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiCall } from "@/lib/api";
 import { messageErreurApi } from "@/lib/api-error-message";
+import { briefActif } from "@/lib/sections-cockpit";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -59,6 +60,11 @@ const NOTIFICATIONS = [
  * fuseau horaire, 3 alertes) lisant/écrivant GET/PATCH /api/preferences
  * (cf. .project/rounds/005/plan.md « Contrats figés »). Chaque changement
  * s'enregistre immédiatement (pas de bouton « Enregistrer » séparé).
+ *
+ * Brief coupé (carte « Sections du cockpit ») : l'heure, le ton et l'alerte
+ * « Brief prêt » restent visibles mais grisés, avec leurs valeurs conservées
+ * pour le jour où le brief est réactivé. Le fuseau et les autres alertes
+ * servent ailleurs et restent modifiables.
  */
 export function BriefNotificationsForm() {
   const [preferences, setPreferences] = useState<Preferences | null>(null);
@@ -128,11 +134,20 @@ export function BriefNotificationsForm() {
     );
   }
 
+  const briefCoupe = !briefActif(preferences);
+
   return (
     <section className="fade-in delay-1 rounded-card bg-card p-6 shadow-card">
       <h2 className="mb-5 font-display font-bold tracking-[-0.02em] text-ink">
         Brief &amp; notifications
       </h2>
+
+      {briefCoupe ? (
+        <p className="mb-5 rounded-inner border border-ink/10 px-4 py-3 font-body text-sm text-ink/60">
+          Le brief du jour est désactivé : il n&apos;est plus préparé. Tu peux
+          le réactiver dans Mon compte, carte « Sections du cockpit ».
+        </p>
+      ) : null}
 
       <div className="mb-5 grid gap-4 md:grid-cols-3">
         <div>
@@ -141,6 +156,7 @@ export function BriefNotificationsForm() {
           </p>
           <Select
             value={preferences.brief_hour}
+            disabled={briefCoupe}
             onValueChange={(valeur) =>
               enregistrer({ brief_hour: valeur as string })
             }
@@ -185,6 +201,7 @@ export function BriefNotificationsForm() {
           </p>
           <Select
             value={preferences.brief_tone}
+            disabled={briefCoupe}
             onValueChange={(valeur) =>
               enregistrer({ brief_tone: valeur as BriefTone })
             }
@@ -219,7 +236,10 @@ export function BriefNotificationsForm() {
             </div>
             <Switch
               checked={preferences[notification.cle]}
-              disabled={enregistrement}
+              disabled={
+                enregistrement ||
+                (briefCoupe && notification.cle === "notif_brief_ready")
+              }
               onCheckedChange={(valeur) =>
                 enregistrer({ [notification.cle]: valeur })
               }

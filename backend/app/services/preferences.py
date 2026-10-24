@@ -21,7 +21,7 @@ from app.utils.errors import bad_request
 _COLUMNS = (
     "brief_hour, brief_tone, timezone, theme, couleur_accent, meteo_ville, "
     "section_meteo, section_planning, section_taches, section_notes, "
-    "section_budget, notif_important_mail, "
+    "section_budget, section_brief, notif_important_mail, "
     "notif_event_reminder, notif_brief_ready, onboarding_completed, "
     "onboarding_step, created_at, updated_at"
 )
@@ -33,6 +33,7 @@ SECTIONS = (
     "section_taches",
     "section_notes",
     "section_budget",
+    "section_brief",
 )
 
 _METEO_VILLE_MAX = 120
@@ -130,10 +131,10 @@ async def update_preferences(user_id: str, payload: PreferencesUpdate) -> dict:
             SET brief_hour = $2, brief_tone = $3, timezone = $4, theme = $5,
                 couleur_accent = $6, meteo_ville = $7,
                 section_meteo = $8, section_planning = $9, section_taches = $10,
-                section_notes = $11, section_budget = $12,
-                notif_important_mail = $13,
-                notif_event_reminder = $14, notif_brief_ready = $15,
-                onboarding_completed = $16, onboarding_step = $17,
+                section_notes = $11, section_budget = $12, section_brief = $13,
+                notif_important_mail = $14,
+                notif_event_reminder = $15, notif_brief_ready = $16,
+                onboarding_completed = $17, onboarding_step = $18,
                 updated_at = now()
             WHERE user_id = $1
             RETURNING {_COLUMNS}

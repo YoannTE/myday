@@ -1,0 +1,1 @@
+ALTER TABLE "user_preferences" ADD COLUMN "section_brief" boolean DEFAULT true NOT NULL;

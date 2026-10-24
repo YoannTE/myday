@@ -28,19 +28,47 @@ logger = logging.getLogger("myday.daily_brief.orchestrator")
 
 async def _load_preferences(user_id: str) -> dict:
     """Ton et fuseau viennent de `user_preferences` (correction #9) — jamais
-    de config.py pour le ton, qui est per-utilisateur."""
+    de config.py pour le ton, qui est per-utilisateur. `section_brief` dit si
+    l'utilisateur veut encore du brief (absence de ligne = défaut, activé)."""
     async with scoped_connection(user_id) as conn:
         row = await conn.fetchrow(
-            "SELECT brief_tone, timezone FROM user_preferences WHERE user_id = $1",
+            "SELECT brief_tone, timezone, section_brief FROM user_preferences "
+            "WHERE user_id = $1",
             user_id,
         )
     if row is None:
-        return {"brief_tone": "neutre", "timezone": settings.app_timezone}
-    return {"brief_tone": row["brief_tone"], "timezone": row["timezone"]}
+        return {
+            "brief_tone": "neutre",
+            "timezone": settings.app_timezone,
+            "section_brief": True,
+        }
+    return {
+        "brief_tone": row["brief_tone"],
+        "timezone": row["timezone"],
+        "section_brief": row["section_brief"],
+    }
 
 
 async def run_daily_brief(user_id: str, trigger: str, brief_date: str) -> dict:
     prefs = await _load_preferences(user_id)
+
+    # Brief désactivé dans les réglages (« Sections du cockpit ») : on s'arrête
+    # avant toute collecte et tout appel IA. Point de passage unique de tous
+    # les déclencheurs (heure prévue, bouton du cockpit, fin d'onboarding) :
+    # aucun coût, aucune ligne `briefs`, donc aucune notification « brief prêt ».
+    # Seul un `false` explicite coupe, comme pour l'affichage côté site.
+    if prefs["section_brief"] is False:
+        logger.info(
+            "daily_brief désactivé user_id=%s trigger=%s brief_date=%s",
+            user_id, trigger, brief_date,
+        )
+        return {
+            "brief_id": None,
+            "generated": False,
+            "degraded": False,
+            "disabled": True,
+        }
+
     timezone_str = prefs["timezone"]
 
     context = await collect_context(

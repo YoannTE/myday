@@ -24,6 +24,7 @@ from app.api.google import router as google_router
 from app.api.health import router as health_router
 from app.api.mails import router as mails_router
 from app.api.me import router as me_router
+from app.api.mia import router as mia_router
 from app.api.contacts import router as contacts_router
 from app.api.event_categories import router as event_categories_router
 from app.api.note_categories import router as note_categories_router
@@ -127,6 +128,7 @@ app.include_router(assistant_router, prefix="/api")
 app.include_router(push_router, prefix="/api")
 app.include_router(notifications_router, prefix="/api")
 app.include_router(search_router, prefix="/api")
+app.include_router(mia_router, prefix="/api")
 if events_router is not None:
     app.include_router(events_router, prefix="/api")
 app.include_router(event_categories_router, prefix="/api")

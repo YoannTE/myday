@@ -141,5 +141,15 @@ class Settings(BaseSettings):
     event_reminder_scheduler_enabled: bool = True
     event_reminder_interval_minutes: int = 5
 
+    # Accès « machine » de la page MIA (`/api/mia`) : le Mac de l'utilisateur
+    # lit sa journée et crée tâches / rendez-vous / notes avec curl, sans
+    # session de navigateur. Jeton secret (`Authorization: Bearer ...`) +
+    # email du SEUL compte concerné. Si l'un des deux manque (ou si le jeton
+    # fait moins de `mia_token_min_length` caractères), tout `/api/mia`
+    # répond 404 : la fonction est désactivée par défaut.
+    mia_token: str = ""
+    mia_user_email: str = ""
+    mia_token_min_length: int = 32
+
 
 settings = Settings()

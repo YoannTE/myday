@@ -12,6 +12,9 @@ export interface Preferences {
   notif_important_mail: boolean;
   notif_event_reminder: boolean;
   notif_brief_ready: boolean;
+  /** Brief du jour actif (carte « Sections du cockpit »). Optionnel : un
+   * moteur pas encore à jour ne le renvoie pas, ce qui vaut « actif ». */
+  section_brief?: boolean;
   onboarding_completed: boolean;
   onboarding_step: number;
   created_at: string;

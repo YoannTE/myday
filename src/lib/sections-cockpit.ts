@@ -5,6 +5,10 @@
 //   - l'ORDRE reste local à l'appareil (flèches du cockpit, localStorage) ;
 //   - l'AFFICHAGE vit sur le profil (`user_preferences`, une colonne booléenne
 //     par section), pour qu'une section masquée le soit partout.
+//
+// Le brief du jour est un cas à part : il n'a pas de place dans l'ordre (il
+// reste toujours en tête) et le couper va plus loin que le masquer, puisque le
+// moteur cesse alors de le générer (ni coût IA, ni notification « brief prêt »).
 
 import type { CleSection } from "@/components/cockpit/use-ordre-sections";
 
@@ -15,16 +19,24 @@ export interface PreferencesSections {
   section_taches: boolean;
   section_notes: boolean;
   section_budget: boolean;
+  section_brief: boolean;
 }
 
 export interface SectionCockpit {
   cle: keyof PreferencesSections;
-  section: CleSection;
+  /** Absent pour le brief, qui n'est pas une section réordonnable. */
+  section?: CleSection;
   titre: string;
   description: string;
 }
 
 export const SECTIONS_COCKPIT: SectionCockpit[] = [
+  {
+    cle: "section_brief",
+    titre: "Brief du jour",
+    description:
+      "Le résumé IA de ta journée. Désactivé, il n'est plus préparé du tout.",
+  },
   {
     cle: "section_meteo",
     section: "meteo",
@@ -65,10 +77,13 @@ export const SECTIONS_TOUTES_VISIBLES: PreferencesSections = {
   section_taches: true,
   section_notes: true,
   section_budget: true,
+  section_brief: true,
 };
 
 const PAR_SECTION = new Map<CleSection, keyof PreferencesSections>(
-  SECTIONS_COCKPIT.map((entree) => [entree.section, entree.cle]),
+  SECTIONS_COCKPIT.flatMap((entree) =>
+    entree.section ? [[entree.section, entree.cle] as const] : [],
+  ),
 );
 
 /**
@@ -87,4 +102,13 @@ export function sectionVisible(
 ): boolean {
   const cle = PAR_SECTION.get(section);
   return cle ? preferences[cle] !== false : true;
+}
+
+/**
+ * Le brief du jour est-il actif ? Même règle que les sections : seul un
+ * `false` explicite le coupe (un moteur pas encore à jour, qui ne renvoie pas
+ * `section_brief`, laisse le brief tel qu'il était).
+ */
+export function briefActif(preferences: Partial<PreferencesSections>): boolean {
+  return preferences.section_brief !== false;
 }

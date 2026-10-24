@@ -54,6 +54,11 @@ export const userPreferences = pgTable(
     sectionTaches: boolean("section_taches").notNull().default(true),
     sectionNotes: boolean("section_notes").notNull().default(true),
     sectionBudget: boolean("section_budget").notNull().default(true),
+    // Brief du jour (IA). Va plus loin que les autres sections : à `false`, le
+    // brief n'est plus du tout généré (ni à l'heure prévue, ni à la demande),
+    // donc ni coût IA ni notification « brief prêt ». Le code reste en place :
+    // réactiver l'interrupteur suffit à le faire revenir.
+    sectionBrief: boolean("section_brief").notNull().default(true),
 
     notifImportantMail: boolean("notif_important_mail").notNull().default(true),
     notifEventReminder: boolean("notif_event_reminder").notNull().default(true),

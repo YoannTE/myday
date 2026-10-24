@@ -49,6 +49,24 @@ def run_in_loop(coro_factory):
     return asyncio.new_event_loop().run_until_complete(_runner())
 
 
+def run_in_loop_scheduler(coro_factory):
+    """Comme `run_in_loop`, en dédiant aussi le pool admin au loop neuf : le
+    scheduler lit la liste des utilisateurs via `get_admin_pool()`."""
+
+    async def _runner():
+        saved_admin = dbclient._admin_pool
+        dbclient._admin_pool = await asyncpg.create_pool(
+            settings.database_url, min_size=1, max_size=2
+        )
+        try:
+            return await coro_factory()
+        finally:
+            await dbclient._admin_pool.close()
+            dbclient._admin_pool = saved_admin
+
+    return run_in_loop(_runner)
+
+
 def admin_val(query, *args):
     async def _do():
         conn = await asyncpg.connect(settings.database_url)
@@ -391,6 +409,81 @@ def test_scheduled_respecte_notif_brief_ready_desactive(user_id):
     assert count_brief_notifications(user_id) == 0
 
 
+# --- Brief désactivé (`section_brief = false`) ------------------------------
+
+
+@pytest.mark.parametrize("trigger", ["scheduled", "manual", "onboarding"])
+def test_brief_desactive_ne_genere_rien(user_id, trigger):
+    """Brief coupé dans les réglages : aucun déclencheur ne génère (donc aucun
+    coût IA), aucune ligne `briefs`, aucune notification « brief prêt »."""
+    insert_preferences(user_id, section_brief=False)
+    result = run_in_loop(lambda: run_daily_brief(user_id, trigger, today_str()))
+
+    assert result["generated"] is False
+    assert result["disabled"] is True
+    assert result["brief_id"] is None
+    assert count_briefs(user_id, "quotidien") == 0
+    assert count_briefs(user_id, "a_la_demande") == 0
+    assert count_brief_notifications(user_id) == 0
+    assert count_usage_events(user_id, "brief_generated") == 0
+
+
+def test_brief_desactive_compose_jamais_appele(user_id, monkeypatch):
+    """Garde-fou coût : l'étape IA (`compose_brief`) n'est même pas atteinte."""
+    import app.services.daily_brief.orchestrator as orchestrator
+
+    async def _interdit(**_kwargs):
+        raise AssertionError("compose_brief ne doit pas être appelé")
+
+    monkeypatch.setattr(orchestrator, "compose_brief", _interdit)
+    insert_preferences(user_id, section_brief=False)
+    result = run_in_loop(lambda: run_daily_brief(user_id, "scheduled", today_str()))
+    assert result["generated"] is False
+
+
+def test_scheduler_ignore_les_briefs_desactives(user_id):
+    """Le scheduler ne liste plus un utilisateur qui a coupé le brief, et
+    reprend dès qu'il le réactive."""
+    from app.services.brief_scheduler import _list_onboarded_users
+
+    insert_preferences(user_id, onboarding_completed=True, section_brief=False)
+    ids = {row["user_id"] for row in run_in_loop_scheduler(_list_onboarded_users)}
+    assert user_id not in ids
+
+    admin_exec(
+        "UPDATE user_preferences SET section_brief = true WHERE user_id = $1",
+        user_id,
+    )
+    ids = {row["user_id"] for row in run_in_loop_scheduler(_list_onboarded_users)}
+    assert user_id in ids
+
+
+def test_scheduler_tick_ne_genere_pas_si_desactive(user_id, monkeypatch):
+    """Un tick complet, heure du brief dépassée : rien n'est généré ni notifié."""
+    import app.services.brief_scheduler as brief_scheduler
+
+    insert_preferences(
+        user_id, onboarding_completed=True, section_brief=False, brief_hour="00:00"
+    )
+    appels: list[str] = []
+
+    # Espion sans effet : n'écrit aucun brief pour les autres comptes de la
+    # base de dev qui seraient dus à cette heure-ci.
+    async def _espion(uid, trigger, brief_date):
+        appels.append(uid)
+        return {"brief_id": None, "generated": False, "degraded": False}
+
+    monkeypatch.setattr(brief_scheduler, "run_daily_brief", _espion)
+    # Le tick avale ses erreurs (il logue et continue) : on vérifie d'abord
+    # que la liste se lit bien, sinon le test passerait sans rien prouver.
+    run_in_loop_scheduler(brief_scheduler._list_onboarded_users)
+    run_in_loop_scheduler(brief_scheduler._tick)
+
+    assert user_id not in appels
+    assert count_briefs(user_id, "quotidien") == 0
+    assert count_brief_notifications(user_id) == 0
+
+
 # --- Alerte de synchronisation en retard ------------------------------------
 
 
@@ -459,6 +552,42 @@ def test_generate_brief_anti_spam_429(client, auth_user):
 
     second = client.post("/api/brief/generate", headers=headers)
     assert second.status_code == 429
+
+
+def test_generate_brief_desactive_ne_genere_pas(client, auth_user):
+    """Le bouton du cockpit et la fin d'onboarding passent par cet endpoint :
+    brief coupé, réponse 200 sans génération, et le cockpit renvoie `brief`
+    à `None` (forme de la réponse inchangée)."""
+    uid, headers = auth_user
+    resp = client.patch(
+        "/api/preferences", json={"section_brief": False}, headers=headers
+    )
+    assert resp.status_code == 200
+
+    for trigger in ("manual", "onboarding"):
+        resp = client.post(f"/api/brief/generate?trigger={trigger}", headers=headers)
+        assert resp.status_code == 200
+        assert resp.json()["data"]["generated"] is False
+    assert count_briefs(uid, "a_la_demande") == 0
+
+    cockpit = client.get("/api/cockpit", headers=headers)
+    assert cockpit.status_code == 200
+    assert "brief" in cockpit.json()["data"]
+    assert cockpit.json()["data"]["brief"] is None
+
+
+def test_cockpit_masque_un_brief_existant_si_desactive(client, auth_user):
+    """Un brief déjà généré aujourd'hui n'est plus renvoyé une fois le brief
+    coupé, et revient quand on le réactive."""
+    uid, headers = auth_user
+    assert client.post("/api/brief/generate", headers=headers).status_code == 200
+    assert client.get("/api/cockpit", headers=headers).json()["data"]["brief"]
+
+    client.patch("/api/preferences", json={"section_brief": False}, headers=headers)
+    assert client.get("/api/cockpit", headers=headers).json()["data"]["brief"] is None
+
+    client.patch("/api/preferences", json={"section_brief": True}, headers=headers)
+    assert client.get("/api/cockpit", headers=headers).json()["data"]["brief"]
 
 
 def test_dedupe_priorities_supprime_doublons_et_complete():
